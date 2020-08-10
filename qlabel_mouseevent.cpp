@@ -1,13 +1,10 @@
 #include "qlabel_mouseevent.h"
 
 QLabel_mouseEvent::QLabel_mouseEvent(QWidget* parent) : QLabel(parent)
-{
-}
+{}
 
 QLabel_mouseEvent::~QLabel_mouseEvent()
-{
-
-}
+{}
 
 void QLabel_mouseEvent::mouseMoveEvent(QMouseEvent *ev)
 {
@@ -27,7 +24,6 @@ void QLabel_mouseEvent::mouseMoveEvent(QMouseEvent *ev)
 
 void QLabel_mouseEvent::mousePressEvent(QMouseEvent *ev)
 {
-
     if(ev->button() == Qt::LeftButton)
     {
         origin = ev->pos();
