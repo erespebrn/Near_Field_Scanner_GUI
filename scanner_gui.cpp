@@ -464,6 +464,9 @@ void scanner_gui::displayCroppedImage(QRect &rect)
                                     Qt::SmoothTransformation);
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
+    double width_cropped = (double)rect.width()*0.25;
+    double height_cropped = (double)rect.height()*0.25;
+    ui->cropped_size->setText("x: "+ QString::number(width_cropped) +" mm" + ",y: " + QString::number(height_cropped) + "mm" );
 }
 
 void scanner_gui::on_scan_settings_button_clicked()

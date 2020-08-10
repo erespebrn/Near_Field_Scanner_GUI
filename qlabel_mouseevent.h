@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QRubberBand>
 #include <QMouseEvent>
+#include <QMessageBox>
 
 class QLabel_mouseEvent : public QLabel
 {
@@ -13,7 +14,7 @@ class QLabel_mouseEvent : public QLabel
 
 public:
     QLabel_mouseEvent(QWidget *parent = nullptr);
-    ~QLabel_mouseEvent();
+    ~QLabel_mouseEvent() override;
 
 signals:
     void sendMousePosition(QPoint&);
@@ -29,6 +30,7 @@ private:
     QPoint origin;
     QPoint mouse_pos;
     bool leftmouseevent {false};
+    bool rubberSizeOK {false};
     bool stop_mouse {false};
 };
 
