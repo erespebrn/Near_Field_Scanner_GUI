@@ -39,7 +39,7 @@ void QLabel_mouseEvent::mouseReleaseEvent(QMouseEvent *ev)
 {
     if(ev->button() == Qt::LeftButton)
     {
-        if((ev->pos().x() - origin.x()) > 50 && (ev->pos().y() - origin.y()) > 50)
+        if((ev->pos().x() - origin.x()) > 10 && (ev->pos().y() - origin.y()) > 10)
         {
             QRect myRect(origin, ev->pos());
             emit sendQrect(myRect);

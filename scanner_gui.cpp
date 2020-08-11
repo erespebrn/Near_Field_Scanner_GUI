@@ -120,7 +120,6 @@ void scanner_gui::on_Start_scan_button_clicked()
     //Start scan button
 }
 
-
 void scanner_gui::on_stop_scan_button_clicked()
 {
     _socket_robot.write("demo = 0");
@@ -129,6 +128,7 @@ void scanner_gui::on_stop_scan_button_clicked()
     _socket_robot.waitForBytesWritten(30);
 }
 
+
 void scanner_gui::on_Take_img_button_clicked()
 {
     m_camera->searchAndLock();
@@ -136,6 +136,58 @@ void scanner_gui::on_Take_img_button_clicked()
     displayCapturedImage();
     m_camera->unlock();
 }
+
+void scanner_gui::takeImage()
+{
+    m_isCapturingImage = true;
+    m_imageCapture->capture();
+}
+
+void scanner_gui::displayCapturedImage()
+{
+    ui->stackedWidget->setCurrentIndex(1);
+}
+
+void scanner_gui::processCapturedImage(int requestId, const QImage &img)
+{
+    Q_UNUSED(requestId);
+    QImage scaledImage = img.scaled(ui->viewfinder->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(img));
+    displayCapturedImage();
+}
+
+void scanner_gui::displayCroppedImage(QRect &rect)
+{
+    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
+    QImage image( pixmap->toImage() );
+    QImage cropped = image.copy(rect);
+    QImage scaledImage = cropped.scaled(ui->viewfinder->size(),
+                                    Qt::KeepAspectRatio,
+                                    Qt::SmoothTransformation);
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
+    scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
+
+    float field_height = sensor_height*camera_distance/focal_lenght;
+    float field_width = sensor_width*camera_distance/focal_lenght;
+
+    float pixel_height = field_height/m_imageSettings.resolution().height();
+    float pixel_width = field_width/m_imageSettings.resolution().width();
+
+    float width_cropped = (float)rect.width()*pixel_width;
+    float height_cropped = (float)rect.height()*pixel_height;
+    ui->cropped_size->setText("x: "+ QString::number(width_cropped) +"mm" + ",y: " + QString::number(height_cropped) + "mm" );
+}
+
+void scanner_gui::displayViewfinder()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+void scanner_gui::on_actionReset_Camera_triggered()
+{
+    displayViewfinder();
+}
+
 
 void scanner_gui::on_Y_plus_button_pressed()
 {
@@ -299,19 +351,6 @@ void scanner_gui::updateRecordTime()
     ui->statusbar->showMessage(str);
 }
 
-void scanner_gui::processCapturedImage(int requestId, const QImage& img)
-{
-    Q_UNUSED(requestId);
-    QImage scaledImage = img.scaled(ui->viewfinder->size(),
-                                    Qt::KeepAspectRatio,
-                                    Qt::SmoothTransformation);
-
-    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    // Display captured image for 4 seconds.
-    displayCapturedImage();
-    //QTimer::singleShot(4000, this, &scanner_gui::displayViewfinder);
-}
-
 void scanner_gui::configureCaptureSettings()
 {
     switch (m_camera->captureMode()) {
@@ -369,12 +408,6 @@ void scanner_gui::toggleLock()
     }
 }
 
-void scanner_gui::takeImage()
-{
-    m_isCapturingImage = true;
-    m_imageCapture->capture();
-}
-
 void scanner_gui::displayCaptureError(int id, const QCameraImageCapture::Error error, const QString &errorString)
 {
     Q_UNUSED(id)
@@ -413,16 +446,6 @@ void scanner_gui::updateCameraDevice(QAction *action)
     setCamera(qvariant_cast<QCameraInfo>(action->data()));
 }
 
-void scanner_gui::displayViewfinder()
-{
-    ui->stackedWidget->setCurrentIndex(0);
-}
-
-void scanner_gui::displayCapturedImage()
-{
-    ui->stackedWidget->setCurrentIndex(1);
-}
-
 void scanner_gui::readyForCapture(bool ready)
 {
     ui->Take_img_button->setEnabled(ready);
@@ -454,20 +477,7 @@ void scanner_gui::showMousePosition(QPoint &pos)
     ui->mouse_position_label->setText("x: "+ QString::number(pos.x()) + ",y: " + QString::number(pos.y()));
 }
 
-void scanner_gui::displayCroppedImage(QRect &rect)
-{
-    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
-    QImage image( pixmap->toImage() );
-    QImage cropped = image.copy(rect);
-    QImage scaledImage = cropped.scaled(ui->viewfinder->size(),
-                                    Qt::KeepAspectRatio,
-                                    Qt::SmoothTransformation);
-    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
-    double width_cropped = (double)rect.width()*0.75;
-    double height_cropped = (double)rect.height()*0.75;
-    ui->cropped_size->setText("x: "+ QString::number(width_cropped) +" mm" + ",y: " + QString::number(height_cropped) + "mm" );
-}
+
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
@@ -478,12 +488,6 @@ void scanner_gui::on_scan_settings_button_clicked()
 }
 
 
-
-
-void scanner_gui::on_actionReset_Camera_triggered()
-{
-    displayViewfinder();
-}
 
 
 

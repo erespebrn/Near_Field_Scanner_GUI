@@ -86,6 +86,8 @@ private slots:
     void displayCroppedImage(QRect& rect);
     void showMousePosition(QPoint& pos);
 
+    //void on_actionSettings_triggered();
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
@@ -107,6 +109,11 @@ private:
     QString m_videoContainerFormat;
     bool m_isCapturingImage = false;
     bool m_applicationExiting = false;
+
+    const float sensor_width = 4.54;
+    const float sensor_height = 2.42;
+    const float focal_lenght = 3.81;
+    uint16_t camera_distance = 890;
 };
 
 #endif // SCANNER_GUI_H
