@@ -28,7 +28,7 @@ private slots:
     void on_scan_height_valueChanged(double arg1);
     void on_stepsize_x_valueChanged(double arg1);
     void on_stepsize_y_valueChanged(double arg1);
-    void on_Take_img_button_clicked();
+
 
     //Robot manual control buttons
     void on_Y_plus_button_pressed();
@@ -38,10 +38,20 @@ private slots:
     void on_Z_plus_pressed();
     void on_Z_minus_pressed();
 
-    void setCamera(const QCameraInfo &cameraInfo);
+    //Take and process the image
+    void on_Take_img_button_clicked();
+    void takeImage();
+    void displayCapturedImage();
+    void processCapturedImage(int requestId, const QImage &img);
+    void displayCroppedImage(QRect& rect);
+    //void readyForCapture(bool ready);
+    void imageSaved(int id, const QString &fileName);
 
+    //Camera settings
+    void setCamera(const QCameraInfo &cameraInfo);
     void startCamera();
     void stopCamera();
+    void updateCameraDevice(QAction *action);
 
     void record();
     void pause();
@@ -49,17 +59,18 @@ private slots:
     void setMuted(bool);
 
     void toggleLock();
-    void takeImage();
+
     void displayCaptureError(int, QCameraImageCapture::Error, const QString &errorString);
 
     void configureCaptureSettings();
     //void configureVideoSettings();
+
     void configureImageSettings();
+
 
     void displayRecorderError();
     void displayCameraError();
 
-    void updateCameraDevice(QAction *action);
 
     //void updateCameraState(QCamera::State);
     //void updateCaptureMode();
@@ -68,13 +79,12 @@ private slots:
 
     void updateRecordTime();
 
-    void processCapturedImage(int requestId, const QImage &img);
     //void updateLockStatus(QCamera::LockStatus, QCamera::LockChangeReason);
 
     void displayViewfinder();
-    void displayCapturedImage();
-    void readyForCapture(bool ready);
-    void imageSaved(int id, const QString &fileName);
+
+
+
 
     void on_scan_settings_button_clicked();
 
@@ -83,7 +93,7 @@ private slots:
     void on_measure_height_clicked();
     void on_stop_scan_button_clicked();
 
-    void displayCroppedImage(QRect& rect);
+
     void showMousePosition(QPoint& pos);
 
     //void on_actionSettings_triggered();
@@ -111,7 +121,7 @@ private:
     bool m_applicationExiting = false;
 
     const float sensor_width = 4.54;
-    const float sensor_height = 2.42;
+    const float sensor_height = 3.42;
     const float focal_lenght = 3.81;
     uint16_t camera_distance = 890;
 };

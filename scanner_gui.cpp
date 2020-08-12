@@ -42,7 +42,8 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     QActionGroup *videoDevicesGroup = new QActionGroup(this);
     videoDevicesGroup->setExclusive(true);
     const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
-    for (const QCameraInfo &cameraInfo : availableCameras) {
+    for (const QCameraInfo &cameraInfo : availableCameras)
+    {
         QAction *videoDeviceAction = new QAction(cameraInfo.description(), videoDevicesGroup);
         videoDeviceAction->setCheckable(true);
         videoDeviceAction->setData(QVariant::fromValue(cameraInfo));
@@ -50,16 +51,24 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
             videoDeviceAction->setChecked(true);
 
         ui->menuDevices->addAction(videoDeviceAction);
-
-        connect(ui->actionSettings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
     }
 
-    connect(videoDevicesGroup, &QActionGroup::triggered, this, &scanner_gui::updateCameraDevice);
-    //connect(ui->captureWidget, &QTabWidget::currentChanged, this, &scanner_gui::updateCaptureMode);
     setCamera(QCameraInfo::defaultCamera());
 
+    //Default image capture settings
+    m_imageSettings.setCodec("jpg");
+    m_imageSettings.setResolution(1280, 720);
+    m_imageCapture->setEncodingSettings(m_imageSettings);
+
+
+    connect(ui->actionImage_Settings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
+    connect(videoDevicesGroup, &QActionGroup::triggered, this, &scanner_gui::updateCameraDevice);
+
+
+    //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
+
 }
 
 scanner_gui::~scanner_gui()
@@ -129,6 +138,14 @@ void scanner_gui::on_stop_scan_button_clicked()
 }
 
 
+void scanner_gui::configureImageSettings()
+{
+    ImageSettings settingsDialog(m_imageCapture.data(), &m_imageSettings);
+    settingsDialog.setWindowFlags(settingsDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    settingsDialog.exec();
+    m_imageCapture->setEncodingSettings(m_imageSettings);
+}
+
 void scanner_gui::on_Take_img_button_clicked()
 {
     m_camera->searchAndLock();
@@ -151,8 +168,8 @@ void scanner_gui::displayCapturedImage()
 void scanner_gui::processCapturedImage(int requestId, const QImage &img)
 {
     Q_UNUSED(requestId);
-    QImage scaledImage = img.scaled(ui->viewfinder->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(img));
+    QImage scaledImage = img.scaled(ui->viewfinder->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     displayCapturedImage();
 }
 
@@ -167,15 +184,25 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
 
-    float field_height = sensor_height*camera_distance/focal_lenght;
-    float field_width = sensor_width*camera_distance/focal_lenght;
+//    float field_height = sensor_height*camera_distance/focal_lenght;
+//    float field_width = sensor_width*camera_distance/focal_lenght;
 
-    float pixel_height = field_height/m_imageSettings.resolution().height();
-    float pixel_width = field_width/m_imageSettings.resolution().width();
+//    float pixel_height = field_height/m_imageSettings.resolution().height();
+//    float pixel_width = field_width/m_imageSettings.resolution().width();
 
-    float width_cropped = (float)rect.width()*pixel_width;
-    float height_cropped = (float)rect.height()*pixel_height;
-    ui->cropped_size->setText("x: "+ QString::number(width_cropped) +"mm" + ",y: " + QString::number(height_cropped) + "mm" );
+//    float pixel_height = field_height/3156;
+//    float pixel_width = field_width/4224;
+
+//    uint16_t width_cropped = rect.width()*pixel_height;
+//    uint16_t height_cropped = rect.height()*pixel_height;
+
+    float scale_factor = 3156/ui->viewfinder->height();
+
+    float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*m_imageSettings.resolution().height()))*scale_factor;
+    float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*m_imageSettings.resolution().width()))*scale_factor;
+
+    ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ",y: " + QString::number((uint16_t)height_cropped) + "mm" );
+    ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );
 }
 
 void scanner_gui::displayViewfinder()
@@ -282,7 +309,7 @@ void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
     //updateLockStatus(m_camera->lockStatus(), QCamera::UserRequest);
     //updateRecorderState(m_mediaRecorder->state());
 
-    connect(m_imageCapture.data(), &QCameraImageCapture::readyForCaptureChanged, this, &scanner_gui::readyForCapture);
+    //connect(m_imageCapture.data(), &QCameraImageCapture::readyForCaptureChanged, this, &scanner_gui::readyForCapture);
     connect(m_imageCapture.data(), &QCameraImageCapture::imageCaptured, this, &scanner_gui::processCapturedImage);
     connect(m_imageCapture.data(), &QCameraImageCapture::imageSaved, this, &scanner_gui::imageSaved);
     connect(m_imageCapture.data(), QOverload<int, QCameraImageCapture::Error, const QString &>::of(&QCameraImageCapture::error),
@@ -298,10 +325,11 @@ void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
     //ui->captureWidget->setTabEnabled(1, (m_camera->isCaptureModeSupported(QCamera::CaptureVideo)));
 
     //updateCaptureMode();
-    QCameraFocus *focus = m_camera->focus();
-    focus->setFocusPointMode(QCameraFocus::FocusPointAuto);
+//    QCameraFocus *focus = m_camera->focus();
+//    focus->setFocusPointMode(QCameraFocus::FocusPointAuto);
     m_camera->start();
     displayViewfinder();
+
 }
 
 void scanner_gui::keyPressEvent(QKeyEvent * event)
@@ -362,18 +390,7 @@ void scanner_gui::configureCaptureSettings()
     }
 }
 
-void scanner_gui::configureImageSettings()
-{
-    ImageSettings settingsDialog(m_imageCapture.data());
-    settingsDialog.setWindowFlags(settingsDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    settingsDialog.setImageSettings(m_imageSettings);
-
-    if (settingsDialog.exec()) {
-        m_imageSettings = settingsDialog.imageSettings();
-        m_imageCapture->setEncodingSettings(m_imageSettings);
-    }
-}
 
 void scanner_gui::record()
 {
@@ -446,10 +463,10 @@ void scanner_gui::updateCameraDevice(QAction *action)
     setCamera(qvariant_cast<QCameraInfo>(action->data()));
 }
 
-void scanner_gui::readyForCapture(bool ready)
+/*void scanner_gui::readyForCapture(bool ready)
 {
     ui->Take_img_button->setEnabled(ready);
-}
+}*/
 
 void scanner_gui::imageSaved(int id, const QString &fileName)
 {

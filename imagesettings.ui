@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
-    <height>270</height>
+    <width>310</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,38 +86,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ImageSettingsUi</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>322</x>
-     <y>272</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>44</x>
-     <y>230</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>ImageSettingsUi</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>405</x>
-     <y>262</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>364</x>
-     <y>227</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

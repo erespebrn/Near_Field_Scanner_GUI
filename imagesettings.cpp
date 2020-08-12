@@ -7,7 +7,7 @@
 #include <QMediaService>
 
 
-ImageSettings::ImageSettings(QCameraImageCapture *imageCapture, QWidget *parent) :
+ImageSettings::ImageSettings(QCameraImageCapture *imageCapture, QImageEncoderSettings *imageSet, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ImageSettingsUi),
     imagecapture(imageCapture)
@@ -15,21 +15,23 @@ ImageSettings::ImageSettings(QCameraImageCapture *imageCapture, QWidget *parent)
     ui->setupUi(this);
 
     //image codecs
-    ui->imageCodecBox->addItem(tr("Default image format"), QVariant(QString()));
     const QStringList supportedImageCodecs = imagecapture->supportedImageCodecs();
-    for (const QString &codecName : supportedImageCodecs) {
+    for (const QString &codecName : supportedImageCodecs)
+    {
         QString description = imagecapture->imageCodecDescription(codecName);
         ui->imageCodecBox->addItem(codecName + ": " + description, QVariant(codecName));
     }
 
     ui->imageQualitySlider->setRange(0, int(QMultimedia::VeryHighQuality));
 
-    ui->imageResolutionBox->addItem(tr("Default Resolution"));
     const QList<QSize> supportedResolutions = imagecapture->supportedResolutions();
-    for (const QSize &resolution : supportedResolutions) {
+    for (const QSize &resolution : supportedResolutions)
+    {
         ui->imageResolutionBox->addItem(QString("%1x%2").arg(resolution.width()).arg(resolution.height()),
                                         QVariant(resolution));
     }
+    setImageSettings(*imageSet);
+    imgSet = imageSet;
 }
 
 ImageSettings::~ImageSettings()
@@ -55,7 +57,6 @@ QImageEncoderSettings ImageSettings::imageSettings() const
     settings.setCodec(boxValue(ui->imageCodecBox).toString());
     settings.setQuality(QMultimedia::EncodingQuality(ui->imageQualitySlider->value()));
     settings.setResolution(boxValue(ui->imageResolutionBox).toSize());
-
     return settings;
 }
 
@@ -83,4 +84,16 @@ void ImageSettings::selectComboBoxItem(QComboBox *box, const QVariant &value)
             break;
         }
     }
+}
+
+void ImageSettings::on_buttonBox_accepted()
+{
+    *imgSet = imageSettings();
+    hide();
+}
+
+
+void ImageSettings::on_buttonBox_rejected()
+{
+    hide();
 }

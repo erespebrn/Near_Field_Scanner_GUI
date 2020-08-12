@@ -66,7 +66,7 @@ class ImageSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit ImageSettings(QCameraImageCapture *imageCapture, QWidget *parent = nullptr);
+    explicit ImageSettings(QCameraImageCapture *imageCapture, QImageEncoderSettings *imageSettings, QWidget *parent = nullptr);
     ~ImageSettings();
 
     QAudioEncoderSettings audioSettings() const;
@@ -81,12 +81,18 @@ public:
 protected:
     void changeEvent(QEvent *e) override;
 
+private slots:
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
+
 private:
     QVariant boxValue(const QComboBox *box) const;
     void selectComboBoxItem(QComboBox *box, const QVariant &value);
 
     Ui::ImageSettingsUi *ui;
     QCameraImageCapture *imagecapture;
+    QImageEncoderSettings *imgSet;
 };
 
 #endif // IMAGESETTINGS_H

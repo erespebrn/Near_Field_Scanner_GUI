@@ -631,7 +631,14 @@
       <item>
        <widget class="QLabel" name="cropped_size">
         <property name="text">
-         <string>Cropped image size: X=0, Y=0</string>
+         <string>x=0, y=0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="cropped_size_px">
+        <property name="text">
+         <string>x=0, y=0</string>
         </property>
        </widget>
       </item>
@@ -777,7 +784,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionSettings"/>
+    <addaction name="actionImage_Settings"/>
     <addaction name="actionReset_Camera"/>
    </widget>
    <widget class="QMenu" name="menuDevices">
@@ -815,14 +822,14 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionSettings">
-   <property name="text">
-    <string>Image Settings</string>
-   </property>
-  </action>
   <action name="actionReset_Camera">
    <property name="text">
     <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actionImage_Settings">
+   <property name="text">
+    <string>Image Settings</string>
    </property>
   </action>
  </widget>
@@ -840,24 +847,7 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>actionSettings</sender>
-   <signal>triggered()</signal>
-   <receiver>scanner_gui</receiver>
-   <slot>configureImageSettings()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>855</x>
-     <y>465</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>configureImageSettings()</slot>
   <slot>configureCaptureSettings()</slot>
