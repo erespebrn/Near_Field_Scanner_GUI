@@ -17,25 +17,28 @@ scan_settings::scan_settings(QWidget *parent) :
     ui(new Ui::scan_settings), _socket_sa(this)
 {
     ui->setupUi(this);    //sockets:
-   _socket_sa.connectToHost(QHostAddress("192.168.11.4"), 5024);
-   /*
-    * Setup default SA settings here
-    *
-   */
-
     QDate mydate = QDate::currentDate();
     QTime mytime = QTime::currentTime();
-    QString tid = mytime.toString("hhmmss");
-    QString dato = mydate.toString("yyyyMMdd");
-   connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
-   ui->referencelevel_spinbox->setEnabled(false);
-   ui->leveloffset_spinbox->setEnabled(false);
-   ui->attenuation_spinbox->setEnabled(false);
-   ui->sweep_spinbox->setEnabled(false);
-   ui->center_freq_spinbox->setEnabled(false);
-   ui->spanfreq_spinbox->setEnabled(false);
-   ui->frequency_dropdown_center->setEnabled(false);
-   ui->frequency_dropdown_span->setEnabled(false);
+    QString time = mytime.toString("hhmmss");
+    QString date = mydate.toString("yyyyMMdd");
+
+    QString time_cmd = ":SYSTem:TIME %1\n";
+    time_cmd = time_cmd.arg(time);
+    qDebug() << time_cmd.toLocal8Bit();
+    _socket_sa.connectToHost(QHostAddress("192.168.11.4"), 5024);
+    _socket_sa.write("*RST");
+    _socket_sa.waitForBytesWritten(10);
+    _socket_sa.write(time.toUtf8());
+
+    connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
+    ui->referencelevel_spinbox->setEnabled(false);
+    ui->leveloffset_spinbox->setEnabled(false);
+    ui->attenuation_spinbox->setEnabled(false);
+    ui->sweep_spinbox->setEnabled(false);
+    ui->center_freq_spinbox->setEnabled(false);
+    ui->spanfreq_spinbox->setEnabled(false);
+    ui->frequency_dropdown_center->setEnabled(false);
+    ui->frequency_dropdown_span->setEnabled(false);
 
 }
 
