@@ -57,7 +57,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 
     //Default image capture settings
     m_imageSettings.setCodec("jpg");
-    m_imageSettings.setResolution(1280, 720);
+    m_imageSettings.setResolution(4208, 3120);
     m_imageCapture->setEncodingSettings(m_imageSettings);
 
 
@@ -68,7 +68,6 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
-
 }
 
 scanner_gui::~scanner_gui()
@@ -184,22 +183,18 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
 
-//    float field_height = sensor_height*camera_distance/focal_lenght;
-//    float field_width = sensor_width*camera_distance/focal_lenght;
+    // *** Determine the real size of the object on an image *** //
+    //Since the image taken is scaled, scale factor must be used
+    float scale_factor = (float)m_imageSettings.resolution().height()/(float)ui->viewfinder->height();
 
-//    float pixel_height = field_height/m_imageSettings.resolution().height();
-//    float pixel_width = field_width/m_imageSettings.resolution().width();
-
-//    float pixel_height = field_height/3156;
-//    float pixel_width = field_width/4224;
-
-//    uint16_t width_cropped = rect.width()*pixel_height;
-//    uint16_t height_cropped = rect.height()*pixel_height;
-
-    float scale_factor = 3156/ui->viewfinder->height();
-
+    //Height and width of cropped image (marked using mouse) can be computed using the following equations
     float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*m_imageSettings.resolution().height()))*scale_factor;
     float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*m_imageSettings.resolution().width()))*scale_factor;
+
+    //Since the used camera image sensor's aspect ratio is 4:3, when using 16:9 ratio the image is cropped.
+    //Therefore the special factor (calculated experimentally) added when aspect ratio is 16:9
+    if(((float)m_imageSettings.resolution().width()/(float)m_imageSettings.resolution().height()) > 1.5)
+        height_cropped = height_cropped*0.73;
 
     ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ",y: " + QString::number((uint16_t)height_cropped) + "mm" );
     ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );

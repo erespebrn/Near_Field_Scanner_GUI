@@ -27,8 +27,8 @@ ImageSettings::ImageSettings(QCameraImageCapture *imageCapture, QImageEncoderSet
     const QList<QSize> supportedResolutions = imagecapture->supportedResolutions();
     for (const QSize &resolution : supportedResolutions)
     {
-        ui->imageResolutionBox->addItem(QString("%1x%2").arg(resolution.width()).arg(resolution.height()),
-                                        QVariant(resolution));
+        if(((float)resolution.width()/(float)resolution.height()) < 1.8)
+            ui->imageResolutionBox->addItem(QString("%1x%2").arg(resolution.width()).arg(resolution.height()), QVariant(resolution));
     }
     setImageSettings(*imageSet);
     imgSet = imageSet;
