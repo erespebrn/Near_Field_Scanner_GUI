@@ -38,6 +38,27 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
 
+    // *** SIGLENT SSA3032X spectrum analyzer TCP connection *** //
+    //Establish a connection with the SSA3032X spectrum analyzer
+    _socket_sa.connectToHost(QHostAddress("192.168.11.4"), 5024);
+    _socket_sa.waitForReadyRead(1);
+    _socket_sa.write("*RST");
+    _socket_sa.waitForBytesWritten(1);
+    //Set the SA3032X local time and date
+    QDate mydate = QDate::currentDate();
+    QTime mytime = QTime::currentTime();
+    QString time = mytime.toString("hhmmss");
+    QString date = mydate.toString("yyyyMMdd");
+    QString time_cmd = ":SYSTem:TIME %1\n";
+    time_cmd = time_cmd.arg(time);
+    QString date_cmd = ":SYSTem:DATE %1\n";
+    date_cmd = date_cmd.arg(date);
+    _socket_sa.write(date_cmd.toUtf8());
+    _socket_sa.waitForBytesWritten(1);
+    _socket_sa.write(time_cmd.toUtf8());
+    _socket_sa.waitForBytesWritten(1);
+    //***//
+
     //Camera
     QActionGroup *videoDevicesGroup = new QActionGroup(this);
     videoDevicesGroup->setExclusive(true);

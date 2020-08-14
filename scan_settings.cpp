@@ -11,26 +11,17 @@ int center_freq;
 char center_freq_str[80];
 int start_freq;
 char start_freq_str[80];
+char read_buffer[128];
 
 scan_settings::scan_settings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::scan_settings), _socket_sa(this)
 {
-    ui->setupUi(this);    //sockets:
-    QDate mydate = QDate::currentDate();
-    QTime mytime = QTime::currentTime();
-    QString time = mytime.toString("hhmmss");
-    QString date = mydate.toString("yyyyMMdd");
-
-    QString time_cmd = ":SYSTem:TIME %1\n";
-    time_cmd = time_cmd.arg(time);
-    qDebug() << time_cmd.toLocal8Bit();
-    _socket_sa.connectToHost(QHostAddress("192.168.11.4"), 5024);
-    _socket_sa.write("*RST");
-    _socket_sa.waitForBytesWritten(10);
-    _socket_sa.write(time.toUtf8());
+    ui->setupUi(this);
 
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
+
+    //Default settings for the scan settings window
     ui->referencelevel_spinbox->setEnabled(false);
     ui->leveloffset_spinbox->setEnabled(false);
     ui->attenuation_spinbox->setEnabled(false);
@@ -39,7 +30,6 @@ scan_settings::scan_settings(QWidget *parent) :
     ui->spanfreq_spinbox->setEnabled(false);
     ui->frequency_dropdown_center->setEnabled(false);
     ui->frequency_dropdown_span->setEnabled(false);
-
 }
 
 scan_settings::~scan_settings()
