@@ -39,8 +39,6 @@ scan_settings::~scan_settings()
 
 void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
 {
-    center_span = true;
-    start_stop = false;
     //Enabled
     ui->center_freq_spinbox->setEnabled(true);
     ui->spanfreq_spinbox->setEnabled(true);
@@ -56,8 +54,6 @@ void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and 
 
 void scan_settings::on_start_stop_radiobutton_clicked()
 {
-    center_span = false;
-    start_stop = true;
     //enabled
     ui->start_freq_spinbox->setEnabled(true);
     ui->start_freq_dropdown->setEnabled(true);
@@ -74,13 +70,14 @@ void scan_settings::on_start_stop_radiobutton_clicked()
 void scan_settings::on_apply_click()
 {
     QString mystring;
-    if(center_span)
+    if(ui->center_span_radiobutton->isChecked())
     {
         // Center frequency
         mystring = ":FREQuency:CENTer %1 %2\n";
         mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
         _socket_sa->write(mystring.toLocal8Bit());
         _socket_sa->waitForBytesWritten(1);
+        qDebug() << mystring;
         mystring = "";
 
         // Span
@@ -88,9 +85,10 @@ void scan_settings::on_apply_click()
         mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
         _socket_sa->write(mystring.toLocal8Bit());
         _socket_sa->waitForBytesWritten(1);
+        qDebug() << mystring;
         mystring = "";
     }
-    else if(start_stop)
+    else if(ui->start_stop_radiobutton->isChecked())
     {
         // Start frequency
         mystring = ":FREQuency:STARt %1 %2\n";
@@ -108,6 +106,33 @@ void scan_settings::on_apply_click()
         qDebug() << mystring;
         mystring = "";
     }
+
+    // Number of sweeps
+    mystring = ":SWEep:COUNt %1\n";
+    mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
+    _socket_sa->write(mystring.toLocal8Bit());
+    _socket_sa->waitForBytesWritten(1);
+    qDebug() << mystring;
+    mystring = "";
+
+    // Step
+    mystring = ":FREQuency:CENTer:STEP %1\n";
+    mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
+    mystring = mystring + " MHz";
+    _socket_sa->write(mystring.toLocal8Bit());
+    _socket_sa->waitForBytesWritten(1);
+    qDebug() << mystring;
+    mystring = "";
+
+    // Scale
+    if(ui->scaleCheckbox->isChecked())
+         mystring = ":DISPlay:WINDow:TRACe:Y:SPACing LINear %1\n";
+    else
+        mystring = ":DISPlay:WINDow:TRACe:Y:SPACing LOGarithmic %1\n";
+    _socket_sa->write(mystring.toLocal8Bit());
+    _socket_sa->waitForBytesWritten(1);
+    qDebug() << mystring;
+    mystring = "";
 }
 
 
@@ -126,28 +151,29 @@ void scan_settings::on_stop_freq_spinbox_valueChanged(double arg1)
         ui->stop_freq_spinbox->setValue(sa_max_freq);
 }
 
+void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
+{
+    if(arg1 >= sa_max_freq && ui->frequency_dropdown_center->currentText() == sa_max_freq_unit)
+        ui->center_freq_spinbox->setValue(sa_max_freq-0.1);
+
+}
+
 void scan_settings::on_start_freq_dropdown_currentIndexChanged(int index)
 {
     if(ui->stop_freq_dropdown->currentIndex() > index)
         ui->stop_freq_dropdown->setCurrentIndex(index);
 }
 
-
-void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
+void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
 {
-    if(arg1 >= sa_max_freq && ui->frequency_dropdown_center->currentText() == sa_max_freq_unit)
-    {
-        ui->center_freq_spinbox->setValue(sa_max_freq-0.1);
-    }
+    if(index > ui->start_freq_dropdown->currentIndex())
+        ui->start_freq_dropdown->setCurrentIndex(ui->stop_freq_dropdown->currentIndex());
 }
-
 
 void scan_settings::on_buttonBox_accepted()
 {
     emit on_apply_click();
 }
-
-
 
 void scan_settings::on_referencelevel_checkbox_stateChanged(int arg1)
 {
@@ -194,5 +220,4 @@ void scan_settings::on_checkBox_2_stateChanged(int arg1)
         ui->videoBW_dropdown->setEnabled(false);
     }
 }
-
 

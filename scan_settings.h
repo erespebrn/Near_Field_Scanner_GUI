@@ -37,12 +37,11 @@ private slots:
 
     void on_start_freq_dropdown_currentIndexChanged(int index);
 
+    void on_stop_freq_dropdown_currentIndexChanged(int index);
+
 private:
     Ui::scan_settings *ui;
     QTcpSocket *_socket_sa;
-
-    bool center_span = false;
-    bool start_stop = true;
 
     const double sa_max_freq = 3.2;
     const QString sa_max_freq_unit = "GHz";
