@@ -10,6 +10,12 @@
     <height>931</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Near-field Scanner</string>
   </property>
@@ -24,28 +30,6 @@
     <bool>false</bool>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="2" column="2" colspan="2">
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>X-Y-Z position</string>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item row="1" column="0" rowspan="4" colspan="2">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="enabled">
@@ -178,6 +162,28 @@
       </widget>
      </widget>
     </item>
+    <item row="2" column="2" colspan="2">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>X-Y-Z position</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
     <item row="3" column="2" colspan="2">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
@@ -187,46 +193,6 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="3" column="1">
-        <widget class="QToolButton" name="X_minus_button">
-         <property name="minimumSize">
-          <size>
-           <width>45</width>
-           <height>45</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>45</width>
-           <height>45</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>X+</string>
-         </property>
-         <property name="statusTip">
-          <string>X+</string>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>40</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="autoRepeat">
-          <bool>true</bool>
-         </property>
-         <property name="autoRepeatDelay">
-          <number>100</number>
-         </property>
-         <property name="arrowType">
-          <enum>Qt::LeftArrow</enum>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="2" alignment="Qt::AlignHCenter">
         <widget class="QToolButton" name="Y_minus_button">
          <property name="minimumSize">
@@ -276,14 +242,8 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QPushButton" name="Z_plus">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
+       <item row="3" column="1">
+        <widget class="QToolButton" name="X_minus_button">
          <property name="minimumSize">
           <size>
            <width>45</width>
@@ -296,15 +256,14 @@
            <height>45</height>
           </size>
          </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
+         <property name="toolTip">
+          <string>X+</string>
+         </property>
+         <property name="statusTip">
+          <string>X+</string>
          </property>
          <property name="text">
-          <string>Z+</string>
+          <string>...</string>
          </property>
          <property name="iconSize">
           <size>
@@ -318,10 +277,13 @@
          <property name="autoRepeatDelay">
           <number>100</number>
          </property>
+         <property name="arrowType">
+          <enum>Qt::LeftArrow</enum>
+         </property>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QPushButton" name="Z_minus">
+       <item row="3" column="2">
+        <widget class="QToolButton" name="home_button">
          <property name="minimumSize">
           <size>
            <width>45</width>
@@ -334,22 +296,18 @@
            <height>45</height>
           </size>
          </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-           <kerning>true</kerning>
-          </font>
-         </property>
          <property name="text">
-          <string>Z-</string>
+          <string>...</string>
          </property>
-         <property name="autoRepeat">
-          <bool>true</bool>
+         <property name="icon">
+          <iconset>
+           <normaloff>images/home_icon.svg</normaloff>images/home_icon.svg</iconset>
          </property>
-         <property name="autoRepeatDelay">
-          <number>100</number>
+         <property name="iconSize">
+          <size>
+           <width>35</width>
+           <height>30</height>
+          </size>
          </property>
         </widget>
        </item>
@@ -441,8 +399,8 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QToolButton" name="home_button">
+       <item row="4" column="0">
+        <widget class="QPushButton" name="Z_minus">
          <property name="minimumSize">
           <size>
            <width>45</width>
@@ -455,18 +413,66 @@
            <height>45</height>
           </size>
          </property>
-         <property name="text">
-          <string>...</string>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+           <kerning>true</kerning>
+          </font>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>images/home_icon.svg</normaloff>images/home_icon.svg</iconset>
+         <property name="text">
+          <string>Z-</string>
+         </property>
+         <property name="autoRepeat">
+          <bool>true</bool>
+         </property>
+         <property name="autoRepeatDelay">
+          <number>100</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="Z_plus">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>45</width>
+           <height>45</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>45</width>
+           <height>45</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Z+</string>
          </property>
          <property name="iconSize">
           <size>
-           <width>35</width>
-           <height>30</height>
+           <width>40</width>
+           <height>40</height>
           </size>
+         </property>
+         <property name="autoRepeat">
+          <bool>true</bool>
+         </property>
+         <property name="autoRepeatDelay">
+          <number>100</number>
          </property>
         </widget>
        </item>
@@ -617,15 +623,148 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="mouse_position_label">
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
-        <property name="text">
-         <string/>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
         </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QFrame" name="frame_2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="lineWidth">
+         <number>21</number>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Measurement equipment:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetMaximumSize</enum>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Spectrum Analyzer:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="sa_connect_btn">
+             <property name="text">
+              <string>Connect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>VNA Analyzer:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>Connect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="refresh_connection_btn">
+             <property name="text">
+              <string>Refresh</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Probes:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="Probe_dropdown">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>LF R 400</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LF B 3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LF U 5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>LF U 2,5</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="scan_settings_button">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+             <stylestrategy>PreferDefault</stylestrategy>
+            </font>
+           </property>
+           <property name="text">
+            <string>Scan Settings</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -640,63 +779,6 @@
         <property name="text">
          <string>x=0, y=0</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Probes:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="Probe_dropdown">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <item>
-         <property name="text">
-          <string>LF R 400</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LF B 3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LF U 5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LF U 2,5</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item>
@@ -723,19 +805,6 @@
         </property>
         <property name="text">
          <string>Measure Height</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="scan_settings_button">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-          <stylestrategy>PreferDefault</stylestrategy>
-         </font>
-        </property>
-        <property name="text">
-         <string>Scan Settings</string>
         </property>
        </widget>
       </item>

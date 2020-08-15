@@ -1,6 +1,5 @@
 #include "imagesettings.h"
 #include "ui_imagesettings.h"
-
 #include <QComboBox>
 #include <QDebug>
 #include <QCameraImageCapture>
