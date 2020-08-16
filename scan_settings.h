@@ -24,20 +24,15 @@ private slots:
     void on_referencelevel_checkbox_stateChanged(int arg1);
     void on_leveloffset_checkbox_stateChanged(int arg1);
     void on_attenuation_checkbox_stateChanged(int arg1);
-    void on_sweep_checkbox_stateChanged(int arg1);
+    void on_sweepTime_checkbox_stateChanged(int arg1);
     void on_checkBox_2_stateChanged(int arg1);
-
     void on_buttonBox_accepted();
-
     void on_start_freq_spinbox_valueChanged(double arg1);
-
     void on_stop_freq_spinbox_valueChanged(double arg1);
-
     void on_center_freq_spinbox_valueChanged(double arg1);
-
     void on_start_freq_dropdown_currentIndexChanged(int index);
-
     void on_stop_freq_dropdown_currentIndexChanged(int index);
+    void on_units_combobox_currentIndexChanged(const QString &arg1);
 
 private:
     Ui::scan_settings *ui;
@@ -45,6 +40,8 @@ private:
 
     const double sa_max_freq = 3.2;
     const QString sa_max_freq_unit = "GHz";
+
+    void send_command(const QString &cmd);
 
 };
 

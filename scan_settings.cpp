@@ -25,7 +25,7 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     ui->referencelevel_spinbox->setEnabled(false);
     ui->leveloffset_spinbox->setEnabled(false);
     ui->attenuation_spinbox->setEnabled(false);
-    ui->sweep_spinbox->setEnabled(false);
+    ui->sweepTime_spinbox->setEnabled(false);
     ui->center_freq_spinbox->setEnabled(false);
     ui->spanfreq_spinbox->setEnabled(false);
     ui->frequency_dropdown_center->setEnabled(false);
@@ -70,22 +70,21 @@ void scan_settings::on_start_stop_radiobutton_clicked()
 void scan_settings::on_apply_click()
 {
     QString mystring;
+
+    // ************************************************************************************************************************ //
+    // *** SSA3032X Menu -> Frequency *** //
     if(ui->center_span_radiobutton->isChecked())
     {
         // Center frequency
         mystring = ":FREQuency:CENTer %1 %2\n";
         mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
-        _socket_sa->write(mystring.toLocal8Bit());
-        _socket_sa->waitForBytesWritten(1);
-        qDebug() << mystring;
+        send_command(mystring);
         mystring = "";
 
         // Span
-        mystring = "::FREQuency:SPAN %1 %2\n";
+        mystring = ":FREQuency:SPAN %1 %2\n";
         mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
-        _socket_sa->write(mystring.toLocal8Bit());
-        _socket_sa->waitForBytesWritten(1);
-        qDebug() << mystring;
+        send_command(mystring);
         mystring = "";
     }
     else if(ui->start_stop_radiobutton->isChecked())
@@ -93,46 +92,89 @@ void scan_settings::on_apply_click()
         // Start frequency
         mystring = ":FREQuency:STARt %1 %2\n";
         mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
-        _socket_sa->write(mystring.toLocal8Bit());
-        _socket_sa->waitForBytesWritten(1);
-        qDebug() << mystring;
+        send_command(mystring);
         mystring = "";
 
        // Stop frequency
         mystring = ":FREQuency:STOP %1 %2\n";
         mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
-        _socket_sa->write(mystring.toLocal8Bit());
-        _socket_sa->waitForBytesWritten(1);
-        qDebug() << mystring;
+        send_command(mystring);
+        mystring = "";
+    }
+    // Step
+    mystring = ":FREQuency:CENTer:STEP %1";
+    mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
+    mystring = mystring + " MHz\n";
+    send_command(mystring);
+    mystring = "";
+    // ************************************************************************************************************************ //
+
+    // ************************************************************************************************************************ //
+    // *** SSA3032X Menu -> Aplitude *** //
+    if(ui->referencelevel_checkbox->isChecked())
+    {
+        // Reference level
+        mystring = ":DISPlay:WINDow:TRACe:Y:RLEVel %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->step_spinbox->value()), ui->referencelevel_spinbox->suffix());
+        send_command(mystring);
+        mystring = "";
+    }
+    if(ui->attenuation_checkbox->isChecked())
+    {
+        // Attenuation
+        mystring = ":POWer:ATTenuation %1\n";
+        mystring = mystring.arg(QString::number(ui->attenuation_spinbox->value()));
+        send_command(mystring);
+        mystring = "";
+    }
+    if(ui->leveloffset_checkbox->isChecked())
+    {
+        // Level offset
+        mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:RLEVel:OFFSet %1\n";
+        mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
+        send_command(mystring);
         mystring = "";
     }
 
-    // Number of sweeps
-    mystring = ":SWEep:COUNt %1\n";
-    mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
-    _socket_sa->write(mystring.toLocal8Bit());
-    _socket_sa->waitForBytesWritten(1);
-    qDebug() << mystring;
-    mystring = "";
-
-    // Step
-    mystring = ":FREQuency:CENTer:STEP %1\n";
-    mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
-    mystring = mystring + " MHz";
-    _socket_sa->write(mystring.toLocal8Bit());
-    _socket_sa->waitForBytesWritten(1);
-    qDebug() << mystring;
+    // Units
+    mystring = ":UNIT:POWer %1\n";
+    mystring = mystring.arg(ui->units_combobox->currentText().toUpper());
+    send_command(mystring);
     mystring = "";
 
     // Scale
     if(ui->scaleCheckbox->isChecked())
-         mystring = ":DISPlay:WINDow:TRACe:Y:SPACing LINear %1\n";
+         mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LOGarithmic\n";
     else
-        mystring = ":DISPlay:WINDow:TRACe:Y:SPACing LOGarithmic %1\n";
-    _socket_sa->write(mystring.toLocal8Bit());
-    _socket_sa->waitForBytesWritten(1);
-    qDebug() << mystring;
+        mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LINear\n";
+    send_command(mystring);
     mystring = "";
+    // ************************************************************************************************************************ //
+
+    // ************************************************************************************************************************ //
+    // *** SSA3032X Menu -> Sweep *** //
+    // Number of sweeps
+    mystring = ":SWEep:COUNt %1\n";
+    mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
+    send_command(mystring);
+    mystring = "";
+
+    if(ui->sweepTime_checkbox->isChecked())
+    {
+        // Sweep time
+        mystring = ":SWEep:TIME %1\n";
+        mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+        send_command(mystring);
+        mystring = "";
+    }
+    // ************************************************************************************************************************ //
+}
+
+void scan_settings::send_command(const QString &cmd)
+{
+    qDebug() << cmd;
+    _socket_sa->write(cmd.toLocal8Bit());
+    _socket_sa->waitForBytesWritten(1);
 }
 
 
@@ -170,6 +212,11 @@ void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
         ui->start_freq_dropdown->setCurrentIndex(ui->stop_freq_dropdown->currentIndex());
 }
 
+void scan_settings::on_units_combobox_currentIndexChanged(const QString &arg1)
+{
+    ui->referencelevel_spinbox->setSuffix(arg1);
+}
+
 void scan_settings::on_buttonBox_accepted()
 {
     emit on_apply_click();
@@ -199,12 +246,12 @@ void scan_settings::on_attenuation_checkbox_stateChanged(int arg1)
         ui->attenuation_spinbox->setEnabled(true);
 }
 
-void scan_settings::on_sweep_checkbox_stateChanged(int arg1)
+void scan_settings::on_sweepTime_checkbox_stateChanged(int arg1)
 {
     if(arg1 == 0)
-        ui->sweep_spinbox->setEnabled(false);
+        ui->sweepTime_spinbox->setEnabled(false);
     else
-        ui->sweep_spinbox->setEnabled(true);
+        ui->sweepTime_spinbox->setEnabled(true);
 }
 
 void scan_settings::on_checkBox_2_stateChanged(int arg1)
