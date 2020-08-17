@@ -510,11 +510,19 @@ void scanner_gui::sa_disconnected()
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
-    scan_settings scan_settings(&_socket_sa, this);
-    scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    scan_settings.setModal(true);
-    scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
-    scan_settings.exec();
+    if(sa_connected_bool)
+    {
+        scan_settings scan_settings(&_socket_sa, this);
+        scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        scan_settings.setModal(true);
+        scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+        scan_settings.exec();
+    }
+    else
+    {
+        QMessageBox::warning(this, "SSA3032X not connected!", "Do you want to connect?", QMessageBox::Yes, QMessageBox::No);
+
+    }
 
 }
 
@@ -530,10 +538,12 @@ void scanner_gui::on_sa_connect_btn_clicked()
     //Check if the connection succeeded
     if(_socket_sa.state() == QAbstractSocket::UnconnectedState)
     {
-        QMessageBox::warning(this, "SA connection error", "Connection to a Spectrum Analyzer failed");
+        sa_connected_bool = false;
+        QMessageBox::warning(this, "Connection error!", "Connection to the SSA3032X failed!");
     }
     else
     {
+        sa_connected_bool = true;
         //Reset command for the device
         _socket_sa.write("*RST");
         _socket_sa.waitForBytesWritten();

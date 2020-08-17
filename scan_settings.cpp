@@ -162,8 +162,32 @@ void scan_settings::on_apply_click()
     if(ui->sweepTime_checkbox->isChecked())
     {
         // Sweep time
-        mystring = ":SWEep:TIME %1\n";
+        mystring = ":SWEep:TIME %1 ms\n";
         mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+        send_command(mystring);
+        mystring = "";
+    }
+    // ************************************************************************************************************************ //
+
+    // ************************************************************************************************************************ //
+    // *** SSA3032X Menu -> BW (Bandwidth) *** //
+    // Resolution bandwidth
+    mystring = ":BWIDth %1\n";
+    mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+    send_command(mystring);
+    mystring = "";
+
+    if(ui->same_RBW_VBW_checkBox->isChecked())
+    {
+        mystring = ":BWIDth:VIDeo %1\n";
+        mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+        send_command(mystring);
+        mystring = "";
+    }
+    else
+    {
+        mystring = ":BWIDth:VIDeo %1\n";
+        mystring = mystring.arg(ui->videoBW_dropdown->currentText());
         send_command(mystring);
         mystring = "";
     }
@@ -214,7 +238,7 @@ void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
 
 void scan_settings::on_units_combobox_currentIndexChanged(const QString &arg1)
 {
-    ui->referencelevel_spinbox->setSuffix(arg1);
+    ui->referencelevel_spinbox->setSuffix(" " + arg1);
 }
 
 void scan_settings::on_buttonBox_accepted()
@@ -254,16 +278,14 @@ void scan_settings::on_sweepTime_checkbox_stateChanged(int arg1)
         ui->sweepTime_spinbox->setEnabled(true);
 }
 
-void scan_settings::on_checkBox_2_stateChanged(int arg1)
+void scan_settings::on_same_RBW_VBW_checkBox_stateChanged(int arg1)
 {
     if(arg1 == 0)
     {
-        ui->videoBW_spinbox->setEnabled(true);
         ui->videoBW_dropdown->setEnabled(true);
     }
     else
     {
-        ui->videoBW_spinbox->setEnabled(false);
         ui->videoBW_dropdown->setEnabled(false);
     }
 }

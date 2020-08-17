@@ -94,77 +94,6 @@
         <enum>QFrame::Raised</enum>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="videoBW_spinbox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>10000000</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QComboBox" name="videoBW_dropdown">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <item>
-           <property name="text">
-            <string>GHz</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>MHz</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>kHz</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Hz</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="resolutionBW_spinbox">
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100000000</number>
-          </property>
-          <property name="value">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_9">
           <property name="font">
@@ -178,7 +107,7 @@
          </widget>
         </item>
         <item row="2" column="0" colspan="3">
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="same_RBW_VBW_checkBox">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -204,31 +133,104 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
+        <item row="0" column="1">
          <widget class="QComboBox" name="resolutionBW_dropdown">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="currentText">
+           <string>1 KHz</string>
+          </property>
           <item>
            <property name="text">
-            <string>GHz</string>
+            <string>1 KHz</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>MHz</string>
+            <string>3 KHz</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>kHz</string>
+            <string>10 KHz</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>Hz</string>
+            <string>30 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>300 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1 MHz</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="videoBW_dropdown">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="currentText">
+           <string>30 Hz</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>30 Hz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>100 Hz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>300 Hz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>3 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>10 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>30 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>300 KHz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>1 MHz</string>
            </property>
           </item>
          </widget>
@@ -259,7 +261,7 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
           <property name="suffix">
-           <string>[dB]</string>
+           <string> [dB]</string>
           </property>
           <property name="maximum">
            <number>100000000</number>
@@ -314,7 +316,7 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
           <property name="suffix">
-           <string>[dBm]</string>
+           <string> [dBm]</string>
           </property>
           <property name="maximum">
            <number>1000000000</number>
@@ -414,7 +416,7 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
           <property name="suffix">
-           <string>[dB]</string>
+           <string> [dB]</string>
           </property>
           <property name="maximum">
            <number>1000000000</number>
@@ -533,30 +535,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="sweepTime_spinbox">
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="wrapping">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="suffix">
-           <string>[ms]</string>
-          </property>
-          <property name="maximum">
-           <number>100000000</number>
-          </property>
-          <property name="value">
-           <number>20</number>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_7">
           <property name="font">
@@ -629,6 +607,30 @@
           </property>
           <property name="text">
            <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QDoubleSpinBox" name="sweepTime_spinbox">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="wrapping">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="prefix">
+           <string/>
+          </property>
+          <property name="suffix">
+           <string> [ms]</string>
+          </property>
+          <property name="maximum">
+           <double>1000.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -930,7 +932,7 @@
            </font>
           </property>
           <property name="suffix">
-           <string>MHz</string>
+           <string> MHz</string>
           </property>
           <property name="minimum">
            <number>1</number>

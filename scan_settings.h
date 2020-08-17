@@ -25,7 +25,7 @@ private slots:
     void on_leveloffset_checkbox_stateChanged(int arg1);
     void on_attenuation_checkbox_stateChanged(int arg1);
     void on_sweepTime_checkbox_stateChanged(int arg1);
-    void on_checkBox_2_stateChanged(int arg1);
+    void on_same_RBW_VBW_checkBox_stateChanged(int arg1);
     void on_buttonBox_accepted();
     void on_start_freq_spinbox_valueChanged(double arg1);
     void on_stop_freq_spinbox_valueChanged(double arg1);

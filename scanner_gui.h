@@ -117,9 +117,13 @@ private:
     QVideoEncoderSettings m_videoSettings;
 
     QString m_videoContainerFormat;
+
     bool m_isCapturingImage = false;
     bool m_applicationExiting = false;
 
+    bool  sa_connected_bool = false;
+
+    // Camera image sensor dimensions
     const float sensor_width = 4.54;
     const float sensor_height = 3.42;
     const float focal_lenght = 3.81;
