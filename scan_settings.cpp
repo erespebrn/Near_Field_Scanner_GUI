@@ -6,6 +6,7 @@
 #include <string>
 #include <QDate>
 #include <QTime>
+#include <QFile>
 
 int center_freq;
 char center_freq_str[80];
@@ -30,6 +31,10 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     ui->spanfreq_spinbox->setEnabled(false);
     ui->frequency_dropdown_center->setEnabled(false);
     ui->frequency_dropdown_span->setEnabled(false);
+    ui->resolutionBW_dropdown->setEnabled(false);
+    ui->videoBW_dropdown->setEnabled(false);
+    ui->same_RBW_VBW_checkBox->setEnabled(false);
+    ui->videoBW_radioButton->setChecked(false);
 }
 
 scan_settings::~scan_settings()
@@ -69,6 +74,10 @@ void scan_settings::on_start_stop_radiobutton_clicked()
 
 void scan_settings::on_apply_click()
 {
+    QFile preset_file(QCoreApplication::applicationDirPath());
+    preset_file.open(QFile::ReadWrite, QFile::Text);
+    QTextStream file_out(&preset_file);
+
     QString mystring;
 
     // ************************************************************************************************************************ //
@@ -151,45 +160,52 @@ void scan_settings::on_apply_click()
     mystring = "";
     // ************************************************************************************************************************ //
 
+
     // ************************************************************************************************************************ //
     // *** SSA3032X Menu -> Sweep *** //
-    // Number of sweeps
-    mystring = ":SWEep:COUNt %1\n";
-    mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
-    send_command(mystring);
-    mystring = "";
-
-    if(ui->sweepTime_checkbox->isChecked())
+    if(ui->sweep_radioButton->isChecked())
     {
-        // Sweep time
-        mystring = ":SWEep:TIME %1 ms\n";
-        mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+        // Number of sweeps
+        mystring = ":SWEep:COUNt %1\n";
+        mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
         send_command(mystring);
         mystring = "";
+
+        if(ui->sweepTime_checkbox->isChecked())
+        {
+            // Sweep time
+            mystring = ":SWEep:TIME %1 ms\n";
+            mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+            send_command(mystring);
+            mystring = "";
+        }
     }
     // ************************************************************************************************************************ //
 
     // ************************************************************************************************************************ //
     // *** SSA3032X Menu -> BW (Bandwidth) *** //
-    // Resolution bandwidth
-    mystring = ":BWIDth %1\n";
-    mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
-    send_command(mystring);
-    mystring = "";
-
-    if(ui->same_RBW_VBW_checkBox->isChecked())
+    if(ui->videoBW_radioButton->isChecked())
     {
-        mystring = ":BWIDth:VIDeo %1\n";
+        // Resolution bandwidth
+        mystring = ":BWIDth %1\n";
         mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
         send_command(mystring);
         mystring = "";
-    }
-    else
-    {
-        mystring = ":BWIDth:VIDeo %1\n";
-        mystring = mystring.arg(ui->videoBW_dropdown->currentText());
-        send_command(mystring);
-        mystring = "";
+
+        if(ui->same_RBW_VBW_checkBox->isChecked())
+        {
+            mystring = ":BWIDth:VIDeo %1\n";
+            mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+            send_command(mystring);
+            mystring = "";
+        }
+        else
+        {
+            mystring = ":BWIDth:VIDeo %1\n";
+            mystring = mystring.arg(ui->videoBW_dropdown->currentText());
+            send_command(mystring);
+            mystring = "";
+        }
     }
     // ************************************************************************************************************************ //
 }
@@ -290,3 +306,29 @@ void scan_settings::on_same_RBW_VBW_checkBox_stateChanged(int arg1)
     }
 }
 
+
+void scan_settings::on_sweep_radioButton_clicked()
+{
+    ui->sweep_points_spinbox->setEnabled(true);
+    ui->no_sweeps_spinbox->setEnabled(true);
+    ui->no_sweeps_dropdown->setEnabled(true);
+    ui->sweepTime_checkbox->setEnabled(true);
+
+    ui->resolutionBW_dropdown->setEnabled(false);
+    ui->same_RBW_VBW_checkBox->setEnabled(false);
+    ui->videoBW_radioButton->setChecked(false);
+}
+
+void scan_settings::on_videoBW_radioButton_clicked()
+{
+    ui->sweepTime_spinbox->setEnabled(false);
+    ui->sweep_points_spinbox->setEnabled(false);
+    ui->no_sweeps_spinbox->setEnabled(false);
+    ui->no_sweeps_dropdown->setEnabled(false);
+    ui->sweep_radioButton->setChecked(false);
+    ui->sweepTime_checkbox->setEnabled(false);
+
+    ui->resolutionBW_dropdown->setEnabled(true);
+    ui->same_RBW_VBW_checkBox->setEnabled(true);
+    ui->videoBW_radioButton->setChecked(true);
+}
