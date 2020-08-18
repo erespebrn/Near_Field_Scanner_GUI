@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QTcpSocket>
-
+#include <QSettings>
 namespace Ui {
 class scan_settings;
 }
@@ -41,6 +41,7 @@ private slots:
 private:
     Ui::scan_settings *ui;
     QTcpSocket *_socket_sa;
+    QSettings *settings;
 
     const double sa_max_freq = 3.2;
     const QString sa_max_freq_unit = "GHz";

@@ -6,7 +6,7 @@
 #include <string>
 #include <QDate>
 #include <QTime>
-#include <QFile>
+
 
 int center_freq;
 char center_freq_str[80];
@@ -35,6 +35,9 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     ui->videoBW_dropdown->setEnabled(false);
     ui->same_RBW_VBW_checkBox->setEnabled(false);
     ui->videoBW_radioButton->setChecked(false);
+
+    /*ui->center_freq_spinbox->setValue(settings->value("Center freq. value").toDouble());
+    ui->frequency_dropdown_center->setCurrentText(settings->value("Center freq. unit").toString());*/
 }
 
 scan_settings::~scan_settings()
@@ -74,10 +77,6 @@ void scan_settings::on_start_stop_radiobutton_clicked()
 
 void scan_settings::on_apply_click()
 {
-    QFile preset_file(QCoreApplication::applicationDirPath());
-    preset_file.open(QFile::ReadWrite, QFile::Text);
-    QTextStream file_out(&preset_file);
-
     QString mystring;
 
     // ************************************************************************************************************************ //
@@ -87,6 +86,8 @@ void scan_settings::on_apply_click()
         // Center frequency
         mystring = ":FREQuency:CENTer %1 %2\n";
         mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
+        settings->setValue("Center freq. value", ui->center_freq_spinbox->value());
+        settings->setValue("Center freq. unit", ui->frequency_dropdown_center->currentText());
         send_command(mystring);
         mystring = "";
 
@@ -208,6 +209,7 @@ void scan_settings::on_apply_click()
         }
     }
     // ************************************************************************************************************************ //
+
 }
 
 void scan_settings::send_command(const QString &cmd)
