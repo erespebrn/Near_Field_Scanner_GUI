@@ -12,6 +12,7 @@
 #include <QPalette>
 #include <QtWidgets>
 #include <QLabel>
+#include <QDir>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>

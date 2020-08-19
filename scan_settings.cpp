@@ -25,14 +25,33 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
     qDebug() << settings.fileName();
 
-    // Start frequency
-    ui->start_freq_dropdown->setCurrentIndex(settings.value("Start freq. unit").toInt());
-    ui->start_freq_spinbox->setValue(settings.value("Start freq. value").toDouble());
+    // Load last settings from .ini file
+    if(settings.value("StartStop?").toBool())
+    {
+        // Start frequency
+        ui->start_freq_dropdown->setCurrentIndex(settings.value("Start freq. unit").toInt());
+        ui->start_freq_spinbox->setValue(settings.value("Start freq. value").toDouble());
 
-    // Stop frequency
-    ui->stop_freq_dropdown->setCurrentIndex(settings.value("Stop freq. unit").toInt());
-    ui->stop_freq_spinbox->setValue(settings.value("Stop freq. value").toDouble());
+        // Stop frequency
+        ui->stop_freq_dropdown->setCurrentIndex(settings.value("Stop freq. unit").toInt());
+        ui->stop_freq_spinbox->setValue(settings.value("Stop freq. value").toDouble());
 
+        ui->start_stop_radiobutton->setChecked(true);
+        ui->center_span_radiobutton->setChecked(false);
+    }
+    if(settings.value("CenterSpan?").toBool())
+    {
+        // Center frequency
+        ui->frequency_dropdown_center->setCurrentIndex(settings.value("Center freq. unit").toInt());
+        ui->center_freq_spinbox->setValue(settings.value("Center freq. value").toDouble());
+
+        // Span frequency
+        ui->frequency_dropdown_span->setCurrentIndex(settings.value("Span freq. unit").toInt());
+        ui->stop_freq_spinbox->setValue(settings.value("Span freq. value").toDouble());
+
+        ui->center_span_radiobutton->setChecked(true);
+        ui->start_stop_radiobutton->setChecked(false);
+    }
 
 
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
@@ -57,36 +76,6 @@ scan_settings::~scan_settings()
     delete ui;
 }
 
-void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
-{
-    //Enabled
-    ui->center_freq_spinbox->setEnabled(true);
-    ui->spanfreq_spinbox->setEnabled(true);
-    ui->frequency_dropdown_center->setEnabled(true);
-    ui->frequency_dropdown_span->setEnabled(true);
-    //Disabled
-    ui->start_freq_spinbox->setEnabled(false);
-    ui->start_freq_dropdown->setEnabled(false);
-    ui->stop_freq_spinbox->setEnabled(false);
-    ui->stop_freq_dropdown->setEnabled(false);
-
-}
-
-void scan_settings::on_start_stop_radiobutton_clicked()
-{
-    //enabled
-    ui->start_freq_spinbox->setEnabled(true);
-    ui->start_freq_dropdown->setEnabled(true);
-    ui->stop_freq_spinbox->setEnabled(true);
-    ui->stop_freq_dropdown->setEnabled(true);
-    //disabled
-    ui->center_freq_spinbox->setEnabled(false);
-    ui->spanfreq_spinbox->setEnabled(false);
-    ui->frequency_dropdown_center->setEnabled(false);
-    ui->frequency_dropdown_span->setEnabled(false);
-   // ui->start_freq_spinbox
-}
-
 void scan_settings::on_apply_click()
 {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
@@ -94,43 +83,52 @@ void scan_settings::on_apply_click()
     qDebug() << settings.fileName();
     QString mystring;
 
-    // ************************************************************************************************************************ //
     // *** SSA3032X Menu -> Frequency *** //
     if(ui->start_stop_radiobutton->isChecked())
-    {
-        // Start frequency
+    {     
+        // Start frequency //
+        // Send SPCI command
         mystring = ":FREQuency:STARt %1 %2\n";
         mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
-        settings.setValue("Start freq. value", ui->start_freq_spinbox->value());
-        settings.setValue("Start freq. unit", ui->start_freq_dropdown->currentIndex());
         send_command(mystring);
         mystring = "";
 
-       // Stop frequency
+        // Stop frequency //
+        // Send SPCI command
         mystring = ":FREQuency:STOP %1 %2\n";
         mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
-        settings.setValue("Stop freq. value", ui->stop_freq_spinbox->value());
-        settings.setValue("Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
         send_command(mystring);
         mystring = "";
+
+        // Save to the preset file
+        settings.setValue("StartStop?", ui->start_stop_radiobutton->isChecked());
+        settings.setValue("Start freq. value", ui->start_freq_spinbox->value());
+        settings.setValue("Start freq. unit", ui->start_freq_dropdown->currentIndex());
+        settings.setValue("Stop freq. value", ui->stop_freq_spinbox->value());
+        settings.setValue("Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
     }
     else if(ui->center_span_radiobutton->isChecked())
     {
         // Center frequency
+        // Send SPCI command
         mystring = ":FREQuency:CENTer %1 %2\n";
         mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
-        settings.setValue("Center freq. value", ui->center_freq_spinbox->value());
-        settings.setValue("Center freq. unit", ui->frequency_dropdown_center->currentText());
         send_command(mystring);
         mystring = "";
 
         // Span
+        // Send SPCI command
         mystring = ":FREQuency:SPAN %1 %2\n";
         mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
-        settings.setValue("Span freq. value", ui->spanfreq_spinbox->value());
-        settings.setValue("Span freq. unit", ui->frequency_dropdown_span->currentText());
         send_command(mystring);
         mystring = "";
+
+        // Save to the preset file
+        settings.setValue("CenterSpan?", ui->center_span_radiobutton->isChecked());
+        settings.setValue("Center freq. value", ui->center_freq_spinbox->value());
+        settings.setValue("Center freq. unit", ui->frequency_dropdown_center->currentIndex());
+        settings.setValue("Span freq. value", ui->spanfreq_spinbox->value());
+        settings.setValue("Span freq. unit", ui->frequency_dropdown_span->currentIndex());
     }
     // Step
     mystring = ":FREQuency:CENTer:STEP %1";
@@ -233,6 +231,36 @@ void scan_settings::on_apply_click()
     }
     // ************************************************************************************************************************ //
 
+}
+
+void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
+{
+    //Enabled
+    ui->center_freq_spinbox->setEnabled(true);
+    ui->spanfreq_spinbox->setEnabled(true);
+    ui->frequency_dropdown_center->setEnabled(true);
+    ui->frequency_dropdown_span->setEnabled(true);
+    //Disabled
+    ui->start_freq_spinbox->setEnabled(false);
+    ui->start_freq_dropdown->setEnabled(false);
+    ui->stop_freq_spinbox->setEnabled(false);
+    ui->stop_freq_dropdown->setEnabled(false);
+
+}
+
+void scan_settings::on_start_stop_radiobutton_clicked()
+{
+    //enabled
+    ui->start_freq_spinbox->setEnabled(true);
+    ui->start_freq_dropdown->setEnabled(true);
+    ui->stop_freq_spinbox->setEnabled(true);
+    ui->stop_freq_dropdown->setEnabled(true);
+    //disabled
+    ui->center_freq_spinbox->setEnabled(false);
+    ui->spanfreq_spinbox->setEnabled(false);
+    ui->frequency_dropdown_center->setEnabled(false);
+    ui->frequency_dropdown_span->setEnabled(false);
+   // ui->start_freq_spinbox
 }
 
 void scan_settings::send_command(const QString &cmd)
