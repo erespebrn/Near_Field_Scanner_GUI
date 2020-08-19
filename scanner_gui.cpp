@@ -510,13 +510,7 @@ void scanner_gui::sa_disconnected()
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
-    scan_settings scan_settings(&_socket_sa, this);
-    scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    scan_settings.setModal(true);
-    scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
-    scan_settings.exec();
-
-    /*if(sa_connected_bool)
+    if(sa_connected_bool)
     {
         scan_settings scan_settings(&_socket_sa, this);
         scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -540,7 +534,7 @@ void scanner_gui::on_scan_settings_button_clicked()
                 scan_settings.exec();
             }
         }
-    }*/
+    }
 
 }
 

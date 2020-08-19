@@ -6,6 +6,7 @@
 #include <string>
 #include <QDate>
 #include <QTime>
+#include <QDir>
 
 
 int center_freq;
@@ -20,6 +21,20 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
 {
     ui->setupUi(this);
     _socket_sa = socket;
+
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
+    qDebug() << settings.fileName();
+
+    // Start frequency
+    ui->start_freq_dropdown->setCurrentIndex(settings.value("Start freq. unit").toInt());
+    ui->start_freq_spinbox->setValue(settings.value("Start freq. value").toDouble());
+
+    // Stop frequency
+    ui->stop_freq_dropdown->setCurrentIndex(settings.value("Stop freq. unit").toInt());
+    ui->stop_freq_spinbox->setValue(settings.value("Stop freq. value").toDouble());
+
+
+
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
 
     //Default settings for the scan settings window
@@ -35,9 +50,6 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     ui->videoBW_dropdown->setEnabled(false);
     ui->same_RBW_VBW_checkBox->setEnabled(false);
     ui->videoBW_radioButton->setChecked(false);
-
-    /*ui->center_freq_spinbox->setValue(settings->value("Center freq. value").toDouble());
-    ui->frequency_dropdown_center->setCurrentText(settings->value("Center freq. unit").toString());*/
 }
 
 scan_settings::~scan_settings()
@@ -77,37 +89,46 @@ void scan_settings::on_start_stop_radiobutton_clicked()
 
 void scan_settings::on_apply_click()
 {
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
+    settings.clear();
+    qDebug() << settings.fileName();
     QString mystring;
 
     // ************************************************************************************************************************ //
     // *** SSA3032X Menu -> Frequency *** //
-    if(ui->center_span_radiobutton->isChecked())
-    {
-        // Center frequency
-        mystring = ":FREQuency:CENTer %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
-        settings->setValue("Center freq. value", ui->center_freq_spinbox->value());
-        settings->setValue("Center freq. unit", ui->frequency_dropdown_center->currentText());
-        send_command(mystring);
-        mystring = "";
-
-        // Span
-        mystring = ":FREQuency:SPAN %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
-        send_command(mystring);
-        mystring = "";
-    }
-    else if(ui->start_stop_radiobutton->isChecked())
+    if(ui->start_stop_radiobutton->isChecked())
     {
         // Start frequency
         mystring = ":FREQuency:STARt %1 %2\n";
         mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
+        settings.setValue("Start freq. value", ui->start_freq_spinbox->value());
+        settings.setValue("Start freq. unit", ui->start_freq_dropdown->currentIndex());
         send_command(mystring);
         mystring = "";
 
        // Stop frequency
         mystring = ":FREQuency:STOP %1 %2\n";
         mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
+        settings.setValue("Stop freq. value", ui->stop_freq_spinbox->value());
+        settings.setValue("Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
+        send_command(mystring);
+        mystring = "";
+    }
+    else if(ui->center_span_radiobutton->isChecked())
+    {
+        // Center frequency
+        mystring = ":FREQuency:CENTer %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
+        settings.setValue("Center freq. value", ui->center_freq_spinbox->value());
+        settings.setValue("Center freq. unit", ui->frequency_dropdown_center->currentText());
+        send_command(mystring);
+        mystring = "";
+
+        // Span
+        mystring = ":FREQuency:SPAN %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
+        settings.setValue("Span freq. value", ui->spanfreq_spinbox->value());
+        settings.setValue("Span freq. unit", ui->frequency_dropdown_span->currentText());
         send_command(mystring);
         mystring = "";
     }
@@ -115,6 +136,8 @@ void scan_settings::on_apply_click()
     mystring = ":FREQuency:CENTer:STEP %1";
     mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
     mystring = mystring + " MHz\n";
+    settings.setValue("Step freq. value", ui->step_spinbox->value());
+    settings.setValue("Step freq. unit", "MHz");
     send_command(mystring);
     mystring = "";
     // ************************************************************************************************************************ //
@@ -231,7 +254,7 @@ void scan_settings::on_start_freq_spinbox_valueChanged(double arg1)
 
 void scan_settings::on_stop_freq_spinbox_valueChanged(double arg1)
 {
-    if(arg1 >= sa_max_freq && ui->stop_freq_dropdown->currentText() == sa_max_freq_unit)
+    if(arg1 >= sa_max_freq && ui->stop_freq_dropdown->currentIndex() == sa_max_freq_unit)
         ui->stop_freq_spinbox->setValue(sa_max_freq);
 }
 
@@ -244,12 +267,16 @@ void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
 
 void scan_settings::on_start_freq_dropdown_currentIndexChanged(int index)
 {
+    if(ui->start_freq_spinbox->value() > sa_max_freq && index == sa_max_freq_unit)
+        ui->start_freq_spinbox->setValue(sa_max_freq-0.1);
     if(ui->stop_freq_dropdown->currentIndex() > index)
         ui->stop_freq_dropdown->setCurrentIndex(index);
 }
 
 void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
 {
+    if(ui->stop_freq_spinbox->value() > sa_max_freq && index == sa_max_freq_unit)
+        ui->stop_freq_spinbox->setValue(sa_max_freq);
     if(index > ui->start_freq_dropdown->currentIndex())
         ui->start_freq_dropdown->setCurrentIndex(ui->stop_freq_dropdown->currentIndex());
 }
