@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QTcpSocket>
 #include <QSettings>
+#include <QCoreApplication>
 
 namespace Ui {
 class scan_settings;
@@ -44,6 +45,7 @@ private:
     QTcpSocket *_socket_sa;
     QString settingsFile;
 
+    const QString settings_file_path = QCoreApplication::applicationDirPath() + "/scansettings.ini";
     const double sa_max_freq = 3.2;
     const uint8_t sa_max_freq_unit = 0;
 

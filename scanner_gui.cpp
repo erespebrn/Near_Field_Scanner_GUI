@@ -12,7 +12,7 @@
 #include <QPalette>
 #include <QtWidgets>
 #include <QLabel>
-#include <QDir>
+#include <QFile>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>
@@ -74,6 +74,10 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
+
+    QFile file(QCoreApplication::applicationDirPath() + "/scansettings.ini");
+    if(file.exists())
+        file.remove();
 }
 
 scanner_gui::~scanner_gui()
@@ -511,7 +515,13 @@ void scanner_gui::sa_disconnected()
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
-    if(sa_connected_bool)
+    scan_settings scan_settings(&_socket_sa, this);
+    scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    scan_settings.setModal(true);
+    scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+    scan_settings.exec();
+
+    /*if(sa_connected_bool)
     {
         scan_settings scan_settings(&_socket_sa, this);
         scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -535,7 +545,7 @@ void scanner_gui::on_scan_settings_button_clicked()
                 scan_settings.exec();
             }
         }
-    }
+    }*/
 
 }
 

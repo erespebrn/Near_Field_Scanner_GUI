@@ -6,7 +6,7 @@
 #include <string>
 #include <QDate>
 #include <QTime>
-#include <QDir>
+#include <QFile>
 
 
 int center_freq;
@@ -22,53 +22,64 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
     ui->setupUi(this);
     _socket_sa = socket;
 
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
-    qDebug() << settings.fileName();
-
-    // Load last settings from .ini file
-    if(settings.value("StartStop?").toBool())
+    QFile settings_file(settings_file_path);
+    if(settings_file.exists())
     {
-        // Start frequency
-        ui->start_freq_dropdown->setCurrentIndex(settings.value("Start freq. unit").toInt());
-        ui->start_freq_spinbox->setValue(settings.value("Start freq. value").toDouble());
+        QSettings settings(settings_file_path, QSettings::IniFormat);
+        // Load last settings from .ini file
+        if(settings.value("StartStop?").toBool())
+        {
+            ui->start_stop_radiobutton->setChecked(true);
+            ui->center_span_radiobutton->setChecked(false);
+            ui->center_freq_spinbox->setEnabled(false);
+            ui->spanfreq_spinbox->setEnabled(false);
+            ui->frequency_dropdown_center->setEnabled(false);
+            ui->frequency_dropdown_span->setEnabled(false);
 
-        // Stop frequency
-        ui->stop_freq_dropdown->setCurrentIndex(settings.value("Stop freq. unit").toInt());
-        ui->stop_freq_spinbox->setValue(settings.value("Stop freq. value").toDouble());
+            // Start frequency
+            ui->start_freq_dropdown->setCurrentIndex(settings.value("Start freq. unit").toInt());
+            ui->start_freq_spinbox->setValue(settings.value("Start freq. value").toDouble());
 
-        ui->start_stop_radiobutton->setChecked(true);
-        ui->center_span_radiobutton->setChecked(false);
+            // Stop frequency
+            ui->stop_freq_dropdown->setCurrentIndex(settings.value("Stop freq. unit").toInt());
+            ui->stop_freq_spinbox->setValue(settings.value("Stop freq. value").toDouble());
+        }
+        if(settings.value("CenterSpan?").toBool())
+        {
+            ui->center_span_radiobutton->setChecked(true);
+            ui->start_stop_radiobutton->setChecked(false);
+            ui->start_freq_spinbox->setEnabled(false);
+            ui->stop_freq_spinbox->setEnabled(false);
+            ui->start_freq_dropdown->setEnabled(false);
+            ui->stop_freq_dropdown->setEnabled(false);
+
+            // Center frequency
+            ui->frequency_dropdown_center->setCurrentIndex(settings.value("Center freq. unit").toInt());
+            ui->center_freq_spinbox->setValue(settings.value("Center freq. value").toDouble());
+
+            // Span frequency
+            ui->frequency_dropdown_span->setCurrentIndex(settings.value("Span freq. unit").toInt());
+            ui->spanfreq_spinbox->setValue(settings.value("Span freq. value").toDouble());
+        }
+
     }
-    if(settings.value("CenterSpan?").toBool())
+    else
     {
-        // Center frequency
-        ui->frequency_dropdown_center->setCurrentIndex(settings.value("Center freq. unit").toInt());
-        ui->center_freq_spinbox->setValue(settings.value("Center freq. value").toDouble());
-
-        // Span frequency
-        ui->frequency_dropdown_span->setCurrentIndex(settings.value("Span freq. unit").toInt());
-        ui->stop_freq_spinbox->setValue(settings.value("Span freq. value").toDouble());
-
-        ui->center_span_radiobutton->setChecked(true);
-        ui->start_stop_radiobutton->setChecked(false);
+        //Default settings for the scan settings window
+        ui->referencelevel_spinbox->setEnabled(false);
+        ui->leveloffset_spinbox->setEnabled(false);
+        ui->attenuation_spinbox->setEnabled(false);
+        ui->sweepTime_spinbox->setEnabled(false);
+        ui->center_freq_spinbox->setEnabled(false);
+        ui->spanfreq_spinbox->setEnabled(false);
+        ui->frequency_dropdown_center->setEnabled(false);
+        ui->frequency_dropdown_span->setEnabled(false);
+        ui->resolutionBW_dropdown->setEnabled(false);
+        ui->videoBW_dropdown->setEnabled(false);
+        ui->same_RBW_VBW_checkBox->setEnabled(false);
+        ui->videoBW_radioButton->setChecked(false);
     }
-
-
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
-
-    //Default settings for the scan settings window
-    ui->referencelevel_spinbox->setEnabled(false);
-    ui->leveloffset_spinbox->setEnabled(false);
-    ui->attenuation_spinbox->setEnabled(false);
-    ui->sweepTime_spinbox->setEnabled(false);
-    ui->center_freq_spinbox->setEnabled(false);
-    ui->spanfreq_spinbox->setEnabled(false);
-    ui->frequency_dropdown_center->setEnabled(false);
-    ui->frequency_dropdown_span->setEnabled(false);
-    ui->resolutionBW_dropdown->setEnabled(false);
-    ui->videoBW_dropdown->setEnabled(false);
-    ui->same_RBW_VBW_checkBox->setEnabled(false);
-    ui->videoBW_radioButton->setChecked(false);
 }
 
 scan_settings::~scan_settings()
@@ -78,9 +89,8 @@ scan_settings::~scan_settings()
 
 void scan_settings::on_apply_click()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Near Field Scanner", "scansettings");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/scansettings.ini", QSettings::IniFormat);
     settings.clear();
-    qDebug() << settings.fileName();
     QString mystring;
 
     // *** SSA3032X Menu -> Frequency *** //
@@ -134,10 +144,12 @@ void scan_settings::on_apply_click()
     mystring = ":FREQuency:CENTer:STEP %1";
     mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
     mystring = mystring + " MHz\n";
-    settings.setValue("Step freq. value", ui->step_spinbox->value());
-    settings.setValue("Step freq. unit", "MHz");
     send_command(mystring);
     mystring = "";
+
+    // Save to the preset file
+    settings.setValue("Step freq. value", ui->step_spinbox->value());
+    settings.setValue("Step freq. unit", "MHz");
     // ************************************************************************************************************************ //
 
     // ************************************************************************************************************************ //
@@ -149,6 +161,9 @@ void scan_settings::on_apply_click()
         mystring = mystring.arg(QString::number(ui->step_spinbox->value()), ui->referencelevel_spinbox->suffix());
         send_command(mystring);
         mystring = "";
+
+        settings.setValue("ReferenceLevel?", ui->referencelevel_checkbox->isChecked());
+        settings.setValue("Ref. level value",  ui->referencelevel_spinbox->value());
     }
     if(ui->attenuation_checkbox->isChecked())
     {
@@ -276,7 +291,7 @@ void scan_settings::on_start_freq_spinbox_valueChanged(double arg1)
     if(arg1 >= ui->stop_freq_spinbox->value() && ui->start_freq_dropdown->currentText() == ui->stop_freq_dropdown->currentText())
         ui->stop_freq_spinbox->setValue(arg1 + 1);
 
-    if(arg1 >= sa_max_freq && ui->start_freq_dropdown->currentText() == sa_max_freq_unit)
+    if(arg1 >= sa_max_freq && ui->start_freq_dropdown->currentIndex() == sa_max_freq_unit)
         ui->start_freq_spinbox->setValue(sa_max_freq-0.1);
 }
 
@@ -288,7 +303,7 @@ void scan_settings::on_stop_freq_spinbox_valueChanged(double arg1)
 
 void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
 {
-    if(arg1 >= sa_max_freq && ui->frequency_dropdown_center->currentText() == sa_max_freq_unit)
+    if(arg1 >= sa_max_freq && ui->frequency_dropdown_center->currentIndex() == sa_max_freq_unit)
         ui->center_freq_spinbox->setValue(sa_max_freq-0.1);
 
 }
