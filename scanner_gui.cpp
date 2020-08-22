@@ -12,6 +12,7 @@
 #include <QPalette>
 #include <QtWidgets>
 #include <QLabel>
+#include <QFile>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>
@@ -22,8 +23,9 @@ Q_DECLARE_METATYPE(QCameraInfo)
 scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
-    //sockets:
-    _socket_robot.connectToHost(QHostAddress("192.168.11.2"), 23);
+
+    // *** Robot TCP connection *** //
+    _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     _socket_robot.write("");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.waitForReadyRead(20);
@@ -37,8 +39,9 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("EXECUTE main");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
+    // *** //
 
-    //Camera
+    // *** Camera detection and default initialization *** //
     QActionGroup *videoDevicesGroup = new QActionGroup(this);
     videoDevicesGroup->setExclusive(true);
     const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
@@ -52,14 +55,17 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 
         ui->menuDevices->addAction(videoDeviceAction);
     }
-
     setCamera(QCameraInfo::defaultCamera());
+    // *** //
 
     //Default image capture settings
     m_imageSettings.setCodec("jpg");
     m_imageSettings.setResolution(4208, 3120);
     m_imageCapture->setEncodingSettings(m_imageSettings);
 
+
+    connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
+    connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
 
     connect(ui->actionImage_Settings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
     connect(videoDevicesGroup, &QActionGroup::triggered, this, &scanner_gui::updateCameraDevice);
@@ -68,6 +74,10 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
+
+    QFile file(QCoreApplication::applicationDirPath() + "/scansettings.ini");
+    if(file.exists())
+        file.remove();
 }
 
 scanner_gui::~scanner_gui()
@@ -486,20 +496,112 @@ void scanner_gui::closeEvent(QCloseEvent *event)
 
 void scanner_gui::showMousePosition(QPoint &pos)
 {
-    ui->mouse_position_label->setText("x: "+ QString::number(pos.x()) + ",y: " + QString::number(pos.y()));
+
+}
+
+void scanner_gui::sa_connected()
+{
+    ui->sa_connect_btn->setEnabled(false);
+    ui->sa_connect_btn->setText("Connected");
+}
+
+void scanner_gui::sa_disconnected()
+{
+    ui->sa_connect_btn->setEnabled(true);
+    ui->sa_connect_btn->setText("Connect");
 }
 
 
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
-    scan_settings scan_settings(this);
+    scan_settings scan_settings(&_socket_sa, this);
+    scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     scan_settings.setModal(true);
+    scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
     scan_settings.exec();
+
+    /*if(sa_connected_bool)
+    {
+        scan_settings scan_settings(&_socket_sa, this);
+        scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        scan_settings.setModal(true);
+        scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+        scan_settings.exec();
+    }
+    else
+    {
+        QMessageBox::StandardButton reply = QMessageBox::warning(this, "SSA3032X not connected!", "Try to connect?", QMessageBox::Yes | QMessageBox::No);
+
+        if(reply == QMessageBox::Yes)
+        {
+            on_sa_connect_btn_clicked();
+            if(_socket_sa.state() == QAbstractSocket::ConnectedState)
+            {
+                scan_settings scan_settings(&_socket_sa, this);
+                scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+                scan_settings.setModal(true);
+                scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+                scan_settings.exec();
+            }
+        }
+    }*/
 
 }
 
+void scanner_gui::on_sa_connect_btn_clicked()
+{
+    // *** SIGLENT SSA3032X spectrum analyzer TCP connection *** //
+    //Establish a connection with the SSA3032X spectrum analyzer
+    _socket_sa.connectToHost(QHostAddress(sa_ip_address), 5024);
+    _socket_sa.waitForReadyRead(1);
+    //Read the welcome message so it's not in the read buffer any more
+    char welcome_msg[128];
+    _socket_sa.read(welcome_msg, 128);
+    //Check if the connection succeeded
+    if(_socket_sa.state() == QAbstractSocket::UnconnectedState)
+    {
+        sa_connected_bool = false;
+        QMessageBox::warning(this, "Connection error!", "Connection to the SSA3032X failed!");
+    }
+    else
+    {
+        sa_connected_bool = true;
+        //Reset command for the device
+        _socket_sa.write("*RST");
+        _socket_sa.waitForBytesWritten();
+        //Set the SA3032X local time and date
+        QDate mydate = QDate::currentDate();
+        QTime mytime = QTime::currentTime();
+        QString time = mytime.toString("hhmmss");
+        QString date = mydate.toString("yyyyMMdd");
+        QString time_cmd = ":SYSTem:TIME %1\n";
+        time_cmd = time_cmd.arg(time);
+        QString date_cmd = ":SYSTem:DATE %1\n";
+        date_cmd = date_cmd.arg(date);
+        _socket_sa.write(date_cmd.toUtf8());
+        _socket_sa.waitForBytesWritten();
+        _socket_sa.write(time_cmd.toUtf8());
+        _socket_sa.waitForBytesWritten();
+    }
+    // *** //
+}
 
+void scanner_gui::on_refresh_connection_btn_clicked()
+{
+    //Check if the connections are still on line
 
-
-
+    //SSA3032X Spectrum Analyzer connection test
+    //If the device respond with any character different than 'c', connection still online
+    //Else, disconnect the socket and generate the disconnect() signal
+    char feedback[128];
+    strcpy(feedback, "c");
+    _socket_sa.write(":SYSTem:COMMunicate:LAN:IPADdress?");
+    _socket_sa.waitForReadyRead(1);
+    _socket_sa.read(feedback,128);
+    if(feedback[0] == 'c')
+    {
+        _socket_sa.disconnectFromHost();
+    }
+    // *** //
+}
