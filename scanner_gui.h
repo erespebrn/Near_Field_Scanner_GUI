@@ -93,6 +93,8 @@ private slots:
     void on_sa_connect_btn_clicked();
     void on_refresh_connection_btn_clicked();
 
+    void on_resetCamera_button_clicked();
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;

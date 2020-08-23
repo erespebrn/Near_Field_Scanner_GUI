@@ -24,7 +24,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
 
-    // *** Robot TCP connection *** //
+   /* // *** Robot TCP connection *** //
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     _socket_robot.write("");
     _socket_robot.waitForReadyRead(20);
@@ -39,7 +39,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("EXECUTE main");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
-    // *** //
+    // *** // */
 
     // *** Camera detection and default initialization *** //
     QActionGroup *videoDevicesGroup = new QActionGroup(this);
@@ -174,6 +174,11 @@ void scanner_gui::displayCapturedImage()
     ui->stackedWidget->setCurrentIndex(1);
 }
 
+void scanner_gui::displayViewfinder()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
 void scanner_gui::processCapturedImage(int requestId, const QImage &img)
 {
     Q_UNUSED(requestId);
@@ -210,16 +215,15 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );
 }
 
-void scanner_gui::displayViewfinder()
-{
-    ui->stackedWidget->setCurrentIndex(0);
-}
-
 void scanner_gui::on_actionReset_Camera_triggered()
 {
     displayViewfinder();
 }
 
+void scanner_gui::on_resetCamera_button_clicked()
+{
+    displayViewfinder();
+}
 
 void scanner_gui::on_Y_plus_button_pressed()
 {
@@ -468,10 +472,6 @@ void scanner_gui::updateCameraDevice(QAction *action)
     setCamera(qvariant_cast<QCameraInfo>(action->data()));
 }
 
-/*void scanner_gui::readyForCapture(bool ready)
-{
-    ui->Take_img_button->setEnabled(ready);
-}*/
 
 void scanner_gui::imageSaved(int id, const QString &fileName)
 {
@@ -515,13 +515,7 @@ void scanner_gui::sa_disconnected()
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
-    scan_settings scan_settings(&_socket_sa, this);
-    scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    scan_settings.setModal(true);
-    scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
-    scan_settings.exec();
-
-    /*if(sa_connected_bool)
+    if(sa_connected_bool)
     {
         scan_settings scan_settings(&_socket_sa, this);
         scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -531,7 +525,7 @@ void scanner_gui::on_scan_settings_button_clicked()
     }
     else
     {
-        QMessageBox::StandardButton reply = QMessageBox::warning(this, "SSA3032X not connected!", "Try to connect?", QMessageBox::Yes | QMessageBox::No);
+        QMessageBox::StandardButton reply = QMessageBox::warning(this, "Not connected", "Try to connect?", QMessageBox::Yes | QMessageBox::No);
 
         if(reply == QMessageBox::Yes)
         {
@@ -545,7 +539,7 @@ void scanner_gui::on_scan_settings_button_clicked()
                 scan_settings.exec();
             }
         }
-    }*/
+    }
 
 }
 
@@ -605,3 +599,4 @@ void scanner_gui::on_refresh_connection_btn_clicked()
     }
     // *** //
 }
+
