@@ -22,7 +22,7 @@ private slots:
 
     void on_center_span_radiobutton_clicked();
     void on_start_stop_radiobutton_clicked();
-    void on_apply_click();
+    void on_apply_clicked();
     void on_referencelevel_checkbox_stateChanged(int arg1);
     void on_leveloffset_checkbox_stateChanged(int arg1);
     void on_attenuation_checkbox_stateChanged(int arg1);
@@ -38,6 +38,18 @@ private slots:
     void on_sweep_radioButton_clicked();
     void on_videoBW_radioButton_clicked();
     void on_use_instrument_settings_stateChanged(int arg1);
+    void on_frequency_dropdown_center_currentIndexChanged(int index);
+    void on_spanfreq_spinbox_valueChanged(double arg1);
+    void on_frequency_dropdown_span_currentIndexChanged(int index);
+    void on_step_spinbox_valueChanged(int arg1);
+    void on_referencelevel_spinbox_valueChanged(int arg1);
+    void on_attenuation_spinbox_valueChanged(int arg1);
+    void on_leveloffset_spinbox_valueChanged(int arg1);
+    void on_scaleCheckbox_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::scan_settings *ui;

@@ -52,11 +52,12 @@ private slots:
     void imageSaved(int id, const QString &fileName);
 
     //Camera settings
+    void camera_init();
     void setCamera(const QCameraInfo &cameraInfo);
     void startCamera();
     void stopCamera();
     void updateCameraDevice(QAction *action);
-    void on_actionReset_Camera_triggered();
+    void on_resetCamera_button_clicked();
 
     //Camera recording settings
     void record();
@@ -93,7 +94,8 @@ private slots:
     void on_sa_connect_btn_clicked();
     void on_refresh_connection_btn_clicked();
 
-    void on_resetCamera_button_clicked();
+
+    void on_camera_connect_button_clicked();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

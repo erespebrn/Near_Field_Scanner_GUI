@@ -172,7 +172,7 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
         ui->same_RBW_VBW_checkBox->setEnabled(false);
         ui->videoBW_radioButton->setChecked(false);
     }
-    connect(ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this ,SLOT(on_apply_click()));
+
 }
 
 scan_settings::~scan_settings()
@@ -180,226 +180,230 @@ scan_settings::~scan_settings()
     delete ui;
 }
 
-void scan_settings::on_apply_click()
+void scan_settings::on_apply_clicked()
 {
+    qDebug() << "here";
     QSettings settings(QCoreApplication::applicationDirPath() + "/scansettings.ini", QSettings::IniFormat);
     settings.clear();
     QString mystring;
 
-    // *** SSA3032X Menu -> Frequency *** //
-    if(ui->start_stop_radiobutton->isChecked())
-    {     
-        // Start frequency //
-        // Send SPCI command
-        mystring = ":FREQuency:STARt %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
-        send_command(mystring);
-        mystring = "";
-
-        // Stop frequency //
-        // Send SPCI command
-        mystring = ":FREQuency:STOP %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("FREQUENCY/StartStop?", ui->start_stop_radiobutton->isChecked());
-        settings.setValue("FREQUENCY/Start freq. value", ui->start_freq_spinbox->value());
-        settings.setValue("FREQUENCY/Start freq. unit", ui->start_freq_dropdown->currentIndex());
-        settings.setValue("FREQUENCY/Stop freq. value", ui->stop_freq_spinbox->value());
-        settings.setValue("FREQUENCY/Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
-    }
-    else if(ui->center_span_radiobutton->isChecked())
+    if(!instrument_settings)
     {
-        // Center frequency
-        // Send SPCI command
-        mystring = ":FREQuency:CENTer %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
-        send_command(mystring);
-        mystring = "";
-
-        // Span
-        // Send SPCI command
-        mystring = ":FREQuency:SPAN %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("FREQUENCY/CenterSpan?", ui->center_span_radiobutton->isChecked());
-        settings.setValue("FREQUENCY/Center freq. value", ui->center_freq_spinbox->value());
-        settings.setValue("FREQUENCY/Center freq. unit", ui->frequency_dropdown_center->currentIndex());
-        settings.setValue("FREQUENCY/Span freq. value", ui->spanfreq_spinbox->value());
-        settings.setValue("FREQUENCY/Span freq. unit", ui->frequency_dropdown_span->currentIndex());
-    }
-    // Step
-    // Send SPCI command
-    mystring = ":FREQuency:CENTer:STEP %1";
-    mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
-    mystring = mystring + " MHz\n";
-    send_command(mystring);
-    mystring = "";
-
-    // Save to the preset file
-    settings.setValue("FREQUENCY/Step freq. value", ui->step_spinbox->value());
-    settings.setValue("FREQUENCY/Step freq. unit", "MHz");
-    // ************************************************************************************************************************ //
-
-    // ************************************************************************************************************************ //
-    // *** SSA3032X Menu -> Amplitude *** //
-    if(ui->referencelevel_checkbox->isChecked())
-    {
-        // Reference level
-        // Send SPCI command
-        mystring = ":DISPlay:WINDow:TRACe:Y:RLEVel %1 %2\n";
-        mystring = mystring.arg(QString::number(ui->step_spinbox->value()), ui->referencelevel_spinbox->suffix());
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
-        settings.setValue("AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
-    }
-    if(ui->attenuation_checkbox->isChecked())
-    {
-        // Attenuation
-        // Send SPCI command
-        mystring = ":POWer:ATTenuation %1\n";
-        mystring = mystring.arg(QString::number(ui->attenuation_spinbox->value()));
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("AMPLITUDE/Attenuation?", ui->attenuation_checkbox->isChecked());
-        settings.setValue("AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
-
-    }
-    if(ui->leveloffset_checkbox->isChecked())
-    {
-        // Level offset
-        // Send SPCI command
-        mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:RLEVel:OFFSet %1\n";
-        mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("AMPLITUDE/Level offset?", ui->leveloffset_checkbox->isChecked());
-        settings.setValue("AMPLITUDE/Level offset value",  ui->leveloffset_spinbox->value());
-    }
-
-    // Units
-    // Send SPCI command
-    mystring = ":UNIT:POWer %1\n";
-    mystring = mystring.arg(ui->units_combobox->currentText().toUpper());
-    send_command(mystring);
-    mystring = "";
-
-    // Save to the preset file
-    settings.setValue("UNITS/Units",  ui->units_combobox->currentIndex());
-
-    // Scale
-    if(ui->scaleCheckbox->isChecked())
-    {
-        // Send SPCI command
-        mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LOGarithmic\n";
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("UNITS/LogScale", true);
-    }
-    else
-    {
-        // Send SPCI command
-        mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LINear\n";
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("UNITS/LogScale", false);
-    }
-
-    // ************************************************************************************************************************ //
-
-
-    // ************************************************************************************************************************ //
-    // *** SSA3032X Menu -> Sweep *** //
-    if(ui->sweep_radioButton->isChecked())
-    {
-        // Save to the preset file
-        settings.setValue("SWEEP/SweepRadio?", ui->sweep_radioButton->isChecked());
-
-        // Number of sweeps
-        // Send SPCI command
-        mystring = ":SWEep:COUNt %1\n";
-        mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
-        send_command(mystring);
-        mystring = "";
-
-        // Save to the preset file
-        settings.setValue("SWEEP/Number of swppes",  ui->no_sweeps_spinbox->value());
-
-
-        if(ui->sweepTime_checkbox->isChecked())
+        // *** SSA3032X Menu -> Frequency *** //
+        if(ui->start_stop_radiobutton->isChecked())
         {
-            // Sweep time
+            // Start frequency //
             // Send SPCI command
-            mystring = ":SWEep:TIME %1 ms\n";
-            mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+            mystring = ":FREQuency:STARt %1 %2\n";
+            mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
+            send_command(mystring);
+            mystring = "";
+
+            // Stop frequency //
+            // Send SPCI command
+            mystring = ":FREQuency:STOP %1 %2\n";
+            mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
             send_command(mystring);
             mystring = "";
 
             // Save to the preset file
-            settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
-            settings.setValue("SWEEP/Sweep time",  ui->no_sweeps_spinbox->value());
+            settings.setValue("FREQUENCY/StartStop?", ui->start_stop_radiobutton->isChecked());
+            settings.setValue("FREQUENCY/Start freq. value", ui->start_freq_spinbox->value());
+            settings.setValue("FREQUENCY/Start freq. unit", ui->start_freq_dropdown->currentIndex());
+            settings.setValue("FREQUENCY/Stop freq. value", ui->stop_freq_spinbox->value());
+            settings.setValue("FREQUENCY/Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
         }
-    }
-    // ************************************************************************************************************************ //
+        else if(ui->center_span_radiobutton->isChecked())
+        {
+            // Center frequency
+            // Send SPCI command
+            mystring = ":FREQuency:CENTer %1 %2\n";
+            mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
+            send_command(mystring);
+            mystring = "";
 
-    // ************************************************************************************************************************ //
-    // *** SSA3032X Menu -> BW (Bandwidth) *** //
-    if(ui->videoBW_radioButton->isChecked())
-    {
-        // Resolution bandwidth
+            // Span
+            // Send SPCI command
+            mystring = ":FREQuency:SPAN %1 %2\n";
+            mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("FREQUENCY/CenterSpan?", ui->center_span_radiobutton->isChecked());
+            settings.setValue("FREQUENCY/Center freq. value", ui->center_freq_spinbox->value());
+            settings.setValue("FREQUENCY/Center freq. unit", ui->frequency_dropdown_center->currentIndex());
+            settings.setValue("FREQUENCY/Span freq. value", ui->spanfreq_spinbox->value());
+            settings.setValue("FREQUENCY/Span freq. unit", ui->frequency_dropdown_span->currentIndex());
+        }
+        // Step
         // Send SPCI command
-        mystring = ":BWIDth %1\n";
-        mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+        mystring = ":FREQuency:CENTer:STEP %1";
+        mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
+        mystring = mystring + " MHz\n";
         send_command(mystring);
         mystring = "";
 
         // Save to the preset file
-        settings.setValue("BANDWIDTH/BandWidth?", ui->videoBW_radioButton->isChecked());
-        settings.setValue("BANDWIDTH/ResolutionBW", ui->resolutionBW_dropdown->currentIndex());
+        settings.setValue("FREQUENCY/Step freq. value", ui->step_spinbox->value());
+        settings.setValue("FREQUENCY/Step freq. unit", "MHz");
+        // ************************************************************************************************************************ //
 
-        if(ui->same_RBW_VBW_checkBox->isChecked())
+        // ************************************************************************************************************************ //
+        // *** SSA3032X Menu -> Amplitude *** //
+        if(ui->referencelevel_checkbox->isChecked())
+        {
+            // Reference level
+            // Send SPCI command
+            mystring = ":DISPlay:WINDow:TRACe:Y:RLEVel %1 %2\n";
+            mystring = mystring.arg(QString::number(ui->step_spinbox->value()), ui->referencelevel_spinbox->suffix());
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
+            settings.setValue("AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
+        }
+        if(ui->attenuation_checkbox->isChecked())
+        {
+            // Attenuation
+            // Send SPCI command
+            mystring = ":POWer:ATTenuation %1\n";
+            mystring = mystring.arg(QString::number(ui->attenuation_spinbox->value()));
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("AMPLITUDE/Attenuation?", ui->attenuation_checkbox->isChecked());
+            settings.setValue("AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
+
+        }
+        if(ui->leveloffset_checkbox->isChecked())
+        {
+            // Level offset
+            // Send SPCI command
+            mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:RLEVel:OFFSet %1\n";
+            mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("AMPLITUDE/Level offset?", ui->leveloffset_checkbox->isChecked());
+            settings.setValue("AMPLITUDE/Level offset value",  ui->leveloffset_spinbox->value());
+        }
+
+        // Units
+        // Send SPCI command
+        mystring = ":UNIT:POWer %1\n";
+        mystring = mystring.arg(ui->units_combobox->currentText().toUpper());
+        send_command(mystring);
+        mystring = "";
+
+        // Save to the preset file
+        settings.setValue("UNITS/Units",  ui->units_combobox->currentIndex());
+
+        // Scale
+        if(ui->scaleCheckbox->isChecked())
         {
             // Send SPCI command
-            mystring = ":BWIDth:VIDeo %1\n";
+            mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LOGarithmic\n";
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("UNITS/LogScale", true);
+        }
+        else
+        {
+            // Send SPCI command
+            mystring = ":DISPlay:WINDow:TRACe:Y:SCALe:SPACing LINear\n";
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("UNITS/LogScale", false);
+        }
+
+        // ************************************************************************************************************************ //
+
+
+        // ************************************************************************************************************************ //
+        // *** SSA3032X Menu -> Sweep *** //
+        if(ui->sweep_radioButton->isChecked())
+        {
+            // Save to the preset file
+            settings.setValue("SWEEP/SweepRadio?", ui->sweep_radioButton->isChecked());
+
+            // Number of sweeps
+            // Send SPCI command
+            mystring = ":SWEep:COUNt %1\n";
+            mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
+            send_command(mystring);
+            mystring = "";
+
+            // Save to the preset file
+            settings.setValue("SWEEP/Number of swppes",  ui->no_sweeps_spinbox->value());
+
+
+            if(ui->sweepTime_checkbox->isChecked())
+            {
+                // Sweep time
+                // Send SPCI command
+                mystring = ":SWEep:TIME %1 ms\n";
+                mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
+                send_command(mystring);
+                mystring = "";
+
+                // Save to the preset file
+                settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
+                settings.setValue("SWEEP/Sweep time",  ui->no_sweeps_spinbox->value());
+            }
+        }
+        // ************************************************************************************************************************ //
+
+        // ************************************************************************************************************************ //
+        // *** SSA3032X Menu -> BW (Bandwidth) *** //
+        if(ui->videoBW_radioButton->isChecked())
+        {
+            // Resolution bandwidth
+            // Send SPCI command
+            mystring = ":BWIDth %1\n";
             mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
             send_command(mystring);
             mystring = "";
 
             // Save to the preset file
-            settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->resolutionBW_dropdown->currentIndex());
-        }
-        else
-        {
-            // Send SPCI command
-            mystring = ":BWIDth:VIDeo %1\n";
-            mystring = mystring.arg(ui->videoBW_dropdown->currentText());
-            send_command(mystring);
-            mystring = "";
+            settings.setValue("BANDWIDTH/BandWidth?", ui->videoBW_radioButton->isChecked());
+            settings.setValue("BANDWIDTH/ResolutionBW", ui->resolutionBW_dropdown->currentIndex());
 
-            // Save to the preset file
-            settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->videoBW_dropdown->currentIndex());
+            if(ui->same_RBW_VBW_checkBox->isChecked())
+            {
+                // Send SPCI command
+                mystring = ":BWIDth:VIDeo %1\n";
+                mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+                send_command(mystring);
+                mystring = "";
+
+                // Save to the preset file
+                settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
+                settings.setValue("BANDWIDTH/VideoBW", ui->resolutionBW_dropdown->currentIndex());
+            }
+            else
+            {
+                // Send SPCI command
+                mystring = ":BWIDth:VIDeo %1\n";
+                mystring = mystring.arg(ui->videoBW_dropdown->currentText());
+                send_command(mystring);
+                mystring = "";
+
+                // Save to the preset file
+                settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
+                settings.setValue("BANDWIDTH/VideoBW", ui->videoBW_dropdown->currentIndex());
+            }
         }
+        // ************************************************************************************************************************ //
     }
-    // ************************************************************************************************************************ //
-
+    ui->apply->setEnabled(false);
 }
 
 void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
@@ -415,6 +419,7 @@ void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and 
     ui->stop_freq_spinbox->setEnabled(false);
     ui->stop_freq_dropdown->setEnabled(false);
 
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_start_stop_radiobutton_clicked()
@@ -429,7 +434,8 @@ void scan_settings::on_start_stop_radiobutton_clicked()
     ui->spanfreq_spinbox->setEnabled(false);
     ui->frequency_dropdown_center->setEnabled(false);
     ui->frequency_dropdown_span->setEnabled(false);
-   // ui->start_freq_spinbox
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::send_command(const QString &cmd)
@@ -447,12 +453,16 @@ void scan_settings::on_start_freq_spinbox_valueChanged(double arg1)
 
     if(arg1 >= sa_max_freq && ui->start_freq_dropdown->currentIndex() == sa_max_freq_unit)
         ui->start_freq_spinbox->setValue(sa_max_freq-0.1);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_stop_freq_spinbox_valueChanged(double arg1)
 {
     if(arg1 >= sa_max_freq && ui->stop_freq_dropdown->currentIndex() == sa_max_freq_unit)
         ui->stop_freq_spinbox->setValue(sa_max_freq);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
@@ -460,6 +470,7 @@ void scan_settings::on_center_freq_spinbox_valueChanged(double arg1)
     if(arg1 >= sa_max_freq && ui->frequency_dropdown_center->currentIndex() == sa_max_freq_unit)
         ui->center_freq_spinbox->setValue(sa_max_freq-0.1);
 
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_start_freq_dropdown_currentIndexChanged(int index)
@@ -468,6 +479,8 @@ void scan_settings::on_start_freq_dropdown_currentIndexChanged(int index)
         ui->start_freq_spinbox->setValue(sa_max_freq-0.1);
     if(ui->stop_freq_dropdown->currentIndex() > index)
         ui->stop_freq_dropdown->setCurrentIndex(index);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
@@ -481,11 +494,12 @@ void scan_settings::on_stop_freq_dropdown_currentIndexChanged(int index)
 void scan_settings::on_units_combobox_currentIndexChanged(const QString &arg1)
 {
     ui->referencelevel_spinbox->setSuffix(" " + arg1);
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_buttonBox_accepted()
 {
-    emit on_apply_click();
+
 }
 
 void scan_settings::on_referencelevel_checkbox_stateChanged(int arg1)
@@ -494,6 +508,8 @@ void scan_settings::on_referencelevel_checkbox_stateChanged(int arg1)
         ui->referencelevel_spinbox->setEnabled(false);
     else
         ui->referencelevel_spinbox->setEnabled(true);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_leveloffset_checkbox_stateChanged(int arg1)
@@ -502,6 +518,8 @@ void scan_settings::on_leveloffset_checkbox_stateChanged(int arg1)
         ui->leveloffset_spinbox->setEnabled(false);
     else
         ui->leveloffset_spinbox->setEnabled(true);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_attenuation_checkbox_stateChanged(int arg1)
@@ -510,6 +528,8 @@ void scan_settings::on_attenuation_checkbox_stateChanged(int arg1)
         ui->attenuation_spinbox->setEnabled(false);
     else
         ui->attenuation_spinbox->setEnabled(true);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_sweepTime_checkbox_stateChanged(int arg1)
@@ -579,4 +599,61 @@ void scan_settings::on_use_instrument_settings_stateChanged(int arg1)
         ui->sweep_gridFrame->setEnabled(false);
         ui->detectorComboBox->setEnabled(false);
     }
+}
+
+
+void scan_settings::on_frequency_dropdown_center_currentIndexChanged(int index)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_spanfreq_spinbox_valueChanged(double arg1)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_frequency_dropdown_span_currentIndexChanged(int index)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_step_spinbox_valueChanged(int arg1)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_referencelevel_spinbox_valueChanged(int arg1)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_attenuation_spinbox_valueChanged(int arg1)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_leveloffset_spinbox_valueChanged(int arg1)
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_scaleCheckbox_clicked()
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_pushButton_3_clicked()
+{
+    if(ui->apply->isEnabled())
+    {
+        this->hide();
+        emit on_apply_clicked();
+    }
+    else
+        this->hide();
+}
+
+void scan_settings::on_pushButton_clicked()
+{
+    this->hide();
 }

@@ -24,6 +24,8 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
 
+    camera_init();
+
     /*// *** Robot TCP connection *** //
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     _socket_robot.write("");
@@ -41,22 +43,6 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("\n");
     // *** //*/
 
-    // *** Camera detection and default initialization *** //
-    QActionGroup *videoDevicesGroup = new QActionGroup(this);
-    videoDevicesGroup->setExclusive(true);
-    const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
-    for (const QCameraInfo &cameraInfo : availableCameras)
-    {
-        QAction *videoDeviceAction = new QAction(cameraInfo.description(), videoDevicesGroup);
-        videoDeviceAction->setCheckable(true);
-        videoDeviceAction->setData(QVariant::fromValue(cameraInfo));
-        if (cameraInfo == QCameraInfo::defaultCamera())
-            videoDeviceAction->setChecked(true);
-
-        ui->menuDevices->addAction(videoDeviceAction);
-    }
-    setCamera(QCameraInfo::defaultCamera());
-    // *** //
 
     //Default image capture settings
     m_imageSettings.setCodec("jpg");
@@ -67,8 +53,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
     connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
 
-    connect(ui->actionImage_Settings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
-    connect(videoDevicesGroup, &QActionGroup::triggered, this, &scanner_gui::updateCameraDevice);
+
 
 
     //Mouse events signals
@@ -78,11 +63,27 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     QFile file(QCoreApplication::applicationDirPath() + "/scansettings.ini");
     if(file.exists())
         file.remove();
+
+    QSizePolicy sp_croppedsize = ui->cropped_size->sizePolicy();
+    sp_croppedsize.setRetainSizeWhenHidden(true);
+    ui->cropped_size->setSizePolicy(sp_croppedsize);
+    sp_croppedsize = ui->cropped_size_px->sizePolicy();
+    sp_croppedsize.setRetainSizeWhenHidden(true);
+    ui->cropped_size_px->setSizePolicy(sp_croppedsize);
+    ui->cropped_size->setVisible(false);
+    ui->cropped_size_px->setVisible(false);
 }
 
 scanner_gui::~scanner_gui()
 {
     delete ui;
+}
+
+void scanner_gui::camera_init()
+{
+    const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
+    setCamera(QCameraInfo::defaultCamera());
+    connect(ui->actionImage_Settings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
 }
 
 /* Here we see the valueboxes. We use the "on value change" because its what is under the "doubleSpinBox" however -
@@ -157,6 +158,9 @@ void scanner_gui::configureImageSettings()
 
 void scanner_gui::on_Take_img_button_clicked()
 {
+    ui->cropped_size->setVisible(false);
+    ui->cropped_size_px->setVisible(false);
+
     m_camera->searchAndLock();
     takeImage();
     displayCapturedImage();
@@ -189,6 +193,9 @@ void scanner_gui::processCapturedImage(int requestId, const QImage &img)
 
 void scanner_gui::displayCroppedImage(QRect &rect)
 {
+    ui->cropped_size->setVisible(true);
+    ui->cropped_size_px->setVisible(true);
+
     const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
     QImage image( pixmap->toImage() );
     QImage cropped = image.copy(rect);
@@ -197,6 +204,11 @@ void scanner_gui::displayCroppedImage(QRect &rect)
                                     Qt::SmoothTransformation);
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
+
+    for(int i = 0; i < 10; i++)
+    {
+        qDebug() << image.scanLine(i);
+    }
 
     // *** Determine the real size of the object on an image *** //
     //Since the image taken is scaled, scale factor must be used
@@ -215,14 +227,13 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );
 }
 
-void scanner_gui::on_actionReset_Camera_triggered()
-{
-    displayViewfinder();
-}
 
 void scanner_gui::on_resetCamera_button_clicked()
 {
     displayViewfinder();
+
+    ui->cropped_size->setVisible(false);
+    ui->cropped_size_px->setVisible(false);
 }
 
 void scanner_gui::on_Y_plus_button_pressed()
@@ -305,10 +316,9 @@ void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
     m_imageCapture.reset(new QCameraImageCapture(m_camera.data()));
 
     connect(m_mediaRecorder.data(), &QMediaRecorder::durationChanged, this, &scanner_gui::updateRecordTime);
-    connect(m_mediaRecorder.data(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error),
-            this, &scanner_gui::displayRecorderError);
+    connect(m_mediaRecorder.data(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error), this, &scanner_gui::displayRecorderError);
 
-    m_mediaRecorder->setMetaData(QMediaMetaData::Title, QVariant(QLatin1String("Test Title")));
+    m_mediaRecorder->setMetaData(QMediaMetaData::Title, QVariant(QLatin1String("Camera")));
 
     //connect(ui->exposureCompensation, &QAbstractSlider::valueChanged, this, &scanner_gui::setExposureCompensation);
 
@@ -339,6 +349,11 @@ void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
     m_camera->start();
     displayViewfinder();
 
+    if(m_camera->status() == QCamera::ActiveStatus)
+    {
+        ui->camera_connect_button->setEnabled(false);
+        ui->camera_connect_button->setText("Connected");
+    }
 }
 
 void scanner_gui::keyPressEvent(QKeyEvent * event)
@@ -440,6 +455,8 @@ void scanner_gui::displayCaptureError(int id, const QCameraImageCapture::Error e
     Q_UNUSED(error)
     QMessageBox::warning(this, tr("Image Capture Error"), errorString);
     m_isCapturingImage = false;
+    ui->camera_connect_button->setEnabled(true);
+    ui->camera_connect_button->setText("Connect");
 }
 
 void scanner_gui::startCamera()
@@ -460,11 +477,15 @@ void scanner_gui::setExposureCompensation(int index)
 void scanner_gui::displayRecorderError()
 {
     QMessageBox::warning(this, tr("Capture Error"), m_mediaRecorder->errorString());
+    ui->camera_connect_button->setEnabled(true);
+    ui->camera_connect_button->setText("Connect");
 }
 
 void scanner_gui::displayCameraError()
 {
-    QMessageBox::warning(this, tr("Camera Error"), m_camera->errorString());
+    QMessageBox::warning(this, tr("No Camera Error"), m_camera->errorString());
+    ui->camera_connect_button->setEnabled(true);
+    ui->camera_connect_button->setText("Connect");
 }
 
 void scanner_gui::updateCameraDevice(QAction *action)
@@ -552,6 +573,7 @@ void scanner_gui::on_sa_connect_btn_clicked()
     //Read the welcome message so it's not in the read buffer any more
     char welcome_msg[128];
     _socket_sa.read(welcome_msg, 128);
+    qDebug() << welcome_msg;
     //Check if the connection succeeded
     if(_socket_sa.state() == QAbstractSocket::UnconnectedState)
     {
@@ -600,3 +622,8 @@ void scanner_gui::on_refresh_connection_btn_clicked()
     // *** //
 }
 
+
+void scanner_gui::on_camera_connect_button_clicked()
+{
+    camera_init();
+}
