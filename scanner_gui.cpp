@@ -24,7 +24,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
 
-   /* // *** Robot TCP connection *** //
+    /*// *** Robot TCP connection *** //
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     _socket_robot.write("");
     _socket_robot.waitForReadyRead(20);
@@ -39,7 +39,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("EXECUTE main");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
-    // *** // */
+    // *** //*/
 
     // *** Camera detection and default initialization *** //
     QActionGroup *videoDevicesGroup = new QActionGroup(this);
@@ -562,8 +562,8 @@ void scanner_gui::on_sa_connect_btn_clicked()
     {
         sa_connected_bool = true;
         //Reset command for the device
-        _socket_sa.write("*RST");
-        _socket_sa.waitForBytesWritten();
+        //_socket_sa.write("*RST");
+        //_socket_sa.waitForBytesWritten();
         //Set the SA3032X local time and date
         QDate mydate = QDate::currentDate();
         QTime mytime = QTime::currentTime();

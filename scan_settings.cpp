@@ -70,17 +70,29 @@ scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
             ui->referencelevel_checkbox->setChecked(true);
             ui->referencelevel_spinbox->setValue(settings.value("AMPLITUDE/Ref. level value").toDouble());
         }
+        else
+        {
+            ui->referencelevel_spinbox->setEnabled(false);
+        }
         if(settings.value("AMPLITUDE/Attenuation?").toBool())
         {
             // Attenuation
             ui->attenuation_checkbox->setChecked(true);
             ui->attenuation_spinbox->setValue(settings.value("AMPLITUDE/Attenuation value").toInt());
         }
+        else
+        {
+            ui->attenuation_spinbox->setEnabled(false);
+        }
         if(settings.value("AMPLITUDE/Level offset?").toBool())
         {
             // Level offset
             ui->leveloffset_checkbox->setChecked(true);
             ui->leveloffset_spinbox->setValue(settings.value("AMPLITUDE/Level offset value").toInt());
+        }
+        else
+        {
+            ui->leveloffset_spinbox->setEnabled(false);
         }
 
         // Units
@@ -545,4 +557,26 @@ void scan_settings::on_videoBW_radioButton_clicked()
     ui->resolutionBW_dropdown->setEnabled(true);
     ui->same_RBW_VBW_checkBox->setEnabled(true);
     ui->videoBW_radioButton->setChecked(true);
+}
+
+void scan_settings::on_use_instrument_settings_stateChanged(int arg1)
+{
+    if(arg1 == 0)
+    {
+        instrument_settings = false;
+        ui->frequencyFrame->setEnabled(true);
+        ui->amplitudeFrame->setEnabled(true);
+        ui->videoBW_Frame->setEnabled(true);
+        ui->sweep_gridFrame->setEnabled(true);
+        ui->detectorComboBox->setEnabled(true);
+    }
+    else
+    {
+        instrument_settings = true;
+        ui->frequencyFrame->setEnabled(false);
+        ui->amplitudeFrame->setEnabled(false);
+        ui->videoBW_Frame->setEnabled(false);
+        ui->sweep_gridFrame->setEnabled(false);
+        ui->detectorComboBox->setEnabled(false);
+    }
 }

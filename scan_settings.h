@@ -35,10 +35,9 @@ private slots:
     void on_start_freq_dropdown_currentIndexChanged(int index);
     void on_stop_freq_dropdown_currentIndexChanged(int index);
     void on_units_combobox_currentIndexChanged(const QString &arg1);
-
     void on_sweep_radioButton_clicked();
-
     void on_videoBW_radioButton_clicked();
+    void on_use_instrument_settings_stateChanged(int arg1);
 
 private:
     Ui::scan_settings *ui;
@@ -50,6 +49,8 @@ private:
     const uint8_t sa_max_freq_unit = 0;
 
     void send_command(const QString &cmd);
+
+    bool instrument_settings = false;
 
 };
 
