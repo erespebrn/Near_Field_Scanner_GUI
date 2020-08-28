@@ -26,7 +26,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 
     camera_init();
 
-    /*// *** Robot TCP connection *** //
+    // *** Robot TCP connection *** //
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     _socket_robot.write("");
     _socket_robot.waitForReadyRead(20);
@@ -41,7 +41,10 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("EXECUTE main");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
-    // *** //*/
+    char welcome_msg[128];
+    _socket_robot.read(welcome_msg, 128);
+    qDebug() << welcome_msg;
+    // *** //
 
 
     //Default image capture settings
@@ -129,6 +132,9 @@ void scanner_gui::on_Start_scan_button_clicked()
 {
     _socket_robot.write("demo = 1");
     _socket_robot.waitForReadyRead();
+    char test[128];
+    _socket_robot.read(test, 128);
+    //qDebug() << test;
     _socket_robot.write(QByteArray("\n"));
     _socket_robot.waitForBytesWritten(30);
     QString mystring = "dist = %1";
