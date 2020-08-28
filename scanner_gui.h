@@ -10,6 +10,12 @@
 #include <QPushButton>
 #include <QRubberBand>
 #include <QTcpSocket>
+#include <QPainter>
+#include <opencv2/core/core.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio/videoio.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class scanner_gui; }
@@ -25,6 +31,7 @@ public:
 
 private slots:
 
+    //Scan start stop
     void on_Start_scan_button_clicked();
     void on_stop_scan_button_clicked();
 
@@ -43,11 +50,9 @@ private slots:
 
     //Take and process the image
     void on_Take_img_button_clicked();
-    void takeImage();
     void displayCapturedImage();
-    void processCapturedImage(int requestId, const QImage &img);
     void displayCroppedImage(QRect& rect);
-    void configureCaptureSettings();
+
     //void readyForCapture(bool ready);
     void imageSaved(int id, const QString &fileName);
 
@@ -93,11 +98,10 @@ private slots:
     void sa_disconnected();
     void on_sa_connect_btn_clicked();
     void on_refresh_connection_btn_clicked();
-
-
     void on_camera_connect_button_clicked();
 
-protected:
+    void cv_getframe();
+    protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
@@ -132,6 +136,16 @@ private:
     const float sensor_height = 3.42;
     const float focal_lenght = 3.81;
     uint16_t camera_distance = 890;
+
+    //OpenCV
+    cv::VideoCapture cv_camera;
+    cv::Point robot_origin;
+    cv::Mat lastImage_cv;
+    QImage MatToQImage(const cv::Mat& mat);
+    QImage lastImage;
+    QTimer *timer;
+    void processCapturedImage(int requestId, const QImage &img);
+    void configureCaptureSettings();
 };
 
 #endif // SCANNER_GUI_H

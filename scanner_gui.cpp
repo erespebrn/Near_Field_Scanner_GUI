@@ -1,8 +1,9 @@
 #include "scanner_gui.h"
+#include "scan_settings.h"
 #include "ui_scanner_gui.h"
-#include "imagesettings.h"
 #include <QMediaService>
 #include <QDebug>
+#include <QTimer>
 #include <QMediaRecorder>
 #include <QCameraViewfinder>
 #include <QCameraInfo>
@@ -15,7 +16,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>
-
+#include <QPainter>
 char Shift_string[80];
 QByteArray array;
 Q_DECLARE_METATYPE(QCameraInfo)
@@ -40,23 +41,10 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.write("EXECUTE main");
     _socket_robot.waitForReadyRead(20);
     _socket_robot.write("\n");
-    char welcome_msg[128];
-    _socket_robot.read(welcome_msg, 128);
-    qDebug() << welcome_msg;
     // *** //
-
-
-    //Default image capture settings
-    m_imageSettings.setCodec("jpg");
-    m_imageSettings.setResolution(4208, 3120);
-    m_imageCapture->setEncodingSettings(m_imageSettings);
-
 
     connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
     connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
-
-
-
 
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
@@ -83,9 +71,93 @@ scanner_gui::~scanner_gui()
 
 void scanner_gui::camera_init()
 {
-    const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
-    setCamera(QCameraInfo::defaultCamera());
-    connect(ui->actionImage_Settings, &QAction::triggered, this, &scanner_gui::configureImageSettings);
+    if(cv_camera.open(0, cv::CAP_ANY))
+    {
+        ui->camera_connect_button->setEnabled(false);
+        ui->camera_connect_button->setText("Connected");
+    }
+    cv_camera.set(3, 640);
+    cv_camera.set(4, 480);
+    timer = new QTimer;
+    connect(timer, &QTimer::timeout, this, &scanner_gui::cv_getframe);
+    timer->start(1);
+    ui->lastImagePreviewLabel->setAlignment(Qt::AlignLeft);
+    ui->liveStream->setAlignment(Qt::AlignCenter);
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+void scanner_gui::on_Take_img_button_clicked()
+{
+    ui->cropped_size->setVisible(false);
+    ui->cropped_size_px->setVisible(false);
+    timer->stop();
+    displayCapturedImage();
+    processCapturedImage(0,lastImage);
+}
+
+void scanner_gui::cv_getframe()
+{
+    cv::Mat frame_cv;
+    cv::Mat frame_gray;
+    cv::Mat frame_blur;
+    cv::Mat frame_canny;
+
+    cv_camera.read(frame_cv);
+    cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(frame_gray, frame_blur,cv::Size(7,7),1);
+    cv::Canny(frame_blur,frame_canny,100,100);
+
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+
+    cv::findContours(frame_canny(cv::Rect(0,0,50,50)), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+    if(!contours.empty())
+    {
+        cv::circle(frame_cv, contours[0][0], 3, cv::Scalar(255,0,0),1);
+        cv::putText(frame_cv, "(0,0)", cv::Point(contours[0][0].x+5, contours[0][0].y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
+    }
+    QImage frame_qt = MatToQImage(frame_cv);
+    QImage scaledframe_qt = frame_qt.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    lastImage = frame_qt;
+    robot_origin = contours[0][0];
+    ui->liveStream->setPixmap(QPixmap::fromImage(scaledframe_qt));
+}
+
+
+void scanner_gui::processCapturedImage(int requestId, const QImage &img)
+{
+    Q_UNUSED(requestId);
+    QImage scaledImage = img.scaled(ui->lastImagePreviewLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
+    displayCapturedImage();
+}
+
+void scanner_gui::displayCroppedImage(QRect &rect)
+{
+    ui->cropped_size->setVisible(true);
+    ui->cropped_size_px->setVisible(true);
+
+    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
+    QImage image( pixmap->toImage() );
+    QImage cropped = image.copy(rect);
+    QImage scaledImage = cropped.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
+    scaledImage.save(QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
+
+    // *** Determine the real size of the object on an image *** //
+    //Since the image taken is scaled, scale factor must be used
+    float scale_factor = 3120.0/(float)ui->lastImagePreviewLabel->height();
+
+    //Height and width of cropped image (marked using mouse) can be computed using the following equations
+    float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*3120))*scale_factor;
+    float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*4208))*scale_factor;
+
+    //The used camera image sensor's aspect ratio is 4:3
+
+    ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ",y: " + QString::number((uint16_t)height_cropped) + "mm" );
+    ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );
 }
 
 /* Here we see the valueboxes. We use the "on value change" because its what is under the "doubleSpinBox" however -
@@ -115,6 +187,7 @@ void scanner_gui::on_measure_height_clicked()
 
 void scanner_gui::on_stepsize_x_valueChanged(double arg1)//stepsize x
 {
+    Q_UNUSED(arg1);
     QString mystring = "dist = %1";
     mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
     _socket_robot.write(mystring.toLocal8Bit());       //if it doesn't work, try toUtf8()
@@ -152,30 +225,9 @@ void scanner_gui::on_stop_scan_button_clicked()
     _socket_robot.waitForBytesWritten(30);
 }
 
-
 void scanner_gui::configureImageSettings()
 {
-    ImageSettings settingsDialog(m_imageCapture.data(), &m_imageSettings);
-    settingsDialog.setWindowFlags(settingsDialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    settingsDialog.exec();
-    m_imageCapture->setEncodingSettings(m_imageSettings);
-}
 
-void scanner_gui::on_Take_img_button_clicked()
-{
-    ui->cropped_size->setVisible(false);
-    ui->cropped_size_px->setVisible(false);
-
-    m_camera->searchAndLock();
-    takeImage();
-    displayCapturedImage();
-    m_camera->unlock();
-}
-
-void scanner_gui::takeImage()
-{
-    m_isCapturingImage = true;
-    m_imageCapture->capture();
 }
 
 void scanner_gui::displayCapturedImage()
@@ -188,55 +240,11 @@ void scanner_gui::displayViewfinder()
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void scanner_gui::processCapturedImage(int requestId, const QImage &img)
-{
-    Q_UNUSED(requestId);
-    QImage scaledImage = img.scaled(ui->viewfinder->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    displayCapturedImage();
-}
-
-void scanner_gui::displayCroppedImage(QRect &rect)
-{
-    ui->cropped_size->setVisible(true);
-    ui->cropped_size_px->setVisible(true);
-
-    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
-    QImage image( pixmap->toImage() );
-    QImage cropped = image.copy(rect);
-    QImage scaledImage = cropped.scaled(ui->viewfinder->size(),
-                                    Qt::KeepAspectRatio,
-                                    Qt::SmoothTransformation);
-    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    scaledImage.save( QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
-
-    for(int i = 0; i < 10; i++)
-    {
-        qDebug() << image.scanLine(i);
-    }
-
-    // *** Determine the real size of the object on an image *** //
-    //Since the image taken is scaled, scale factor must be used
-    float scale_factor = (float)m_imageSettings.resolution().height()/(float)ui->viewfinder->height();
-
-    //Height and width of cropped image (marked using mouse) can be computed using the following equations
-    float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*m_imageSettings.resolution().height()))*scale_factor;
-    float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*m_imageSettings.resolution().width()))*scale_factor;
-
-    //Since the used camera image sensor's aspect ratio is 4:3, when using 16:9 ratio the image is cropped.
-    //Therefore the special factor (calculated experimentally) added when aspect ratio is 16:9
-    if(((float)m_imageSettings.resolution().width()/(float)m_imageSettings.resolution().height()) > 1.5)
-        height_cropped = height_cropped*0.73;
-
-    ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ",y: " + QString::number((uint16_t)height_cropped) + "mm" );
-    ui->cropped_size_px->setText("x: "+ QString::number(rect.width()) +"px" + ",y: " + QString::number(rect.height()) + "px" );
-}
-
 
 void scanner_gui::on_resetCamera_button_clicked()
 {
     displayViewfinder();
-
+    timer->start(1);
     ui->cropped_size->setVisible(false);
     ui->cropped_size_px->setVisible(false);
 }
@@ -327,7 +335,6 @@ void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
 
     //connect(ui->exposureCompensation, &QAbstractSlider::valueChanged, this, &scanner_gui::setExposureCompensation);
 
-    m_camera->setViewfinder(ui->viewfinder);
 
     //updateCameraState(m_camera->state());
     //updateLockStatus(m_camera->lockStatus(), QCamera::UserRequest);
@@ -374,7 +381,7 @@ void scanner_gui::keyPressEvent(QKeyEvent * event)
         break;
     case Qt::Key_Camera:
         if (m_camera->captureMode() == QCamera::CaptureStillImage) {
-            takeImage();
+
         } else {
             if (m_mediaRecorder->state() == QMediaRecorder::RecordingState)
                 stop();
@@ -418,8 +425,6 @@ void scanner_gui::configureCaptureSettings()
         break;
     }
 }
-
-
 
 void scanner_gui::record()
 {
@@ -498,7 +503,6 @@ void scanner_gui::updateCameraDevice(QAction *action)
     setCamera(qvariant_cast<QCameraInfo>(action->data()));
 }
 
-
 void scanner_gui::imageSaved(int id, const QString &fileName)
 {
     Q_UNUSED(id)
@@ -536,8 +540,6 @@ void scanner_gui::sa_disconnected()
     ui->sa_connect_btn->setEnabled(true);
     ui->sa_connect_btn->setText("Connect");
 }
-
-
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
@@ -627,8 +629,35 @@ void scanner_gui::on_refresh_connection_btn_clicked()
     // *** //
 }
 
-
 void scanner_gui::on_camera_connect_button_clicked()
 {
     camera_init();
+}
+
+QImage scanner_gui::MatToQImage(const cv::Mat& mat)
+{
+    // 8-bits unsigned, NO. OF CHANNELS=1
+    if(mat.type()==CV_8UC1)
+    {
+        // Set the color table (used to translate colour indexes to qRgb values)
+        QVector<QRgb> colorTable;
+        for (int i=0; i<256; i++)
+            colorTable.push_back(qRgb(i,i,i));
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
+        img.setColorTable(colorTable);
+        return img;
+    }
+    // 8-bits unsigned, NO. OF CHANNELS=3
+    if(mat.type()==CV_8UC3)
+    {
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+        return img.rgbSwapped();
+    }
+    return QImage();
 }

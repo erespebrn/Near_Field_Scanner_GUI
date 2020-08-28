@@ -40,6 +40,7 @@ SOURCES += \
 
 HEADERS += \
     qlabel_mouseevent.h \
+    scan_settings.h \
     scanner_gui.h
 
 FORMS += \
