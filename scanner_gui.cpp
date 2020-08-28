@@ -1,6 +1,5 @@
 #include "scanner_gui.h"
 #include "ui_scanner_gui.h"
-#include "scan_settings.h"
 #include "imagesettings.h"
 #include <QMediaService>
 #include <QDebug>
