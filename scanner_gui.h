@@ -101,7 +101,8 @@ private slots:
     void on_camera_connect_button_clicked();
 
     void cv_getframe();
-    protected:
+
+protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
@@ -137,15 +138,21 @@ private:
     const float focal_lenght = 3.81;
     uint16_t camera_distance = 890;
 
+    const uint16_t resolution_max_width = 4208;
+    const uint16_t resolution_max_height = 3120;
+
     //OpenCV
     cv::VideoCapture cv_camera;
-    cv::Point robot_origin;
-    cv::Mat lastImage_cv;
+    cv::Point cv_robot_origin;
+    cv::Mat cv_lastImage;
     QImage MatToQImage(const cv::Mat& mat);
     QImage lastImage;
     QTimer *timer;
+    QRect croppedOrigin;
     void processCapturedImage(int requestId, const QImage &img);
     void configureCaptureSettings();
+
+    bool take_pic = false;
 };
 
 #endif // SCANNER_GUI_H

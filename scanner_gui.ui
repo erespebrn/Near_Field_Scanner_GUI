@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1711</width>
-    <height>931</height>
+    <width>1764</width>
+    <height>1051</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -139,7 +139,7 @@
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>0</height>
+            <height>960</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -167,8 +167,8 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>16777215</width>
-            <height>16777215</height>
+            <width>0</width>
+            <height>0</height>
            </size>
           </property>
           <property name="mouseTracking">
@@ -944,8 +944,21 @@
            </item>
            <item row="2" column="1">
             <widget class="QLabel" name="cropped_size_px">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="text">
               <string>x=0, y=0</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Distances from origin:</string>
              </property>
             </widget>
            </item>
@@ -991,7 +1004,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1711</width>
+     <width>1764</width>
      <height>20</height>
     </rect>
    </property>
