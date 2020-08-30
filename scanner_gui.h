@@ -58,35 +58,9 @@ private slots:
 
     //Camera settings
     void camera_init();
-    void setCamera(const QCameraInfo &cameraInfo);
-    void startCamera();
-    void stopCamera();
-    void updateCameraDevice(QAction *action);
     void on_resetCamera_button_clicked();
 
     //Camera recording settings
-    void record();
-    void pause();
-    void stop();
-    void setMuted(bool);
-    void updateRecordTime();
-    void displayRecorderError();
-    void displayCameraError();
-
-    void toggleLock();
-    void displayCaptureError(int, QCameraImageCapture::Error, const QString &errorString);
-
-
-    //void configureVideoSettings();
-
-    void configureImageSettings();
-
-    //void updateCameraState(QCamera::State);
-    //void updateCaptureMode();
-    //void updateRecorderState(QMediaRecorder::State state);
-    void setExposureCompensation(int index);
-
-    //void updateLockStatus(QCamera::LockStatus, QCamera::LockChangeReason);
 
     void displayViewfinder();
     void on_scan_settings_button_clicked();
@@ -101,11 +75,6 @@ private slots:
     void on_camera_connect_button_clicked();
 
     void cv_getframe();
-
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
-    void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::scanner_gui *ui;
@@ -150,7 +119,6 @@ private:
     QTimer *timer;
     QRect croppedOrigin;
     void processCapturedImage(int requestId, const QImage &img);
-    void configureCaptureSettings();
 
     bool take_pic = false;
 };

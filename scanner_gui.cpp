@@ -28,21 +28,27 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 
     camera_init();
 
+    char robot_msg[16];
+    QString send_msg = "";
+
     // *** Robot TCP connection *** //
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
-    _socket_robot.write("");
+    if(_socket_robot.waitForConnected(1))
+    {
+        qDebug() << "Robot connected!";
+    }
+    _socket_robot.write(send_msg.toLocal8Bit());
     _socket_robot.waitForReadyRead(20);
+    _socket_robot.read(robot_msg,16);
+    send_msg = "as\n";
+    _socket_robot.write(send_msg.toLocal8Bit());
     _socket_robot.waitForReadyRead(20);
-    _socket_robot.write("a");
-    _socket_robot.write("s");
+    send_msg = "EXECUTE main\n";
+    _socket_robot.write(send_msg.toLocal8Bit());
     _socket_robot.waitForReadyRead(20);
-    _socket_robot.write("\r\n");
-    //initialize robot:
-    _socket_robot.waitForReadyRead(20);
-    _socket_robot.waitForReadyRead(20);
-    _socket_robot.write("EXECUTE main");
-    _socket_robot.waitForReadyRead(20);
-    _socket_robot.write("\n");
+
+    _socket_robot.read(robot_msg,128);
+    qDebug() << robot_msg;
     // *** //
 
     connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
@@ -123,8 +129,7 @@ void scanner_gui::cv_getframe()
 
     cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(frame_gray, frame_blur,cv::Size(7,7),1);
-    cv::Canny(frame_blur,frame_canny,150,100);
-
+    cv::Canny(frame_blur,frame_canny,200,100);
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
 
@@ -142,7 +147,6 @@ void scanner_gui::cv_getframe()
     cv_lastImage = frame_cv;
     ui->liveStream->setPixmap(QPixmap::fromImage(scaledframe_qt));
 }
-
 
 void scanner_gui::processCapturedImage(int requestId, const QImage &img)
 {
@@ -186,9 +190,7 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     ui->cropped_size_px->setText("x: "+ QString::number((uint16_t)x_dist_mm) +"mm" + ", y: " + QString::number((uint16_t)y_dist_mm) + "mm \n Lenght: " + QString::number((uint16_t)distance) + "mm");
 }
 
-/* Here we see the valueboxes. We use the "on value change" because its what is under the "doubleSpinBox" however -
-  maybe you can use the functions from the other box types???? */
-void scanner_gui::on_scan_height_valueChanged(double arg1)//scan height
+void scanner_gui::on_scan_height_valueChanged(double arg1)
 {
     //when the value is changed, you get arg1 here
 }
@@ -251,11 +253,6 @@ void scanner_gui::on_stop_scan_button_clicked()
     _socket_robot.waitForBytesWritten(30);
 }
 
-void scanner_gui::configureImageSettings()
-{
-
-}
-
 void scanner_gui::displayCapturedImage()
 {
     ui->stackedWidget->setCurrentIndex(1);
@@ -265,9 +262,6 @@ void scanner_gui::displayViewfinder()
 {
     ui->stackedWidget->setCurrentIndex(0);
 }
-
-
-
 
 void scanner_gui::on_Y_plus_button_pressed()
 {
@@ -336,193 +330,6 @@ void scanner_gui::on_home_button_clicked()
     qDebug() << array;
 }
 
-void scanner_gui::setCamera(const QCameraInfo &cameraInfo)
-{
-    m_camera.reset(new QCamera(cameraInfo));
-
-    //connect(m_camera.data(), &QCamera::stateChanged, this, &scanner_gui::updateCameraState);
-    connect(m_camera.data(), QOverload<QCamera::Error>::of(&QCamera::error), this, &scanner_gui::displayCameraError);
-
-    m_mediaRecorder.reset(new QMediaRecorder(m_camera.data()));
-    //connect(m_mediaRecorder.data(), &QMediaRecorder::stateChanged, this, &scanner_gui::updateRecorderState);
-
-    m_imageCapture.reset(new QCameraImageCapture(m_camera.data()));
-
-    connect(m_mediaRecorder.data(), &QMediaRecorder::durationChanged, this, &scanner_gui::updateRecordTime);
-    connect(m_mediaRecorder.data(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error), this, &scanner_gui::displayRecorderError);
-
-    m_mediaRecorder->setMetaData(QMediaMetaData::Title, QVariant(QLatin1String("Camera")));
-
-    //connect(ui->exposureCompensation, &QAbstractSlider::valueChanged, this, &scanner_gui::setExposureCompensation);
-
-
-    //updateCameraState(m_camera->state());
-    //updateLockStatus(m_camera->lockStatus(), QCamera::UserRequest);
-    //updateRecorderState(m_mediaRecorder->state());
-
-    //connect(m_imageCapture.data(), &QCameraImageCapture::readyForCaptureChanged, this, &scanner_gui::readyForCapture);
-    connect(m_imageCapture.data(), &QCameraImageCapture::imageCaptured, this, &scanner_gui::processCapturedImage);
-    connect(m_imageCapture.data(), &QCameraImageCapture::imageSaved, this, &scanner_gui::imageSaved);
-    connect(m_imageCapture.data(), QOverload<int, QCameraImageCapture::Error, const QString &>::of(&QCameraImageCapture::error),
-            this, &scanner_gui::displayCaptureError);
-
-    //connect(m_camera.data(), QOverload<QCamera::LockStatus, QCamera::LockChangeReason>::of(&QCamera::lockStatusChanged),
-    //        this, &scanner_gui::updateLockStatus);
-
-    if (m_camera->isCaptureModeSupported(QCamera::CaptureStillImage))
-        m_camera->setCaptureMode(QCamera::CaptureStillImage);
-
-    //ui->captureWidget->setTabEnabled(0, (m_camera->isCaptureModeSupported(QCamera::CaptureStillImage)));
-    //ui->captureWidget->setTabEnabled(1, (m_camera->isCaptureModeSupported(QCamera::CaptureVideo)));
-
-    //updateCaptureMode();
-//    QCameraFocus *focus = m_camera->focus();
-//    focus->setFocusPointMode(QCameraFocus::FocusPointAuto);
-    m_camera->start();
-    displayViewfinder();
-
-    if(m_camera->status() == QCamera::ActiveStatus)
-    {
-        ui->camera_connect_button->setEnabled(false);
-        ui->camera_connect_button->setText("Connected");
-    }
-}
-
-void scanner_gui::keyPressEvent(QKeyEvent * event)
-{
-    if (event->isAutoRepeat())
-        return;
-
-    switch (event->key()) {
-    case Qt::Key_CameraFocus:
-        displayViewfinder();
-        m_camera->searchAndLock();
-        event->accept();
-        break;
-    case Qt::Key_Camera:
-        if (m_camera->captureMode() == QCamera::CaptureStillImage) {
-
-        } else {
-            if (m_mediaRecorder->state() == QMediaRecorder::RecordingState)
-                stop();
-            else
-                record();
-        }
-        event->accept();
-        break;
-    default:
-        QMainWindow::keyPressEvent(event);
-    }
-}
-
-void scanner_gui::keyReleaseEvent(QKeyEvent *event)
-{
-    if (event->isAutoRepeat())
-        return;
-
-    switch (event->key()) {
-    case Qt::Key_CameraFocus:
-        m_camera->unlock();
-        break;
-    default:
-        QMainWindow::keyReleaseEvent(event);
-    }
-}
-
-void scanner_gui::updateRecordTime()
-{
-    QString str = QString("Recorded %1 sec").arg(m_mediaRecorder->duration()/1000);
-    ui->statusbar->showMessage(str);
-}
-
-void scanner_gui::configureCaptureSettings()
-{
-    switch (m_camera->captureMode()) {
-    case QCamera::CaptureStillImage:
-        configureImageSettings();
-        break;
-    default:
-        break;
-    }
-}
-
-void scanner_gui::record()
-{
-    m_mediaRecorder->record();
-    updateRecordTime();
-}
-
-void scanner_gui::pause()
-{
-    m_mediaRecorder->pause();
-}
-
-void scanner_gui::stop()
-{
-    m_mediaRecorder->stop();
-}
-
-void scanner_gui::setMuted(bool muted)
-{
-    m_mediaRecorder->setMuted(muted);
-}
-
-void scanner_gui::toggleLock()
-{
-    switch (m_camera->lockStatus()) {
-    case QCamera::Searching:
-    case QCamera::Locked:
-        m_camera->unlock();
-        break;
-    case QCamera::Unlocked:
-        m_camera->searchAndLock();
-    }
-}
-
-void scanner_gui::displayCaptureError(int id, const QCameraImageCapture::Error error, const QString &errorString)
-{
-    Q_UNUSED(id)
-    Q_UNUSED(error)
-    QMessageBox::warning(this, tr("Image Capture Error"), errorString);
-    m_isCapturingImage = false;
-    ui->camera_connect_button->setEnabled(true);
-    ui->camera_connect_button->setText("Connect");
-}
-
-void scanner_gui::startCamera()
-{
-    m_camera->start();
-}
-
-void scanner_gui::stopCamera()
-{
-    m_camera->stop();
-}
-
-void scanner_gui::setExposureCompensation(int index)
-{
-    m_camera->exposure()->setExposureCompensation(index*0.5);
-}
-
-void scanner_gui::displayRecorderError()
-{
-    QMessageBox::warning(this, tr("Capture Error"), m_mediaRecorder->errorString());
-    ui->camera_connect_button->setEnabled(true);
-    ui->camera_connect_button->setText("Connect");
-}
-
-void scanner_gui::displayCameraError()
-{
-    QMessageBox::warning(this, tr("No Camera Error"), m_camera->errorString());
-    ui->camera_connect_button->setEnabled(true);
-    ui->camera_connect_button->setText("Connect");
-}
-
-void scanner_gui::updateCameraDevice(QAction *action)
-{
-    setCamera(qvariant_cast<QCameraInfo>(action->data()));
-}
-
 void scanner_gui::imageSaved(int id, const QString &fileName)
 {
     Q_UNUSED(id)
@@ -531,17 +338,6 @@ void scanner_gui::imageSaved(int id, const QString &fileName)
     m_isCapturingImage = false;
     if (m_applicationExiting)
         close();
-}
-
-void scanner_gui::closeEvent(QCloseEvent *event)
-{
-    if (m_isCapturingImage) {
-        setEnabled(false);
-        m_applicationExiting = true;
-        event->ignore();
-    } else {
-        event->accept();
-    }
 }
 
 void scanner_gui::showMousePosition(QPoint &pos)
