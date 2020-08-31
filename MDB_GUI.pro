@@ -31,17 +31,20 @@ LIBS += C:\opencv\release\bin\libopencv_features2d420.dll
 LIBS += C:\opencv\release\bin\libopencv_calib3d420.dll
 LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
 LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
+LIBS += C:\opencv\release\bin\libopencv_photo420.dll
 
 SOURCES += \
     main.cpp \
     qlabel_mouseevent.cpp \
     scan_settings.cpp \
-    scanner_gui.cpp
+    scanner_gui.cpp \
+    videothread.cpp
 
 HEADERS += \
     qlabel_mouseevent.h \
     scan_settings.h \
-    scanner_gui.h
+    scanner_gui.h \
+    videothread.h
 
 FORMS += \
     scan_settings.ui \

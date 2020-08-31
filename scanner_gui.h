@@ -11,6 +11,7 @@
 #include <QRubberBand>
 #include <QTcpSocket>
 #include <QPainter>
+#include "videothread.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -51,13 +52,13 @@ private slots:
     //Take and process the image
     void on_Take_img_button_clicked();
     void displayCapturedImage();
+    void processCapturedImage(const QImage &img);
     void displayCroppedImage(QRect& rect);
 
     //void readyForCapture(bool ready);
     void imageSaved(int id, const QString &fileName);
 
     //Camera settings
-    void camera_init();
     void on_resetCamera_button_clicked();
 
     //Camera recording settings
@@ -74,8 +75,9 @@ private slots:
     void on_refresh_connection_btn_clicked();
     void on_camera_connect_button_clicked();
 
-    void cv_getframe();
-
+    void cv_getframe(QImage, int, int);
+    void cameraError(QString);
+    void cameraConnected();
 private:
     Ui::scanner_gui *ui;
 
@@ -111,16 +113,14 @@ private:
     const uint16_t resolution_max_height = 3120;
 
     //OpenCV
-    cv::VideoCapture cv_camera;
     cv::Point cv_robot_origin;
     cv::Mat cv_lastImage;
-    QImage MatToQImage(const cv::Mat& mat);
     QImage lastImage;
-    QTimer *timer;
     QRect croppedOrigin;
-    void processCapturedImage(int requestId, const QImage &img);
 
-    bool take_pic = false;
+    QThread * thread;
+    VideoThread * videothread;
+    void video_thread_init();
 };
 
 #endif // SCANNER_GUI_H

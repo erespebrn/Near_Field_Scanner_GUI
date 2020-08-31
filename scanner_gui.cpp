@@ -1,6 +1,8 @@
 #include "scanner_gui.h"
 #include "scan_settings.h"
 #include "ui_scanner_gui.h"
+
+
 #include <cmath>
 #include <QMediaService>
 #include <QDebug>
@@ -26,7 +28,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
 
-    camera_init();
+    //camera_init();
 
     char robot_msg[16];
     QString send_msg = "";
@@ -35,21 +37,28 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     _socket_robot.connectToHost(QHostAddress(robot_ip_address), 23);
     if(_socket_robot.waitForConnected(1))
     {
-        qDebug() << "Robot connected!";
-    }
-    _socket_robot.write(send_msg.toLocal8Bit());
-    _socket_robot.waitForReadyRead(20);
-    _socket_robot.read(robot_msg,16);
-    send_msg = "as\n";
-    _socket_robot.write(send_msg.toLocal8Bit());
-    _socket_robot.waitForReadyRead(20);
-    send_msg = "EXECUTE main\n";
-    _socket_robot.write(send_msg.toLocal8Bit());
-    _socket_robot.waitForReadyRead(20);
+       ui->robot_connect_button->setEnabled(false);
+       ui->robot_connect_button->setText("Connected");
+       _socket_robot.write(send_msg.toLocal8Bit());
+       _socket_robot.waitForReadyRead(20);
+       _socket_robot.read(robot_msg,16);
+       send_msg = "as\n";
+       _socket_robot.write(send_msg.toLocal8Bit());
+       _socket_robot.waitForReadyRead(20);
+       send_msg = "EXECUTE main\n";
+       _socket_robot.write(send_msg.toLocal8Bit());
+       _socket_robot.waitForReadyRead(20);
 
-    _socket_robot.read(robot_msg,128);
-    qDebug() << robot_msg;
-    // *** //
+       _socket_robot.read(robot_msg,128);
+       qDebug() << robot_msg;
+       ui->robotTerminal->setText(QString(robot_msg));
+       // *** //
+    }
+    else
+    {
+        ui->robotManualControl_frame->setEnabled(false);
+    }
+
 
     connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
     connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
@@ -70,28 +79,32 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     ui->cropped_size_px->setSizePolicy(sp_croppedsize);
     ui->cropped_size->setVisible(false);
     ui->cropped_size_px->setVisible(false);
+    ui->stackedWidget->setCurrentIndex(0);
+
+    video_thread_init();
 }
 
 scanner_gui::~scanner_gui()
 {
+    _socket_robot.write("demo = 0");
+    _socket_robot.waitForBytesWritten();
+    _socket_robot.disconnect();
     delete ui;
 }
 
-void scanner_gui::camera_init()
+void scanner_gui::video_thread_init()
 {
-    if(cv_camera.open(0, cv::CAP_ANY))
-    {
-        ui->camera_connect_button->setEnabled(false);
-        ui->camera_connect_button->setText("Connected");
-    }
-    cv_camera.set(3, resolution_max_width);
-    cv_camera.set(4, resolution_max_height);
-    timer = new QTimer;
-    connect(timer, &QTimer::timeout, this, &scanner_gui::cv_getframe);
-    timer->start(1);
-    ui->lastImagePreviewLabel->setAlignment(Qt::AlignLeft);
-    ui->liveStream->setAlignment(Qt::AlignCenter);
-    ui->stackedWidget->setCurrentIndex(0);
+    QThread* thread = new QThread;
+    VideoThread* videothread = new VideoThread;
+    videothread->moveToThread(thread);
+    connect(thread, SIGNAL(started()), videothread, SLOT(start()));
+    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    connect(videothread, SIGNAL(finished()), thread, SLOT(quit()));
+    connect(videothread, SIGNAL(finished()), videothread, SLOT(deleteLater()));
+    connect(videothread, SIGNAL(readyImg(QImage, int, int)), this, SLOT(cv_getframe(QImage, int, int)));
+    connect(videothread, SIGNAL(error(QString)), this, SLOT(cameraError(QString)));
+    connect(videothread, SIGNAL(cameraOpened()), this, SLOT(cameraConnected()));
+    thread->start();
 }
 
 void scanner_gui::on_Take_img_button_clicked()
@@ -100,9 +113,8 @@ void scanner_gui::on_Take_img_button_clicked()
     ui->cropped_size_px->setVisible(false);
     ui->Take_img_button->setEnabled(false);
     ui->Take_img_button->setText("Picture taken");
-    timer->stop();
     displayCapturedImage();
-    processCapturedImage(0,lastImage);
+    processCapturedImage(lastImage);
 }
 
 void scanner_gui::on_resetCamera_button_clicked()
@@ -110,47 +122,38 @@ void scanner_gui::on_resetCamera_button_clicked()
     displayViewfinder();
     ui->Take_img_button->setEnabled(true);
     ui->Take_img_button->setText("Take Picture");
-    timer->start(1);
     ui->cropped_size->setVisible(false);
     ui->cropped_size_px->setVisible(false);
 }
 
-void scanner_gui::cv_getframe()
+void scanner_gui::cameraConnected()
 {
-    cv::Mat frame_cv;
-    cv::Mat frame_to_resize;
-    cv::Mat frame_gray;
-    cv::Mat frame_blur;
-    cv::Mat frame_canny;
-
-    cv_camera.read(frame_to_resize);
-
-    cv::resize(frame_to_resize, frame_cv, cv::Size(1280,960));
-
-    cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
-    cv::GaussianBlur(frame_gray, frame_blur,cv::Size(7,7),1);
-    cv::Canny(frame_blur,frame_canny,200,100);
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-
-    cv::findContours(frame_canny(cv::Rect(0,0,200,200)), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-
-    if(!contours.empty())
-    {
-        cv_robot_origin = contours[0][0];
-        cv::circle(frame_cv, contours[0][0], 3, cv::Scalar(255,0,0),1);
-        cv::putText(frame_cv, "(0,0)", cv::Point(contours[0][0].x+5, contours[0][0].y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
-    }
-    QImage frame_qt = MatToQImage(frame_cv);
-    QImage scaledframe_qt = frame_qt.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    lastImage = frame_qt;
-    cv_lastImage = frame_cv;
-    ui->liveStream->setPixmap(QPixmap::fromImage(scaledframe_qt));
+    ui->camera_connect_button->setEnabled(false);
+    ui->camera_connect_button->setText("Connected");
 }
 
-void scanner_gui::processCapturedImage(int requestId, const QImage &img)
+void scanner_gui::cameraError(QString error)
 {
-    Q_UNUSED(requestId);
+    ui->camera_connect_button->setEnabled(true);
+    ui->camera_connect_button->setText("Connect");
+    QMessageBox::critical(this, "Camera error", error);
+}
+
+void scanner_gui::on_camera_connect_button_clicked()
+{
+    video_thread_init();
+}
+
+void scanner_gui::cv_getframe(QImage frame, int o_x, int o_y)
+{
+    QImage scaledframe_cv = frame.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    lastImage = scaledframe_cv;
+    cv_robot_origin = cv::Point(o_x, o_y);
+    ui->liveStream->setPixmap(QPixmap::fromImage(scaledframe_cv));
+}
+
+void scanner_gui::processCapturedImage(const QImage &img)
+{
     QImage scaledImage = img.scaled(ui->lastImagePreviewLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
     displayCapturedImage();
@@ -202,15 +205,6 @@ void scanner_gui::on_measure_height_clicked()
     _socket_robot.waitForReadyRead();
     _socket_robot.write(QByteArray("\n"));
     _socket_robot.waitForBytesWritten(30);
-
-
-
-//    QString mystring = "mesheight";
-//    mystring = mystring.arg(QString::number(ui->scan_height->value()));
-//    _socket_robot.write(mystring.toLocal8Bit());       //if it doesn't work, try toUtf8()
-//    _socket_robot.waitForBytesWritten(30);
-//    _socket_robot.write(QByteArray("\n"));
-
 }
 
 void scanner_gui::on_stepsize_x_valueChanged(double arg1)//stepsize x
@@ -234,7 +228,7 @@ void scanner_gui::on_Start_scan_button_clicked()
     _socket_robot.waitForReadyRead();
     char test[128];
     _socket_robot.read(test, 128);
-    //qDebug() << test;
+    qDebug() << test;
     _socket_robot.write(QByteArray("\n"));
     _socket_robot.waitForBytesWritten(30);
     QString mystring = "dist = %1";
@@ -443,37 +437,4 @@ void scanner_gui::on_refresh_connection_btn_clicked()
         _socket_sa.disconnectFromHost();
     }
     // *** //
-}
-
-void scanner_gui::on_camera_connect_button_clicked()
-{
-    camera_init();
-}
-
-QImage scanner_gui::MatToQImage(const cv::Mat& mat)
-{
-    // 8-bits unsigned, NO. OF CHANNELS=1
-    if(mat.type()==CV_8UC1)
-    {
-        // Set the color table (used to translate colour indexes to qRgb values)
-        QVector<QRgb> colorTable;
-        for (int i=0; i<256; i++)
-            colorTable.push_back(qRgb(i,i,i));
-        // Copy input Mat
-        const uchar *qImageBuffer = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
-        img.setColorTable(colorTable);
-        return img;
-    }
-    // 8-bits unsigned, NO. OF CHANNELS=3
-    if(mat.type()==CV_8UC3)
-    {
-        // Copy input Mat
-        const uchar *qImageBuffer = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-        return img.rgbSwapped();
-    }
-    return QImage();
 }
