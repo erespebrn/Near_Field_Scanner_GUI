@@ -54,6 +54,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     ui->cropped_size->setVisible(false);
     ui->cropped_size_px->setVisible(false);
     ui->stackedWidget->setCurrentIndex(0);
+
 }
 
 scanner_gui::~scanner_gui()
@@ -400,56 +401,27 @@ void scanner_gui::on_sa_connect_btn_clicked()
 {
     // *** SIGLENT SSA3032X spectrum analyzer TCP connection *** //
     //Establish a connection with the SSA3032X spectrum analyzer
-    _socket_sa.connectToHost(QHostAddress(sa_ip_address), 5024);
+
+    QString msg;
+
+    _socket_sa.connectToHost(QHostAddress(sa_ip_address), 5025);
     _socket_sa.waitForReadyRead(1);
-    //Read the welcome message so it's not in the read buffer any more
-    char welcome_msg[128];
-    _socket_sa.read(welcome_msg, 128);
-    qDebug() << welcome_msg;
+
     //Check if the connection succeeded
     if(_socket_sa.state() == QAbstractSocket::UnconnectedState)
     {
         sa_connected_bool = false;
-        QMessageBox::warning(this, "Connection error!", "Connection to the SSA3032X failed!");
+        QMessageBox::warning(this, "Connection error!", "Connection to the Spectrum Analyzer failed!");
     }
     else
     {
+        msg = "*RST\n";
+        _socket_sa.write(msg.toLocal8Bit());
+        _socket_sa.waitForBytesWritten();
+        msg = "SYST:DISP:UPD ON\n";
+        _socket_sa.write(msg.toLocal8Bit());
+        _socket_sa.waitForBytesWritten();
         sa_connected_bool = true;
-        //Reset command for the device
-        //_socket_sa.write("*RST");
-        //_socket_sa.waitForBytesWritten();
-        //Set the SA3032X local time and date
-        QDate mydate = QDate::currentDate();
-        QTime mytime = QTime::currentTime();
-        QString time = mytime.toString("hhmmss");
-        QString date = mydate.toString("yyyyMMdd");
-        QString time_cmd = ":SYSTem:TIME %1\n";
-        time_cmd = time_cmd.arg(time);
-        QString date_cmd = ":SYSTem:DATE %1\n";
-        date_cmd = date_cmd.arg(date);
-        _socket_sa.write(date_cmd.toUtf8());
-        _socket_sa.waitForBytesWritten();
-        _socket_sa.write(time_cmd.toUtf8());
-        _socket_sa.waitForBytesWritten();
-    }
-    // *** //
-}
-
-void scanner_gui::on_refresh_connection_btn_clicked()
-{
-    //Check if the connections are still on line
-
-    //SSA3032X Spectrum Analyzer connection test
-    //If the device respond with any character different than 'c', connection still online
-    //Else, disconnect the socket and generate the disconnect() signal
-    char feedback[128];
-    strcpy(feedback, "c");
-    _socket_sa.write(":SYSTem:COMMunicate:LAN:IPADdress?");
-    _socket_sa.waitForReadyRead(1);
-    _socket_sa.read(feedback,128);
-    if(feedback[0] == 'c')
-    {
-        _socket_sa.disconnectFromHost();
     }
     // *** //
 }

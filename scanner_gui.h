@@ -71,7 +71,6 @@ private slots:
     void sa_connected();
     void sa_disconnected();
     void on_sa_connect_btn_clicked();
-    void on_refresh_connection_btn_clicked();
     void on_camera_connect_button_clicked();
 
     void cv_getframe(QImage, int, int);
@@ -85,6 +84,7 @@ private:
     //TCP sockets
     QTcpSocket _socket_sa;
     QTcpSocket _socket_robot;
+
     const QString sa_ip_address = "192.168.11.4";
     const QString robot_ip_address = "192.168.11.2";
 
