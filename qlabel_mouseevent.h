@@ -19,6 +19,7 @@ public:
 signals:
     void sendMousePosition(QPoint&);
     void sendQrect(QRect&);
+    void fromOrigin(QPoint&);
 
 protected:
     void mouseMoveEvent(QMouseEvent *ev) override;

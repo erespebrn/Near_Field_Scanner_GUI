@@ -10,6 +10,13 @@
 #include <QPushButton>
 #include <QRubberBand>
 #include <QTcpSocket>
+#include <QPainter>
+#include "videothread.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio/videoio.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class scanner_gui; }
@@ -25,6 +32,7 @@ public:
 
 private slots:
 
+    //Scan start stop
     void on_Start_scan_button_clicked();
     void on_stop_scan_button_clicked();
 
@@ -43,49 +51,20 @@ private slots:
 
     //Take and process the image
     void on_Take_img_button_clicked();
-    void takeImage();
     void displayCapturedImage();
-    void processCapturedImage(int requestId, const QImage &img);
+    void processCapturedImage(const QImage &img);
     void displayCroppedImage(QRect& rect);
-    void configureCaptureSettings();
+
     //void readyForCapture(bool ready);
     void imageSaved(int id, const QString &fileName);
 
     //Camera settings
-    void camera_init();
-    void setCamera(const QCameraInfo &cameraInfo);
-    void startCamera();
-    void stopCamera();
-    void updateCameraDevice(QAction *action);
     void on_resetCamera_button_clicked();
 
     //Camera recording settings
-    void record();
-    void pause();
-    void stop();
-    void setMuted(bool);
-    void updateRecordTime();
-    void displayRecorderError();
-    void displayCameraError();
-
-    void toggleLock();
-    void displayCaptureError(int, QCameraImageCapture::Error, const QString &errorString);
-
-
-    //void configureVideoSettings();
-
-    void configureImageSettings();
-
-    //void updateCameraState(QCamera::State);
-    //void updateCaptureMode();
-    //void updateRecorderState(QMediaRecorder::State state);
-    void setExposureCompensation(int index);
-
-    //void updateLockStatus(QCamera::LockStatus, QCamera::LockChangeReason);
 
     void displayViewfinder();
     void on_scan_settings_button_clicked();
-    void showMousePosition(QPoint& pos);
 
     //void on_actionSettings_triggered();
 
@@ -93,14 +72,12 @@ private slots:
     void sa_disconnected();
     void on_sa_connect_btn_clicked();
     void on_refresh_connection_btn_clicked();
-
-
     void on_camera_connect_button_clicked();
 
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
-    void closeEvent(QCloseEvent *event) override;
+    void cv_getframe(QImage, int, int);
+    void cameraError(QString);
+    void cameraConnected();
+    void on_robot_connect_button_clicked();
 
 private:
     Ui::scanner_gui *ui;
@@ -132,6 +109,21 @@ private:
     const float sensor_height = 3.42;
     const float focal_lenght = 3.81;
     uint16_t camera_distance = 890;
+
+    const uint16_t resolution_max_width = 4208;
+    const uint16_t resolution_max_height = 3120;
+
+    //OpenCV
+    cv::Point cv_robot_origin;
+    cv::Mat cv_lastImage;
+    QImage lastImage;
+    QRect croppedOrigin;
+
+    QThread * thread;
+    VideoThread * videothread;
+
+    void video_thread_init();
+    void robot_init();
 };
 
 #endif // SCANNER_GUI_H
