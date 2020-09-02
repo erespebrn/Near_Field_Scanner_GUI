@@ -783,6 +783,13 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Height:</string>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="1">
             <widget class="QPushButton" name="measure_height">
              <property name="sizePolicy">
@@ -804,13 +811,6 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>Measure Height</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>Height:</string>
              </property>
             </widget>
            </item>
@@ -868,21 +868,28 @@ p, li { white-space: pre-wrap; }
            <property name="sizeConstraint">
             <enum>QLayout::SetFixedSize</enum>
            </property>
-           <item row="1" column="0">
+           <item row="0" column="0">
             <widget class="QLabel" name="cropped_label">
              <property name="text">
               <string>Scanning area size:</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
+           <item row="0" column="1">
             <widget class="QLabel" name="cropped_size">
              <property name="text">
               <string>x=0, y=0</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Distances from origin:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
             <widget class="QLabel" name="cropped_size_px">
              <property name="minimumSize">
               <size>
@@ -892,13 +899,6 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>x=0, y=0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Distances from origin:</string>
              </property>
             </widget>
            </item>

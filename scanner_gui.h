@@ -65,7 +65,6 @@ private slots:
 
     void displayViewfinder();
     void on_scan_settings_button_clicked();
-    void showMousePosition(QPoint& pos);
 
     //void on_actionSettings_triggered();
 
@@ -78,6 +77,8 @@ private slots:
     void cv_getframe(QImage, int, int);
     void cameraError(QString);
     void cameraConnected();
+    void on_robot_connect_button_clicked();
+
 private:
     Ui::scanner_gui *ui;
 
@@ -120,7 +121,9 @@ private:
 
     QThread * thread;
     VideoThread * videothread;
+
     void video_thread_init();
+    void robot_init();
 };
 
 #endif // SCANNER_GUI_H

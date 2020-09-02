@@ -23,14 +23,55 @@
 
 char Shift_string[80];
 QByteArray array;
+
 Q_DECLARE_METATYPE(QCameraInfo)
 scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 {
     ui->setupUi(this);
 
-    //camera_init();
+    robot_init();
+    video_thread_init();
 
-    char robot_msg[16];
+    // Spectrum analyzer signals
+    connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
+    connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
+
+    //Mouse events signals
+    connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
+
+    // Delete last scan settings file
+    QFile file(QCoreApplication::applicationDirPath() + "/scansettings.ini");
+    if(file.exists())
+        file.remove();
+
+    // Minor init settings
+    QSizePolicy sp_croppedsize = ui->cropped_size->sizePolicy();
+    sp_croppedsize.setRetainSizeWhenHidden(true);
+    ui->cropped_size->setSizePolicy(sp_croppedsize);
+    sp_croppedsize = ui->cropped_size_px->sizePolicy();
+    sp_croppedsize.setRetainSizeWhenHidden(true);
+    ui->cropped_size_px->setSizePolicy(sp_croppedsize);
+    ui->cropped_size->setVisible(false);
+    ui->cropped_size_px->setVisible(false);
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+scanner_gui::~scanner_gui()
+{
+    _socket_robot.write("demo = 0");
+    _socket_robot.waitForBytesWritten();
+    _socket_robot.disconnect();
+    delete ui;
+}
+
+void scanner_gui::on_robot_connect_button_clicked()
+{
+    robot_init();
+}
+
+void scanner_gui::robot_init()
+{
+    char robot_msg[128];
     QString send_msg = "";
 
     // *** Robot TCP connection *** //
@@ -39,6 +80,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     {
        ui->robot_connect_button->setEnabled(false);
        ui->robot_connect_button->setText("Connected");
+       ui->robotManualControl_frame->setEnabled(true);
        _socket_robot.write(send_msg.toLocal8Bit());
        _socket_robot.waitForReadyRead(20);
        _socket_robot.read(robot_msg,16);
@@ -56,40 +98,9 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
     }
     else
     {
+        QMessageBox::warning(this, "Robot error", "Robot not connected!");
         ui->robotManualControl_frame->setEnabled(false);
     }
-
-
-    connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
-    connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
-
-    //Mouse events signals
-    connect(ui->lastImagePreviewLabel, SIGNAL(sendMousePosition(QPoint&)), this, SLOT(showMousePosition(QPoint&)));
-    connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
-
-    QFile file(QCoreApplication::applicationDirPath() + "/scansettings.ini");
-    if(file.exists())
-        file.remove();
-
-    QSizePolicy sp_croppedsize = ui->cropped_size->sizePolicy();
-    sp_croppedsize.setRetainSizeWhenHidden(true);
-    ui->cropped_size->setSizePolicy(sp_croppedsize);
-    sp_croppedsize = ui->cropped_size_px->sizePolicy();
-    sp_croppedsize.setRetainSizeWhenHidden(true);
-    ui->cropped_size_px->setSizePolicy(sp_croppedsize);
-    ui->cropped_size->setVisible(false);
-    ui->cropped_size_px->setVisible(false);
-    ui->stackedWidget->setCurrentIndex(0);
-
-    video_thread_init();
-}
-
-scanner_gui::~scanner_gui()
-{
-    _socket_robot.write("demo = 0");
-    _socket_robot.waitForBytesWritten();
-    _socket_robot.disconnect();
-    delete ui;
 }
 
 void scanner_gui::video_thread_init()
@@ -136,6 +147,7 @@ void scanner_gui::cameraError(QString error)
 {
     ui->camera_connect_button->setEnabled(true);
     ui->camera_connect_button->setText("Connect");
+    ui->liveStream->setText("Camera error. Try to reconect!");
     QMessageBox::critical(this, "Camera error", error);
 }
 
@@ -195,12 +207,17 @@ void scanner_gui::displayCroppedImage(QRect &rect)
 
 void scanner_gui::on_scan_height_valueChanged(double arg1)
 {
-    //when the value is changed, you get arg1 here
+    Q_UNUSED(arg1);
+    QString mystring = "measuring_height = %1";
+    mystring = mystring.arg(QString::number(ui->scan_height->value()));
+    _socket_robot.write("measuring_height = 1");
+    _socket_robot.waitForReadyRead();
+    _socket_robot.write(QByteArray("\n"));
+    _socket_robot.waitForBytesWritten(30);
 }
 
 void scanner_gui::on_measure_height_clicked()
 {
-
     _socket_robot.write("mesheight = 1");
     _socket_robot.waitForReadyRead();
     _socket_robot.write(QByteArray("\n"));
@@ -219,7 +236,12 @@ void scanner_gui::on_stepsize_x_valueChanged(double arg1)//stepsize x
 
 void scanner_gui::on_stepsize_y_valueChanged(double arg1)//stepsize y
 {
-    //when the value is changed, you get arg1 here
+    Q_UNUSED(arg1);
+    QString mystring = "dist = %1";
+    mystring = mystring.arg(QString::number(ui->stepsize_y->value()));
+    _socket_robot.write(mystring.toLocal8Bit());       //if it doesn't work, try toUtf8()
+    _socket_robot.waitForBytesWritten(30);
+    _socket_robot.write(QByteArray("\n"));
 }
 
 void scanner_gui::on_Start_scan_button_clicked()
@@ -259,8 +281,6 @@ void scanner_gui::displayViewfinder()
 
 void scanner_gui::on_Y_plus_button_pressed()
 {
-    //can use QByteArray x("whatever")
-    //can use x.append("whatever2"), to append.
     double stepsize_y = ui->stepsize_y->value();
     sprintf(Shift_string, "yShift = %lf", -stepsize_y);
     _socket_robot.write(QByteArray(Shift_string));
@@ -332,11 +352,6 @@ void scanner_gui::imageSaved(int id, const QString &fileName)
     m_isCapturingImage = false;
     if (m_applicationExiting)
         close();
-}
-
-void scanner_gui::showMousePosition(QPoint &pos)
-{
-
 }
 
 void scanner_gui::sa_connected()

@@ -50,7 +50,6 @@ void VideoThread::process()
         else
             cv_robot_origin = cv::Point(0,0);
 
-        //cv::fastNlMeansDenoisingColored(frame_cv, frame_denoised);
         QImage frame_qt = MatToQImage(frame_cv);
         emit readyImg(frame_qt, cv_robot_origin.x, cv_robot_origin.y);
     }
