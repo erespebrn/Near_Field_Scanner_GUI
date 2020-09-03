@@ -628,14 +628,7 @@ p, li { white-space: pre-wrap; }
            <item row="0" column="0">
             <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>Spectrum Analyzer:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="sa_connect_btn">
-             <property name="text">
-              <string>Connect</string>
+              <string>Spectrum Analyzer:                          </string>
              </property>
             </widget>
            </item>
@@ -646,10 +639,44 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="pushButton">
+           <item row="0" column="1">
+            <widget class="QLabel" name="SA_indicator">
+             <property name="maximumSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
              <property name="text">
-              <string>Connect</string>
+              <string/>
+             </property>
+             <property name="pixmap">
+              <pixmap resource="img.qrc">:/img/images/led_off.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="VNA_indicator">
+             <property name="maximumSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="pixmap">
+              <pixmap resource="img.qrc">:/img/images/led_off.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1089,6 +1116,19 @@ p, li { white-space: pre-wrap; }
       </widget>
      </widget>
     </item>
+    <item row="5" column="2">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1148,7 +1188,9 @@ p, li { white-space: pre-wrap; }
    <header location="global">qlabel_mouseevent.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="img.qrc"/>
+ </resources>
  <connections/>
  <slots>
   <slot>configureImageSettings()</slot>

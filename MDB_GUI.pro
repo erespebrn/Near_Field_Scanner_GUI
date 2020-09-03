@@ -38,6 +38,7 @@ LIBS += C:\opencv\release\bin\libopencv_photo420.dll
 LIBS += C:/Windows/System32/visa32.dll
 
 SOURCES += \
+    instrument_thread.cpp \
     main.cpp \
     qlabel_mouseevent.cpp \
     scan_settings.cpp \
@@ -45,6 +46,7 @@ SOURCES += \
     videothread.cpp
 
 HEADERS += \
+    instrument_thread.h \
     qlabel_mouseevent.h \
     scan_settings.h \
     scanner_gui.h \
@@ -54,7 +56,8 @@ FORMS += \
     scan_settings.ui \
     scanner_gui.ui
 
-RESOURCES += camera.qrc
+RESOURCES += camera.qrc \
+    img.qrc
 
 target.path = $$[QT_INSTALL_EXAMPLES]/multimediawidgets/camera
 INSTALLS += target

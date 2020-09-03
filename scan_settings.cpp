@@ -9,168 +9,37 @@
 #include <QFile>
 
 
-scan_settings::scan_settings(QTcpSocket *socket, QWidget *parent) :
+scan_settings::scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::scan_settings)
 {
     ui->setupUi(this);
-    _socket_sa = socket;
 
-    QFile settings_file(settings_file_path);
-    if(settings_file.exists())
-    {
-        QSettings settings(settings_file_path, QSettings::IniFormat);
-
-        // Load last settings from .ini file
-        // *** FREQUENCY *** //
-        if(settings.value("FREQUENCY/StartStop?").toBool())
-        {
-            ui->start_stop_radiobutton->setChecked(true);
-            ui->center_span_radiobutton->setChecked(false);
-            ui->center_freq_spinbox->setEnabled(false);
-            ui->spanfreq_spinbox->setEnabled(false);
-            ui->frequency_dropdown_center->setEnabled(false);
-            ui->frequency_dropdown_span->setEnabled(false);
-
-            // Start frequency
-            ui->start_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Start freq. unit").toInt());
-            ui->start_freq_spinbox->setValue(settings.value("FREQUENCY/Start freq. value").toDouble());
-
-            // Stop frequency
-            ui->stop_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Stop freq. unit").toInt());
-            ui->stop_freq_spinbox->setValue(settings.value("FREQUENCY/Stop freq. value").toDouble());
-        }
-        if(settings.value("FREQUENCY/CenterSpan?").toBool())
-        {
-            ui->center_span_radiobutton->setChecked(true);
-            ui->start_stop_radiobutton->setChecked(false);
-            ui->start_freq_spinbox->setEnabled(false);
-            ui->stop_freq_spinbox->setEnabled(false);
-            ui->start_freq_dropdown->setEnabled(false);
-            ui->stop_freq_dropdown->setEnabled(false);
-
-            // Center frequency
-            ui->frequency_dropdown_center->setCurrentIndex(settings.value("FREQUENCY/Center freq. unit").toInt());
-            ui->center_freq_spinbox->setValue(settings.value("FREQUENCY/Center freq. value").toDouble());
-
-            // Span frequency
-            ui->frequency_dropdown_span->setCurrentIndex(settings.value("FREQUENCY/Span freq. unit").toInt());
-            ui->spanfreq_spinbox->setValue(settings.value("FREQUENCY/Span freq. value").toDouble());
-        }
-
-        // Step
-        ui->step_spinbox->setValue(settings.value("FREQUENCY/Step freq. value").toInt());
-        ui->step_spinbox->setSuffix(settings.value("FREQUENCY/Step freq. unit").toString());
-        // *** End of FREQUENCY *** //
-
-        // *** Amplitude *** //
-        if(settings.value("AMPLITUDE/Ref. level?").toBool())
-        {
-            // Reference level
-            ui->referencelevel_checkbox->setChecked(true);
-            ui->referencelevel_spinbox->setValue(settings.value("AMPLITUDE/Ref. level value").toDouble());
-        }
-        else
-        {
-            ui->referencelevel_spinbox->setEnabled(false);
-        }
-        if(settings.value("AMPLITUDE/Attenuation?").toBool())
-        {
-            // Attenuation
-            ui->attenuation_checkbox->setChecked(true);
-            ui->attenuation_spinbox->setValue(settings.value("AMPLITUDE/Attenuation value").toInt());
-        }
-        else
-        {
-            ui->attenuation_spinbox->setEnabled(false);
-        }
-        if(settings.value("AMPLITUDE/Level offset?").toBool())
-        {
-            // Level offset
-            ui->leveloffset_checkbox->setChecked(true);
-            ui->leveloffset_spinbox->setValue(settings.value("AMPLITUDE/Level offset value").toInt());
-        }
-        else
-        {
-            ui->leveloffset_spinbox->setEnabled(false);
-        }
-
-        // Units
-        ui->units_combobox->setCurrentIndex(settings.value("UNITS/Units").toInt());
-        // Scale
-        ui->scaleCheckbox->setChecked(settings.value("UNITS/LogScale").toBool());
-        // *** End of AMPLITUDE *** //
-
-        // *** Sweep *** //
-        if(settings.value("SWEEP/SweepRadio?").toBool())
-        {
-           ui->no_sweeps_spinbox->setEnabled(true);
-           ui->no_sweeps_dropdown->setEnabled(true);
-           ui->sweep_points_spinbox->setEnabled(true);
-
-           ui->sweepTime_checkbox->setChecked(false);
-           ui->sweepTime_spinbox->setEnabled(false);
-           ui->videoBW_dropdown->setEnabled(false);
-           ui->same_RBW_VBW_checkBox->setEnabled(false);
-
-           // Numbers of sweeps
-           ui->no_sweeps_spinbox->setValue(settings.value("SWEEP/Number of sweeps").toInt());
-
-           if(settings.value("SWEEP/Sweep time?").toBool())
-           {
-               // Sweep time
-               ui->sweepTime_checkbox->setChecked(true);
-               ui->sweepTime_spinbox->setValue(settings.value("SWEEP/Sweep time").toInt());
-           }
-        }
-        // *** End of sweep *** //
-
-        // *** Video Bandwidth *** //
-        if(settings.value("BANDWIDTH/BandWidth?").toBool())
-        {
-            ui->no_sweeps_spinbox->setEnabled(false);
-            ui->sweep_points_spinbox->setEnabled(false);
-            ui->sweepTime_checkbox->setChecked(false);
-            ui->sweepTime_checkbox->setEnabled(false);
-            ui->sweepTime_spinbox->setEnabled(false);
-            ui->no_sweeps_dropdown->setEnabled(false);
-
-            ui->same_RBW_VBW_checkBox->setChecked(true);
-            ui->videoBW_dropdown->setEnabled(true);
-            ui->same_RBW_VBW_checkBox->setEnabled(true);
-
-            ui->resolutionBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/ResolutionBW").toInt());
-            if(settings.value("BANDWIDTH/SameRBW_VBW").toBool())
-            {
-                ui->same_RBW_VBW_checkBox->setChecked(true);
-            }
-            else
-            {
-                ui->same_RBW_VBW_checkBox->setChecked(false);
-            }
-            ui->videoBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/VideoBW").toInt());
-        }
-
-    }
+    if(sa_vna == false)
+        _socket_sa = socket;
     else
-    {
-        //Default settings for the scan settings window
-        ui->referencelevel_spinbox->setEnabled(false);
-        ui->leveloffset_spinbox->setEnabled(false);
-        ui->attenuation_spinbox->setEnabled(false);
-        ui->sweepTime_spinbox->setEnabled(false);
-        ui->center_freq_spinbox->setEnabled(false);
-        ui->spanfreq_spinbox->setEnabled(false);
-        ui->frequency_dropdown_center->setEnabled(false);
-        ui->frequency_dropdown_span->setEnabled(false);
-    }
+        _socket_vna = socket;
+
+    load_previous_settings();
 
 }
+
+scan_settings::scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::scan_settings)
+{
+    ui->setupUi(this);
+
+    _socket_sa = socket;
+    _socket_vna = socket2;
+}
+
 
 scan_settings::~scan_settings()
 {
     delete ui;
 }
+
 
 void scan_settings::on_apply_clicked()
 {
@@ -391,6 +260,160 @@ void scan_settings::on_apply_clicked()
     ui->apply->setEnabled(false);
 }
 
+void scan_settings::load_previous_settings()
+{
+
+    QFile settings_file(settings_file_path);
+    if(settings_file.exists())
+    {
+        QSettings settings(settings_file_path, QSettings::IniFormat);
+
+        // Load last settings from .ini file
+        // *** FREQUENCY *** //
+        if(settings.value("FREQUENCY/StartStop?").toBool())
+        {
+            ui->start_stop_radiobutton->setChecked(true);
+            ui->center_span_radiobutton->setChecked(false);
+            ui->center_freq_spinbox->setEnabled(false);
+            ui->spanfreq_spinbox->setEnabled(false);
+            ui->frequency_dropdown_center->setEnabled(false);
+            ui->frequency_dropdown_span->setEnabled(false);
+
+            // Start frequency
+            ui->start_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Start freq. unit").toInt());
+            ui->start_freq_spinbox->setValue(settings.value("FREQUENCY/Start freq. value").toDouble());
+
+            // Stop frequency
+            ui->stop_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Stop freq. unit").toInt());
+            ui->stop_freq_spinbox->setValue(settings.value("FREQUENCY/Stop freq. value").toDouble());
+        }
+        if(settings.value("FREQUENCY/CenterSpan?").toBool())
+        {
+            ui->center_span_radiobutton->setChecked(true);
+            ui->start_stop_radiobutton->setChecked(false);
+            ui->start_freq_spinbox->setEnabled(false);
+            ui->stop_freq_spinbox->setEnabled(false);
+            ui->start_freq_dropdown->setEnabled(false);
+            ui->stop_freq_dropdown->setEnabled(false);
+
+            // Center frequency
+            ui->frequency_dropdown_center->setCurrentIndex(settings.value("FREQUENCY/Center freq. unit").toInt());
+            ui->center_freq_spinbox->setValue(settings.value("FREQUENCY/Center freq. value").toDouble());
+
+            // Span frequency
+            ui->frequency_dropdown_span->setCurrentIndex(settings.value("FREQUENCY/Span freq. unit").toInt());
+            ui->spanfreq_spinbox->setValue(settings.value("FREQUENCY/Span freq. value").toDouble());
+        }
+
+        // Step
+        ui->step_spinbox->setValue(settings.value("FREQUENCY/Step freq. value").toInt());
+        ui->step_spinbox->setSuffix(settings.value("FREQUENCY/Step freq. unit").toString());
+        // *** End of FREQUENCY *** //
+
+        // *** Amplitude *** //
+        if(settings.value("AMPLITUDE/Ref. level?").toBool())
+        {
+            // Reference level
+            ui->referencelevel_checkbox->setChecked(true);
+            ui->referencelevel_spinbox->setValue(settings.value("AMPLITUDE/Ref. level value").toDouble());
+        }
+        else
+        {
+            ui->referencelevel_spinbox->setEnabled(false);
+        }
+        if(settings.value("AMPLITUDE/Attenuation?").toBool())
+        {
+            // Attenuation
+            ui->attenuation_checkbox->setChecked(true);
+            ui->attenuation_spinbox->setValue(settings.value("AMPLITUDE/Attenuation value").toInt());
+        }
+        else
+        {
+            ui->attenuation_spinbox->setEnabled(false);
+        }
+        if(settings.value("AMPLITUDE/Level offset?").toBool())
+        {
+            // Level offset
+            ui->leveloffset_checkbox->setChecked(true);
+            ui->leveloffset_spinbox->setValue(settings.value("AMPLITUDE/Level offset value").toInt());
+        }
+        else
+        {
+            ui->leveloffset_spinbox->setEnabled(false);
+        }
+
+        // Units
+        ui->units_combobox->setCurrentIndex(settings.value("UNITS/Units").toInt());
+        // Scale
+        ui->scaleCheckbox->setChecked(settings.value("UNITS/LogScale").toBool());
+        // *** End of AMPLITUDE *** //
+
+        // *** Sweep *** //
+        if(settings.value("SWEEP/SweepRadio?").toBool())
+        {
+           ui->no_sweeps_spinbox->setEnabled(true);
+           ui->no_sweeps_dropdown->setEnabled(true);
+           ui->sweep_points_spinbox->setEnabled(true);
+
+           ui->sweepTime_checkbox->setChecked(false);
+           ui->sweepTime_spinbox->setEnabled(false);
+           ui->videoBW_dropdown->setEnabled(false);
+           ui->same_RBW_VBW_checkBox->setEnabled(false);
+
+           // Numbers of sweeps
+           ui->no_sweeps_spinbox->setValue(settings.value("SWEEP/Number of sweeps").toInt());
+
+           if(settings.value("SWEEP/Sweep time?").toBool())
+           {
+               // Sweep time
+               ui->sweepTime_checkbox->setChecked(true);
+               ui->sweepTime_spinbox->setValue(settings.value("SWEEP/Sweep time").toInt());
+           }
+        }
+        // *** End of sweep *** //
+
+        // *** Video Bandwidth *** //
+        if(settings.value("BANDWIDTH/BandWidth?").toBool())
+        {
+            ui->no_sweeps_spinbox->setEnabled(false);
+            ui->sweep_points_spinbox->setEnabled(false);
+            ui->sweepTime_checkbox->setChecked(false);
+            ui->sweepTime_checkbox->setEnabled(false);
+            ui->sweepTime_spinbox->setEnabled(false);
+            ui->no_sweeps_dropdown->setEnabled(false);
+
+            ui->same_RBW_VBW_checkBox->setChecked(true);
+            ui->videoBW_dropdown->setEnabled(true);
+            ui->same_RBW_VBW_checkBox->setEnabled(true);
+
+            ui->resolutionBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/ResolutionBW").toInt());
+            if(settings.value("BANDWIDTH/SameRBW_VBW").toBool())
+            {
+                ui->same_RBW_VBW_checkBox->setChecked(true);
+            }
+            else
+            {
+                ui->same_RBW_VBW_checkBox->setChecked(false);
+            }
+            ui->videoBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/VideoBW").toInt());
+        }
+
+    }
+    else
+    {
+        //Default settings for the scan settings window
+        ui->referencelevel_spinbox->setEnabled(false);
+        ui->leveloffset_spinbox->setEnabled(false);
+        ui->attenuation_spinbox->setEnabled(false);
+        ui->sweepTime_spinbox->setEnabled(false);
+        ui->center_freq_spinbox->setEnabled(false);
+        ui->spanfreq_spinbox->setEnabled(false);
+        ui->frequency_dropdown_center->setEnabled(false);
+        ui->frequency_dropdown_span->setEnabled(false);
+    }
+
+}
+
 void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
 {
     //Enabled
@@ -480,11 +503,6 @@ void scan_settings::on_units_combobox_currentIndexChanged(const QString &arg1)
 {
     ui->referencelevel_spinbox->setSuffix(" " + arg1);
     ui->apply->setEnabled(true);
-}
-
-void scan_settings::on_buttonBox_accepted()
-{
-
 }
 
 void scan_settings::on_referencelevel_checkbox_stateChanged(int arg1)

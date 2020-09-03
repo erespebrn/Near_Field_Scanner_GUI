@@ -31,10 +31,7 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
 
     robot_init();
     video_thread_init();
-
-    // Spectrum analyzer signals
-    connect(&_socket_sa, &QAbstractSocket::connected, this, &scanner_gui::sa_connected);
-    connect(&_socket_sa, &QAbstractSocket::disconnected, this, &scanner_gui::sa_disconnected);
+    instrument_thread_init();
 
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
@@ -106,17 +103,32 @@ void scanner_gui::robot_init()
 
 void scanner_gui::video_thread_init()
 {
-    QThread* thread = new QThread;
+    QThread* thread1 = new QThread;
     VideoThread* videothread = new VideoThread;
-    videothread->moveToThread(thread);
-    connect(thread, SIGNAL(started()), videothread, SLOT(start()));
-    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-    connect(videothread, SIGNAL(finished()), thread, SLOT(quit()));
+    videothread->moveToThread(thread1);
+    connect(thread1, SIGNAL(started()), videothread, SLOT(start()));
+    connect(thread1, SIGNAL(finished()), thread1, SLOT(deleteLater()));
+    connect(videothread, SIGNAL(finished()), thread1, SLOT(quit()));
     connect(videothread, SIGNAL(finished()), videothread, SLOT(deleteLater()));
     connect(videothread, SIGNAL(readyImg(QImage, int, int)), this, SLOT(cv_getframe(QImage, int, int)));
     connect(videothread, SIGNAL(error(QString)), this, SLOT(cameraError(QString)));
     connect(videothread, SIGNAL(cameraOpened()), this, SLOT(cameraConnected()));
-    thread->start();
+    thread1->start();
+}
+
+void scanner_gui::instrument_thread_init()
+{
+    QThread * thread2 = new QThread;
+    Instrument_Thread * insthread = new Instrument_Thread(sa_ip_address, vna_ip_address);
+    insthread->moveToThread(thread2);
+    connect(thread2, SIGNAL(started()), insthread, SLOT(start()));
+    connect(thread2, SIGNAL(finished()), thread2, SLOT(deleteLater()));
+    connect(insthread, SIGNAL(finished()), thread2, SLOT(quit()));
+    connect(insthread, SIGNAL(finished()), insthread, SLOT(deleteLater()));
+    connect(insthread, SIGNAL(VNA_connected(bool)), this, SLOT(VNA_online(bool)));
+    connect(insthread, SIGNAL(SA_connected(bool)), this, SLOT(SA_online(bool)));
+    connect(this, SIGNAL(insthread_stop()), insthread, SLOT(shutdown()));
+    thread2->start();
 }
 
 void scanner_gui::on_Take_img_button_clicked()
@@ -155,6 +167,26 @@ void scanner_gui::cameraError(QString error)
 void scanner_gui::on_camera_connect_button_clicked()
 {
     video_thread_init();
+}
+
+void scanner_gui::SA_online(bool state)
+{
+    sa_connected_bool = state;
+
+    if(state)
+        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
+    else
+        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
+}
+
+void scanner_gui::VNA_online(bool state)
+{
+    vna_connected_bool = state;
+
+    if(state)
+        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
+    else
+        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
 }
 
 void scanner_gui::cv_getframe(QImage frame, int o_x, int o_y)
@@ -204,6 +236,104 @@ void scanner_gui::displayCroppedImage(QRect &rect)
 
     ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ", y: " + QString::number((uint16_t)height_cropped) + "mm" );
     ui->cropped_size_px->setText("x: "+ QString::number((uint16_t)x_dist_mm) +"mm" + ", y: " + QString::number((uint16_t)y_dist_mm) + "mm \n Lenght: " + QString::number((uint16_t)distance) + "mm");
+}
+
+void scanner_gui::on_scan_settings_button_clicked()
+{
+    if(vna_connected_bool || sa_connected_bool)
+    {
+        QString msg = "";
+        bool wo_vna = false;
+        bool wo_sa = false;
+
+        if(sa_connected_bool)
+        {
+            emit insthread_stop();
+            _socket_vna.connectToHost(vna_ip_address, 5025);
+            _socket_vna.waitForConnected(10);
+
+            if(_socket_vna.state() == QAbstractSocket::ConnectedState)
+            {
+                msg = "*RST\n";
+                _socket_vna.write(msg.toLocal8Bit());
+                _socket_vna.waitForBytesWritten();
+                msg = "SYST:DISP:UPD ON\n";
+                _socket_vna.write(msg.toLocal8Bit());
+                _socket_vna.waitForBytesWritten();
+            }
+        }
+        else
+        {
+            QMessageBox::StandardButton reply = QMessageBox::warning(this, "Spectrum Analyzer", "SA not connected. Continue?", QMessageBox::Yes | QMessageBox::No);
+
+            if(reply == QMessageBox::Yes)
+                wo_sa = true;
+        }
+
+        if(wo_sa)
+        {
+            if(vna_connected_bool)
+            {
+                emit insthread_stop();
+                _socket_vna.connectToHost(vna_ip_address, 5025);
+                _socket_vna.waitForConnected(10);
+
+                if(_socket_vna.state() == QAbstractSocket::ConnectedState)
+                {
+                    msg = "*RST\n";
+                    _socket_vna.write(msg.toLocal8Bit());
+                    _socket_vna.waitForBytesWritten();
+                    msg = "SYST:DISP:UPD ON\n";
+                    _socket_vna.write(msg.toLocal8Bit());
+                    _socket_vna.waitForBytesWritten();
+                }
+            }
+            else
+            {
+                QMessageBox::StandardButton reply = QMessageBox::warning(this, "VNA Analyzer", "VNA not connected. Continue?", QMessageBox::Yes | QMessageBox::No);
+                if(reply == QMessageBox::Yes)
+                    wo_vna = true;
+            }
+        }
+
+        if((vna_connected_bool && sa_connected_bool) || wo_sa || wo_vna)
+        {
+            if(vna_connected_bool && sa_connected_bool && !wo_sa && !wo_vna)
+            {
+                qDebug("All");
+                scan_settings scan_settings(&_socket_sa, &_socket_vna, this);
+                scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+                scan_settings.setModal(true);
+                scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+                scan_settings.exec();
+            }
+            else if(wo_vna)
+            {
+                qDebug("No vna");
+                scan_settings scan_settings(&_socket_sa, false, this);
+                scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+                scan_settings.setModal(true);
+                scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+                scan_settings.exec();
+
+            }
+            else if(wo_sa)
+            {
+                qDebug("No sa");
+                scan_settings scan_settings(&_socket_vna, true, this);
+                scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+                scan_settings.setModal(true);
+                scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
+                scan_settings.exec();
+            }
+
+            instrument_thread_init();
+        }
+    }
+    else
+    {
+        QMessageBox::critical(this, "No instrument", "No measurement instrument connected!");
+    }
 }
 
 void scanner_gui::on_scan_height_valueChanged(double arg1)
@@ -343,85 +473,4 @@ void scanner_gui::on_home_button_clicked()
     _socket_robot.waitForReadyRead(50);
     array = _socket_robot.readAll();
     qDebug() << array;
-}
-
-void scanner_gui::imageSaved(int id, const QString &fileName)
-{
-    Q_UNUSED(id)
-    ui->statusbar->showMessage(tr("Captured \"%1\"").arg(QDir::toNativeSeparators(fileName)));
-
-    m_isCapturingImage = false;
-    if (m_applicationExiting)
-        close();
-}
-
-void scanner_gui::sa_connected()
-{
-    ui->sa_connect_btn->setEnabled(false);
-    ui->sa_connect_btn->setText("Connected");
-}
-
-void scanner_gui::sa_disconnected()
-{
-    ui->sa_connect_btn->setEnabled(true);
-    ui->sa_connect_btn->setText("Connect");
-}
-
-void scanner_gui::on_scan_settings_button_clicked()
-{
-    if(sa_connected_bool)
-    {
-        scan_settings scan_settings(&_socket_sa, this);
-        scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-        scan_settings.setModal(true);
-        scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
-        scan_settings.exec();
-    }
-    else
-    {
-        QMessageBox::StandardButton reply = QMessageBox::warning(this, "Not connected", "Try to connect?", QMessageBox::Yes | QMessageBox::No);
-
-        if(reply == QMessageBox::Yes)
-        {
-            on_sa_connect_btn_clicked();
-            if(_socket_sa.state() == QAbstractSocket::ConnectedState)
-            {
-                scan_settings scan_settings(&_socket_sa, this);
-                scan_settings.setWindowFlags(scan_settings.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-                scan_settings.setModal(true);
-                scan_settings.setFixedSize(scan_settings.width(),scan_settings.height());
-                scan_settings.exec();
-            }
-        }
-    }
-
-}
-
-void scanner_gui::on_sa_connect_btn_clicked()
-{
-    // *** SIGLENT SSA3032X spectrum analyzer TCP connection *** //
-    //Establish a connection with the SSA3032X spectrum analyzer
-
-    QString msg;
-
-    _socket_sa.connectToHost(QHostAddress(sa_ip_address), 5025);
-    _socket_sa.waitForReadyRead(1);
-
-    //Check if the connection succeeded
-    if(_socket_sa.state() == QAbstractSocket::UnconnectedState)
-    {
-        sa_connected_bool = false;
-        QMessageBox::warning(this, "Connection error!", "Connection to the Spectrum Analyzer failed!");
-    }
-    else
-    {
-        msg = "*RST\n";
-        _socket_sa.write(msg.toLocal8Bit());
-        _socket_sa.waitForBytesWritten();
-        msg = "SYST:DISP:UPD ON\n";
-        _socket_sa.write(msg.toLocal8Bit());
-        _socket_sa.waitForBytesWritten();
-        sa_connected_bool = true;
-    }
-    // *** //
 }

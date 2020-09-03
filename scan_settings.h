@@ -15,7 +15,8 @@ class scan_settings : public QDialog
     Q_OBJECT
 
 public:
-    explicit scan_settings(QTcpSocket *socket, QWidget *parent = nullptr);
+    explicit scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent = nullptr);
+    explicit scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *parent = nullptr);
     ~scan_settings();
 
 private slots:
@@ -28,7 +29,6 @@ private slots:
     void on_attenuation_checkbox_stateChanged(int arg1);
     void on_sweepTime_checkbox_stateChanged(int arg1);
     void on_same_RBW_VBW_checkBox_stateChanged(int arg1);
-    void on_buttonBox_accepted();
     void on_start_freq_spinbox_valueChanged(double arg1);
     void on_stop_freq_spinbox_valueChanged(double arg1);
     void on_center_freq_spinbox_valueChanged(double arg1);
@@ -51,7 +51,10 @@ private slots:
 
 private:
     Ui::scan_settings *ui;
+
     QTcpSocket *_socket_sa;
+    QTcpSocket *_socket_vna;
+
     QString settingsFile;
 
     const QString settings_file_path = QCoreApplication::applicationDirPath() + "/scansettings.ini";
@@ -61,6 +64,7 @@ private:
     void send_command(const QString &cmd);
 
     bool instrument_settings = false;
+    void load_previous_settings();
 
 };
 
