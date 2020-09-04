@@ -81,6 +81,8 @@ private slots:
     void cameraConnected();
     void on_robot_connect_button_clicked();
 
+    void read_robot_msg();
+
 private:
     Ui::scanner_gui *ui;
 

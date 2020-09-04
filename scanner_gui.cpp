@@ -1,7 +1,7 @@
 #include "scanner_gui.h"
 #include "scan_settings.h"
 #include "ui_scanner_gui.h"
-
+#include <cstdio>
 
 #include <cmath>
 #include <QMediaService>
@@ -78,6 +78,8 @@ void scanner_gui::robot_init()
     {
        ui->robot_connect_button->setEnabled(false);
        ui->robot_connect_button->setText("Connected");
+       ui->robotTerminal->setText("");
+       ui->robotTerminal->setText("Connected to Kawasaki F Controller");
        ui->robotManualControl_frame->setEnabled(true);
        _socket_robot.write(send_msg.toLocal8Bit());
        _socket_robot.waitForReadyRead(20);
@@ -91,7 +93,9 @@ void scanner_gui::robot_init()
 
        _socket_robot.read(robot_msg,128);
        qDebug() << robot_msg;
-       ui->robotTerminal->setText(QString(robot_msg));
+       QTimer * robot_timer = new QTimer;
+       connect(robot_timer, &QTimer::timeout, this, &scanner_gui::read_robot_msg);
+       robot_timer->start(10);
        // *** //
     }
     else
@@ -232,6 +236,18 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
+    QString msg = "";
+    msg = "x_mes = %1\n";
+    //msg = msg.arg(QString::number((int)(x_dist_mm+(rect.width()/2))));
+    msg = msg.arg(QString::number((int)(x_dist_mm)));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten();
+    msg = "";
+    msg = "y_mes = %1\n";
+    msg = msg.arg(QString::number((int)(y_dist_mm)));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten();
+
     float distance = sqrt(pow(x_dist_mm,2) + pow(y_dist_mm,2));
 
     ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ", y: " + QString::number((uint16_t)height_cropped) + "mm" );
@@ -240,6 +256,8 @@ void scanner_gui::displayCroppedImage(QRect &rect)
 
 void scanner_gui::on_scan_settings_button_clicked()
 {
+    emit insthread_stop();
+
     if(vna_connected_bool || sa_connected_bool)
     {
         QString msg = "";
@@ -248,18 +266,17 @@ void scanner_gui::on_scan_settings_button_clicked()
 
         if(sa_connected_bool)
         {
-            emit insthread_stop();
-            _socket_vna.connectToHost(vna_ip_address, 5025);
-            _socket_vna.waitForConnected(10);
+            _socket_sa.connectToHost(sa_ip_address, 5025);
+            _socket_sa.waitForConnected(10);
 
-            if(_socket_vna.state() == QAbstractSocket::ConnectedState)
+            if(_socket_sa.state() == QAbstractSocket::ConnectedState)
             {
                 msg = "*RST\n";
-                _socket_vna.write(msg.toLocal8Bit());
-                _socket_vna.waitForBytesWritten();
+                _socket_sa.write(msg.toLocal8Bit());
+                _socket_sa.waitForBytesWritten();
                 msg = "SYST:DISP:UPD ON\n";
-                _socket_vna.write(msg.toLocal8Bit());
-                _socket_vna.waitForBytesWritten();
+                _socket_sa.write(msg.toLocal8Bit());
+                _socket_sa.waitForBytesWritten();
             }
         }
         else
@@ -270,7 +287,7 @@ void scanner_gui::on_scan_settings_button_clicked()
                 wo_sa = true;
         }
 
-        if(wo_sa)
+        if(sa_connected_bool || wo_sa)
         {
             if(vna_connected_bool)
             {
@@ -336,6 +353,84 @@ void scanner_gui::on_scan_settings_button_clicked()
     }
 }
 
+void scanner_gui::on_Start_scan_button_clicked()
+{
+    _socket_robot.write("Goto_Origin = 1\n");
+    _socket_robot.waitForBytesWritten(30);
+    QString mystring = "dist = %1\n";
+    mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
+    _socket_robot.write(mystring.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(30);
+}
+
+void scanner_gui::read_robot_msg()
+{
+    char robot_msg[32];
+    if(_socket_robot.waitForReadyRead(10))
+    {
+        _socket_robot.read(robot_msg, 32);
+
+        if(robot_msg[0] == '@')
+        {
+            char buffer[3];
+            for(int i=1; i<3; i++)
+            {
+                buffer[i-1] = robot_msg[i];
+            }
+            int i = atoi(buffer);
+            qDebug() << robot_msg;
+            qDebug() << i;
+            switch(i)
+            {
+                case 1:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Scan started");
+                    break;
+                case 2:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Scan in progress...");
+                    break;
+                case 3:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Scan finished!");
+                    break;
+                case 4:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Height measure started...");
+                    break;
+                case 5:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Height measure done!");
+                    break;
+                case 6:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Robot position");
+                    break;
+                case 7:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Going to the PCB's corner...");
+                    break;
+                case 8:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Reached the PCB's corner!");
+                    on_resetCamera_button_clicked();
+                    break;
+                case 9:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Moving to the homeposition...");
+                    break;
+                case 10:
+                    ui->robotTerminal->setText("");
+                    ui->robotTerminal->setText("Reached the homeposition!");
+                    break;
+                default:
+                    ui->robotTerminal->setText("");
+                    break;
+            }
+        }
+    }
+}
+
 void scanner_gui::on_scan_height_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
@@ -375,28 +470,11 @@ void scanner_gui::on_stepsize_y_valueChanged(double arg1)//stepsize y
     _socket_robot.write(QByteArray("\n"));
 }
 
-void scanner_gui::on_Start_scan_button_clicked()
-{
-    _socket_robot.write("demo = 1");
-    _socket_robot.waitForReadyRead();
-    char test[128];
-    _socket_robot.read(test, 128);
-    qDebug() << test;
-    _socket_robot.write(QByteArray("\n"));
-    _socket_robot.waitForBytesWritten(30);
-    QString mystring = "dist = %1";
-    mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
-    _socket_robot.write(mystring.toUtf8());       //if it doesn't work, try toUtf8()
-    _socket_robot.waitForBytesWritten(30);
-    _socket_robot.write(QByteArray("\n"));
-    //Start scan button
-}
-
 void scanner_gui::on_stop_scan_button_clicked()
 {
-    _socket_robot.write("demo = 0");
-    _socket_robot.waitForReadyRead();
-    _socket_robot.write(QByteArray("\n"));
+    _socket_robot.write("demo = 0\n");
+    _socket_robot.waitForBytesWritten(30);
+    _socket_robot.write("takepic = 1\n");
     _socket_robot.waitForBytesWritten(30);
 }
 
@@ -472,5 +550,4 @@ void scanner_gui::on_home_button_clicked()
     _socket_robot.waitForReadyRead(50);
     _socket_robot.waitForReadyRead(50);
     array = _socket_robot.readAll();
-    qDebug() << array;
 }
