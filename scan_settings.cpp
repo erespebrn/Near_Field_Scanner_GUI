@@ -7,6 +7,7 @@
 #include <QDate>
 #include <QTime>
 #include <QFile>
+#include <QDebug>
 
 
 scan_settings::scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent) :
@@ -32,6 +33,8 @@ scan_settings::scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *p
 
     _socket_sa = socket;
     _socket_vna = socket2;
+
+    load_previous_settings();
 }
 
 
@@ -43,7 +46,6 @@ scan_settings::~scan_settings()
 
 void scan_settings::on_apply_clicked()
 {
-    qDebug() << "here";
     QSettings settings(QCoreApplication::applicationDirPath() + "/scansettings.ini", QSettings::IniFormat);
     settings.clear();
     QString mystring;
@@ -66,7 +68,6 @@ void scan_settings::on_apply_clicked()
             mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("FREQUENCY/StartStop?", ui->start_stop_radiobutton->isChecked());
             settings.setValue("FREQUENCY/Start freq. value", ui->start_freq_spinbox->value());
@@ -89,7 +90,6 @@ void scan_settings::on_apply_clicked()
             mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("FREQUENCY/CenterSpan?", ui->center_span_radiobutton->isChecked());
             settings.setValue("FREQUENCY/Center freq. value", ui->center_freq_spinbox->value());
@@ -104,7 +104,6 @@ void scan_settings::on_apply_clicked()
         mystring = mystring + " MHz\n";
         send_command(mystring);
         mystring = "";
-
         // Save to the preset file
         settings.setValue("FREQUENCY/Step freq. value", ui->step_spinbox->value());
         settings.setValue("FREQUENCY/Step freq. unit", "MHz");
@@ -116,11 +115,10 @@ void scan_settings::on_apply_clicked()
         {
             // Reference level
             // Send SPCI command
-            mystring = "DISPl:TRAC:Y:RLEV %1 %2\n";
-            mystring = mystring.arg(QString::number(ui->step_spinbox->value()), ui->referencelevel_spinbox->suffix());
+            mystring = "DISP:TRAC:Y:RLEV %1%2\n";
+            mystring = mystring.arg(QString::number(ui->referencelevel_spinbox->value()), ui->referencelevel_spinbox->suffix());
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
             settings.setValue("AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
@@ -133,7 +131,6 @@ void scan_settings::on_apply_clicked()
             mystring = mystring.arg(QString::number(ui->attenuation_spinbox->value()));
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("AMPLITUDE/Attenuation?", ui->attenuation_checkbox->isChecked());
             settings.setValue("AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
@@ -147,7 +144,6 @@ void scan_settings::on_apply_clicked()
             mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("AMPLITUDE/Level offset?", ui->leveloffset_checkbox->isChecked());
             settings.setValue("AMPLITUDE/Level offset value",  ui->leveloffset_spinbox->value());
@@ -159,7 +155,6 @@ void scan_settings::on_apply_clicked()
         mystring = mystring.arg(ui->units_combobox->currentText().toUpper());
         send_command(mystring);
         mystring = "";
-
         // Save to the preset file
         settings.setValue("UNITS/Units",  ui->units_combobox->currentIndex());
 
@@ -170,7 +165,6 @@ void scan_settings::on_apply_clicked()
             mystring = "DISP:TRAC:Y:SPAC LOG\n";
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("UNITS/LogScale", true);
         }
@@ -180,7 +174,6 @@ void scan_settings::on_apply_clicked()
             mystring = "DISP:TRAC:Y:SPAC LIN\n";
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("UNITS/LogScale", false);
         }
@@ -194,74 +187,91 @@ void scan_settings::on_apply_clicked()
 
         // Number of sweeps
         // Send SPCI command
-        mystring = ":SWEep:COUNt %1\n";
+        mystring = "SWE:COUN %1\n";
         mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
         send_command(mystring);
         mystring = "";
-
         // Save to the preset file
-        settings.setValue("SWEEP/Number of swppes",  ui->no_sweeps_spinbox->value());
+        settings.setValue("SWEEP/Number of sweeps",  ui->no_sweeps_spinbox->value());
+
+        // Sweep points
+        // Send SPCI command
+        mystring = "SWE:POIN %1\n";
+        mystring = mystring.arg(QString::number(ui->sweep_points_spinbox->value()));
+        send_command(mystring);
+        // Save to the preset file
+        settings.setValue("SWEEP/Sweep points", ui->sweep_points_spinbox->value());
 
 
         if(ui->sweepTime_checkbox->isChecked())
         {
             // Sweep time
             // Send SPCI command
-            mystring = ":SWEep:TIME %1 ms\n";
+            mystring = "SWE:TIME %1 ms\n";
             mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
             send_command(mystring);
             mystring = "";
-
             // Save to the preset file
             settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
-            settings.setValue("SWEEP/Sweep time",  ui->no_sweeps_spinbox->value());
+            settings.setValue("SWEEP/Sweep time",  ui->sweepTime_spinbox->value());
         }
+        else
+        {
+            settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
         }
+
         // ************************************************************************************************************************ //
 
         // ************************************************************************************************************************ //
         // *** SSA3032X Menu -> BW (Bandwidth) *** //
         // Resolution bandwidth
         // Send SPCI command
-        mystring = ":BWIDth %1\n";
-        mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+        mystring = "BAND %1\n";
+        mystring = mystring.arg(ui->resolutionBW_comboBox->currentText());
         send_command(mystring);
         mystring = "";
 
         // Save to the preset file
-        settings.setValue("BANDWIDTH/ResolutionBW", ui->resolutionBW_dropdown->currentIndex());
+        settings.setValue("BANDWIDTH/ResolutionBW", ui->resolutionBW_comboBox->currentIndex());
 
         if(ui->same_RBW_VBW_checkBox->isChecked())
         {
             // Send SPCI command
-            mystring = ":BWIDth:VIDeo %1\n";
-            mystring = mystring.arg(ui->resolutionBW_dropdown->currentText());
+            mystring = "BAND:VID %1\n";
+            mystring = mystring.arg(ui->resolutionBW_comboBox->currentText());
             send_command(mystring);
             mystring = "";
 
             // Save to the preset file
             settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->resolutionBW_dropdown->currentIndex());
+            settings.setValue("BANDWIDTH/VideoBW", ui->resolutionBW_comboBox->currentIndex());
         }
         else
         {
             // Send SPCI command
-            mystring = ":BWIDth:VIDeo %1\n";
-            mystring = mystring.arg(ui->videoBW_dropdown->currentText());
+            mystring = "BAND:VID %1\n";
+            mystring = mystring.arg(ui->videoBW_comboBox->currentText());
             send_command(mystring);
             mystring = "";
 
             // Save to the preset file
             settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->videoBW_dropdown->currentIndex());
+            settings.setValue("BANDWIDTH/VideoBW", ui->videoBW_comboBox->currentIndex());
         }
         // ************************************************************************************************************************ //*/
 
+        // *** Detector ***
+        mystring = "DET %1\n";
+        mystring = mystring.arg(ui->detectorComboBox->currentText());
+        send_command(mystring);
+        mystring = "";
+    }
     ui->apply->setEnabled(false);
 }
 
 void scan_settings::load_previous_settings()
 {
+
 
     QFile settings_file(settings_file_path);
     if(settings_file.exists())
@@ -349,59 +359,42 @@ void scan_settings::load_previous_settings()
         // *** End of AMPLITUDE *** //
 
         // *** Sweep *** //
-        if(settings.value("SWEEP/SweepRadio?").toBool())
+        // Numbers of sweeps
+        ui->no_sweeps_spinbox->setValue(settings.value("SWEEP/Number of sweeps").toInt());
+
+        // Sweep points
+        ui->sweep_points_spinbox->setValue(settings.value("SWEEP/Sweep points").toInt());
+
+        if(settings.value("SWEEP/Sweep time?").toBool())
         {
-           ui->no_sweeps_spinbox->setEnabled(true);
-           ui->no_sweeps_dropdown->setEnabled(true);
-           ui->sweep_points_spinbox->setEnabled(true);
-
-           ui->sweepTime_checkbox->setChecked(false);
-           ui->sweepTime_spinbox->setEnabled(false);
-           ui->videoBW_dropdown->setEnabled(false);
-           ui->same_RBW_VBW_checkBox->setEnabled(false);
-
-           // Numbers of sweeps
-           ui->no_sweeps_spinbox->setValue(settings.value("SWEEP/Number of sweeps").toInt());
-
-           if(settings.value("SWEEP/Sweep time?").toBool())
-           {
-               // Sweep time
-               ui->sweepTime_checkbox->setChecked(true);
-               ui->sweepTime_spinbox->setValue(settings.value("SWEEP/Sweep time").toInt());
-           }
+            // Sweep time
+            ui->sweepTime_checkbox->setChecked(true);
+            ui->sweepTime_spinbox->setValue(settings.value("SWEEP/Sweep time").toDouble());
+        }
+        else
+        {
+            ui->sweepTime_checkbox->setChecked(false);
         }
         // *** End of sweep *** //
 
         // *** Video Bandwidth *** //
-        if(settings.value("BANDWIDTH/BandWidth?").toBool())
+        ui->resolutionBW_comboBox->setCurrentIndex(settings.value("BANDWIDTH/ResolutionBW").toInt());
+
+        if(settings.value("BANDWIDTH/SameRBW_VBW").toBool())
         {
-            ui->no_sweeps_spinbox->setEnabled(false);
-            ui->sweep_points_spinbox->setEnabled(false);
-            ui->sweepTime_checkbox->setChecked(false);
-            ui->sweepTime_checkbox->setEnabled(false);
-            ui->sweepTime_spinbox->setEnabled(false);
-            ui->no_sweeps_dropdown->setEnabled(false);
-
             ui->same_RBW_VBW_checkBox->setChecked(true);
-            ui->videoBW_dropdown->setEnabled(true);
-            ui->same_RBW_VBW_checkBox->setEnabled(true);
-
-            ui->resolutionBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/ResolutionBW").toInt());
-            if(settings.value("BANDWIDTH/SameRBW_VBW").toBool())
-            {
-                ui->same_RBW_VBW_checkBox->setChecked(true);
-            }
-            else
-            {
-                ui->same_RBW_VBW_checkBox->setChecked(false);
-            }
-            ui->videoBW_dropdown->setCurrentIndex(settings.value("BANDWIDTH/VideoBW").toInt());
+        }
+        else
+        {
+            ui->same_RBW_VBW_checkBox->setChecked(false);
         }
 
+        ui->videoBW_comboBox->setCurrentIndex(settings.value("BANDWIDTH/VideoBW").toInt());
     }
     else
     {
         //Default settings for the scan settings window
+        ui->videoBW_comboBox->setEnabled(false);
         ui->referencelevel_spinbox->setEnabled(false);
         ui->leveloffset_spinbox->setEnabled(false);
         ui->attenuation_spinbox->setEnabled(false);
@@ -411,6 +404,7 @@ void scan_settings::load_previous_settings()
         ui->frequency_dropdown_center->setEnabled(false);
         ui->frequency_dropdown_span->setEnabled(false);
     }
+
 
 }
 
@@ -541,17 +535,19 @@ void scan_settings::on_sweepTime_checkbox_stateChanged(int arg1)
         ui->sweepTime_spinbox->setEnabled(false);
     else
         ui->sweepTime_spinbox->setEnabled(true);
+
+    ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_same_RBW_VBW_checkBox_stateChanged(int arg1)
 {
     if(arg1 == 0)
     {
-        ui->videoBW_dropdown->setEnabled(true);
+        ui->videoBW_comboBox->setEnabled(true);
     }
     else
     {
-        ui->videoBW_dropdown->setEnabled(false);
+        ui->videoBW_comboBox->setEnabled(false);
     }
 }
 
@@ -581,36 +577,43 @@ void scan_settings::on_use_instrument_settings_stateChanged(int arg1)
 
 void scan_settings::on_frequency_dropdown_center_currentIndexChanged(int index)
 {
+    Q_UNUSED(index);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_spanfreq_spinbox_valueChanged(double arg1)
 {
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_frequency_dropdown_span_currentIndexChanged(int index)
 {
+    Q_UNUSED(index);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_step_spinbox_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_referencelevel_spinbox_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_attenuation_spinbox_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }
 
 void scan_settings::on_leveloffset_spinbox_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }
 
@@ -633,4 +636,34 @@ void scan_settings::on_pushButton_3_clicked()
 void scan_settings::on_pushButton_clicked()
 {
     this->hide();
+}
+
+void scan_settings::on_referencelevel_spinbox_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_resolutionBW_comboBox_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_no_sweeps_spinbox_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_sweep_points_spinbox_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_sweepTime_spinbox_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
 }

@@ -35,7 +35,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="SA_tab">
       <attribute name="title">
@@ -127,6 +127,9 @@
             </item>
             <item row="3" column="1">
              <widget class="QDoubleSpinBox" name="sweepTime_spinbox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -199,113 +202,8 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="5" column="2">
-             <widget class="QComboBox" name="start_freq_dropdown">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <item>
-               <property name="text">
-                <string>GHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>MHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>kHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Hz</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="9" column="2">
-             <widget class="QComboBox" name="frequency_dropdown_span">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <item>
-               <property name="text">
-                <string>GHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>MHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>kHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Hz</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="8" column="2">
-             <widget class="QComboBox" name="frequency_dropdown_center">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <item>
-               <property name="text">
-                <string>GHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>MHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>kHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Hz</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Span:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QDoubleSpinBox" name="stop_freq_spinbox">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>25</height>
-               </size>
-              </property>
+            <item row="8" column="1">
+             <widget class="QDoubleSpinBox" name="center_freq_spinbox">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -314,26 +212,20 @@
               <property name="decimals">
                <number>1</number>
               </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.899999999999977</double>
-              </property>
               <property name="value">
-               <double>2.000000000000000</double>
+               <double>1.000000000000000</double>
               </property>
              </widget>
             </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label">
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_5">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>Center frequency:</string>
+               <string>Start frequency:</string>
               </property>
              </widget>
             </item>
@@ -361,63 +253,6 @@
               </property>
               <property name="value">
                <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="1">
-             <widget class="QDoubleSpinBox" name="center_freq_spinbox">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QDoubleSpinBox" name="start_freq_spinbox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>25</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <double>999.899999999999977</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Start frequency:</string>
               </property>
              </widget>
             </item>
@@ -456,15 +291,77 @@
               </item>
              </widget>
             </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_6">
+            <item row="6" column="1">
+             <widget class="QDoubleSpinBox" name="stop_freq_spinbox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="minimum">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>999.899999999999977</double>
+              </property>
+              <property name="value">
+               <double>2.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QComboBox" name="frequency_dropdown_span">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <item>
+               <property name="text">
+                <string>GHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hz</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="7" column="0" colspan="2">
+             <widget class="QRadioButton" name="center_span_radiobutton">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="toolTipDuration">
+               <number>0</number>
+              </property>
               <property name="text">
-               <string>Stop frequency:</string>
+               <string>Center frequency and span</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -489,6 +386,77 @@
               </property>
              </widget>
             </item>
+            <item row="8" column="2">
+             <widget class="QComboBox" name="frequency_dropdown_center">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <item>
+               <property name="text">
+                <string>GHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hz</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Center frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QDoubleSpinBox" name="start_freq_spinbox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <double>999.899999999999977</double>
+              </property>
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
+             </widget>
+            </item>
             <item row="4" column="0" colspan="3">
              <widget class="QRadioButton" name="start_stop_radiobutton">
               <property name="font">
@@ -504,22 +472,57 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="0" colspan="2">
-             <widget class="QRadioButton" name="center_span_radiobutton">
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_6">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="toolTipDuration">
-               <number>0</number>
+              <property name="text">
+               <string>Stop frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
               </property>
               <property name="text">
-               <string>Center frequency and span</string>
+               <string>Span:</string>
               </property>
-              <property name="checked">
-               <bool>false</bool>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QComboBox" name="start_freq_dropdown">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
               </property>
+              <item>
+               <property name="text">
+                <string>GHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hz</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
@@ -545,51 +548,38 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_8">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_9">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>Resolution BW:</string>
+               <string>Video BW:</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="resolutionBW_dropdown">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="currentText">
-               <string>1 KHz</string>
-              </property>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="videoBW_comboBox">
               <item>
                <property name="text">
-                <string>1 KHz</string>
+                <string>10 MHz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>3 KHz</string>
+                <string>5 MHz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>10 KHz</string>
+                <string>3 MHz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>30 KHz</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>300 KHz</string>
+                <string>2 MHz</string>
                </property>
               </item>
               <item>
@@ -597,29 +587,69 @@
                 <string>1 MHz</string>
                </property>
               </item>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="videoBW_dropdown">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="currentText">
-               <string>30 Hz</string>
-              </property>
               <item>
                <property name="text">
-                <string>30 Hz</string>
+                <string>500 kHz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>100 Hz</string>
+                <string>300 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>200 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>100 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>50 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>30 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>20 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>10 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>5 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>500 Hz</string>
                </property>
               </item>
               <item>
@@ -629,34 +659,66 @@
               </item>
               <item>
                <property name="text">
-                <string>1 KHz</string>
+                <string>200 Hz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>3 KHz</string>
+                <string>100 Hz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>10 KHz</string>
+                <string>50 Hz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>30 KHz</string>
+                <string>30 Hz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>300 KHz</string>
+                <string>20 Hz</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>1 MHz</string>
+                <string>10 Hz</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>5 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 Hz</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Resolution BW:        </string>
+              </property>
              </widget>
             </item>
             <item row="2" column="0" colspan="3">
@@ -674,16 +736,156 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="resolutionBW_comboBox">
+              <property name="currentIndex">
+               <number>0</number>
               </property>
-              <property name="text">
-               <string>Video BW:</string>
-              </property>
+              <item>
+               <property name="text">
+                <string>10 MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>5 MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 MHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>500 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>300 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>200 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>100 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>50 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>30 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>20 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>10 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>5 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 kHz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>500 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>300 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>200 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>100 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>50 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>30 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>20 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>10 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>5 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 Hz</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 Hz</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
@@ -733,12 +935,7 @@
              </item>
              <item>
               <property name="text">
-               <string>EMI</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Peak</string>
+               <string>APeak</string>
               </property>
              </item>
             </widget>
@@ -779,33 +976,6 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="2">
-             <widget class="QSpinBox" name="referencelevel_spinbox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="wrapping">
-               <bool>false</bool>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-              <property name="suffix">
-               <string> [dBm]</string>
-              </property>
-              <property name="maximum">
-               <number>1000000000</number>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
              <widget class="QLabel" name="label_12">
               <property name="font">
@@ -838,7 +1008,7 @@
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
               <property name="suffix">
-               <string> [dB]</string>
+               <string> dB</string>
               </property>
               <property name="maximum">
                <number>100000000</number>
@@ -859,7 +1029,7 @@
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
               <property name="suffix">
-               <string> [dB]</string>
+               <string> dB</string>
               </property>
               <property name="maximum">
                <number>1000000000</number>
@@ -1004,6 +1174,42 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="2">
+             <widget class="QDoubleSpinBox" name="referencelevel_spinbox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="wrapping">
+               <bool>false</bool>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <property name="prefix">
+               <string/>
+              </property>
+              <property name="suffix">
+               <string>dBm</string>
+              </property>
+              <property name="minimum">
+               <double>-999.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>9999.989999999999782</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -1015,8 +1221,1263 @@
       <attribute name="title">
        <string>VNA</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_11">
+       <item row="3" column="2">
+        <widget class="QFrame" name="sweep_gridFrame_VNA_2">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="3" column="2">
+           <widget class="QCheckBox" name="sweepTime_checkbox_VNA_2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_32">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Number of Sweeps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_33">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Sweep points:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QComboBox" name="no_sweeps_dropdown_VNA_2">
+            <item>
+             <property name="text">
+              <string>MAXH</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="sweepTime_spinbox_VNA_2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> [ms]</string>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="sweep_points_spinbox_VNA_2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="maximum">
+             <number>99000</number>
+            </property>
+            <property name="value">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Sweep:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="no_sweeps_spinbox_VNA_2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QFrame" name="videoBW_Frame_VNA">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_30">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Video BW:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="videoBW_comboBox_2">
+            <item>
+             <property name="text">
+              <string>10 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>300 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>200 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>30 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>300 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>200 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>30 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_31">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Resolution BW:        </string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="3">
+           <widget class="QCheckBox" name="same_RBW_VBW_checkBox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Use the same video bandwidth as resolution</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="resolutionBW_comboBox_VNA">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>10 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>300 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>200 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>30 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>300 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>200 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>100 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>50 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>30 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2 Hz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1 Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="1" rowspan="2">
+        <widget class="QFrame" name="amplitudeFrame_VNA">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="4" column="2">
+           <widget class="QSpinBox" name="leveloffset_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="suffix">
+             <string> dB</string>
+            </property>
+            <property name="maximum">
+             <number>100000000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QCheckBox" name="attenuation_checkbox_VNA">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QComboBox" name="units_combobox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>dBm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>V</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>A</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>W</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dBpW</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dBuV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dBmV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dBuA</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_22">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Level offset:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="label_26">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Units:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QCheckBox" name="referencelevel_checkbox_VNA">
+            <property name="text">
+             <string notr="true"/>
+            </property>
+            <property name="tristate">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QCheckBox" name="scaleCheckbox_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="locale">
+             <locale language="English" country="Denmark"/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QCheckBox" name="leveloffset_checkbox_VNA">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QDoubleSpinBox" name="referencelevel_spinbox_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string>dBm</string>
+            </property>
+            <property name="minimum">
+             <double>-999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>9999.989999999999782</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="attenuation_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="suffix">
+             <string> dB</string>
+            </property>
+            <property name="maximum">
+             <number>1000000000</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_25">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Reference level:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_23">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Attenuation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="label_24">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Logarithmic scale:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="1" rowspan="2">
+        <widget class="QFrame" name="frequencyFrame_VNA">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>165</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="8" column="1">
+           <widget class="QDoubleSpinBox" name="center_freq_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Start frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_18">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Step:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QDoubleSpinBox" name="spanfreq_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QComboBox" name="stop_freq_dropdown_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="stop_freq_spinbox_VNA">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>999.899999999999977</double>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QComboBox" name="frequency_dropdown_span_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <widget class="QRadioButton" name="center_span_radiobutton_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTipDuration">
+             <number>0</number>
+            </property>
+            <property name="text">
+             <string>Center frequency and span</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QSpinBox" name="step_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="suffix">
+             <string> MHz</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="stepType">
+             <enum>QAbstractSpinBox::DefaultStepType</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2">
+           <widget class="QComboBox" name="frequency_dropdown_center_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_19">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Center frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="start_freq_spinbox_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <double>999.899999999999977</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="3">
+           <widget class="QRadioButton" name="start_stop_radiobutton_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Start and stop frequency</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_20">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Stop frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Span:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QComboBox" name="start_freq_dropdown_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="2">
+        <widget class="QFrame" name="sweep_gridFrame_VNA">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="3" column="2">
+           <widget class="QCheckBox" name="sweepTime_checkbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Number of Sweeps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_29">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Sweep points:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QComboBox" name="no_sweeps_dropdown_VNA">
+            <item>
+             <property name="text">
+              <string>MAXH</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="sweepTime_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> [ms]</string>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="sweep_points_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="maximum">
+             <number>99000</number>
+            </property>
+            <property name="value">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_28">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Sweep:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="no_sweeps_spinbox_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

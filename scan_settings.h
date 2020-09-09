@@ -49,6 +49,16 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_referencelevel_spinbox_valueChanged(double arg1);
+
+    void on_resolutionBW_comboBox_currentIndexChanged(int index);
+
+    void on_no_sweeps_spinbox_valueChanged(int arg1);
+
+    void on_sweep_points_spinbox_valueChanged(int arg1);
+
+    void on_sweepTime_spinbox_valueChanged(double arg1);
+
 private:
     Ui::scan_settings *ui;
 
