@@ -28,6 +28,16 @@ void Instrument_Thread::scan_devices()
     {
         _vna_socket->connectToHost(vna_ip, 5025);
         _vna_socket->waitForConnected(10);
+
+        msg = "SYST:TSL OFF\n";
+        _vna_socket->write(msg.toLocal8Bit());
+        _vna_socket->waitForBytesWritten();
+        msg = "";
+
+        msg = "SYST:TSL SCR\n";
+        _vna_socket->write(msg.toLocal8Bit());
+        _vna_socket->waitForBytesWritten();
+        msg = "";
     }
     if(_sa_socket->state() == QAbstractSocket::UnconnectedState)
     {

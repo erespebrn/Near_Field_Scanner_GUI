@@ -274,9 +274,12 @@ void scanner_gui::on_scan_settings_button_clicked()
                 msg = "*RST\n";
                 _socket_sa.write(msg.toLocal8Bit());
                 _socket_sa.waitForBytesWritten();
+                msg = "";
+
                 msg = "SYST:DISP:UPD ON\n";
                 _socket_sa.write(msg.toLocal8Bit());
                 _socket_sa.waitForBytesWritten();
+                msg = "";
             }
         }
         else
@@ -297,12 +300,25 @@ void scanner_gui::on_scan_settings_button_clicked()
 
                 if(_socket_vna.state() == QAbstractSocket::ConnectedState)
                 {
-                    msg = "*RST\n";
+                    msg = "SYST:TSL OFF\n";
                     _socket_vna.write(msg.toLocal8Bit());
                     _socket_vna.waitForBytesWritten();
-                    msg = "SYST:DISP:UPD ON\n";
+                    msg = "";
+
+                    msg = "SYST:TSL SCR\n";
                     _socket_vna.write(msg.toLocal8Bit());
                     _socket_vna.waitForBytesWritten();
+                    msg = "";
+
+//                    msg = "SYST:DISP:BAR:STO OFF\n";
+//                    _socket_vna.write(msg.toLocal8Bit());
+//                    _socket_vna.waitForBytesWritten();
+//                    msg = "";
+
+//                    msg = "SYST:DISP:UPD ON\n";
+//                    _socket_vna.write(msg.toLocal8Bit());
+//                    _socket_vna.waitForBytesWritten();
+//                    msg = "";
                 }
             }
             else

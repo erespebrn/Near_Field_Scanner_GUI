@@ -17,9 +17,15 @@ scan_settings::scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent) :
     ui->setupUi(this);
 
     if(sa_vna == false)
+    {
         _socket_sa = socket;
+        ui->VNA_tab->setEnabled(false);
+    }
     else
+    {
         _socket_vna = socket;
+        ui->SA_tab->setEnabled(false);
+    }
 
     load_previous_settings();
 
@@ -46,34 +52,44 @@ scan_settings::~scan_settings()
 
 void scan_settings::on_apply_clicked()
 {
+    if(ui->tabWidget->currentIndex() == 0)
+        write_sa_settings();
+    else if(ui->tabWidget->currentIndex() == 1)
+        write_vna_settings();
+
+    ui->apply->setEnabled(false);
+}
+
+void scan_settings::write_sa_settings()
+{
     QSettings settings(QCoreApplication::applicationDirPath() + "/scansettings.ini", QSettings::IniFormat);
     settings.clear();
     QString mystring;
 
     if(!instrument_settings)
     {
-        // *** SSA3032X Menu -> Frequency *** //
+        // *** FPL1007 Menu -> Frequency *** //
         if(ui->start_stop_radiobutton->isChecked())
         {
             // Start frequency //
             // Send SPCI command
             mystring = "FREQ:STAR %1 %2\n";
             mystring = mystring.arg(QString::number(ui->start_freq_spinbox->value()), ui->start_freq_dropdown->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
 
             // Stop frequency //
             // Send SPCI command
             mystring = "FREQ:STOP %1 %2\n";
             mystring = mystring.arg(QString::number(ui->stop_freq_spinbox->value()), ui->stop_freq_dropdown->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("FREQUENCY/StartStop?", ui->start_stop_radiobutton->isChecked());
-            settings.setValue("FREQUENCY/Start freq. value", ui->start_freq_spinbox->value());
-            settings.setValue("FREQUENCY/Start freq. unit", ui->start_freq_dropdown->currentIndex());
-            settings.setValue("FREQUENCY/Stop freq. value", ui->stop_freq_spinbox->value());
-            settings.setValue("FREQUENCY/Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
+            settings.setValue("SA_FREQUENCY/StartStop?", ui->start_stop_radiobutton->isChecked());
+            settings.setValue("SA_FREQUENCY/Start freq. value", ui->start_freq_spinbox->value());
+            settings.setValue("SA_FREQUENCY/Start freq. unit", ui->start_freq_dropdown->currentIndex());
+            settings.setValue("SA_FREQUENCY/Stop freq. value", ui->stop_freq_spinbox->value());
+            settings.setValue("SA_FREQUENCY/Stop freq. unit", ui->stop_freq_dropdown->currentIndex());
         }
         else if(ui->center_span_radiobutton->isChecked())
         {
@@ -81,47 +97,47 @@ void scan_settings::on_apply_clicked()
             // Send SPCI command
             mystring = "FREQ:CENT %1 %2\n";
             mystring = mystring.arg(QString::number(ui->center_freq_spinbox->value()), ui->frequency_dropdown_center->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
 
             // Span
             // Send SPCI command
             mystring = "FREQ:SPAN %1 %2\n";
             mystring = mystring.arg(QString::number(ui->spanfreq_spinbox->value()), ui->frequency_dropdown_span->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("FREQUENCY/CenterSpan?", ui->center_span_radiobutton->isChecked());
-            settings.setValue("FREQUENCY/Center freq. value", ui->center_freq_spinbox->value());
-            settings.setValue("FREQUENCY/Center freq. unit", ui->frequency_dropdown_center->currentIndex());
-            settings.setValue("FREQUENCY/Span freq. value", ui->spanfreq_spinbox->value());
-            settings.setValue("FREQUENCY/Span freq. unit", ui->frequency_dropdown_span->currentIndex());
+            settings.setValue("SA_FREQUENCY/CenterSpan?", ui->center_span_radiobutton->isChecked());
+            settings.setValue("SA_FREQUENCY/Center freq. value", ui->center_freq_spinbox->value());
+            settings.setValue("SA_FREQUENCY/Center freq. unit", ui->frequency_dropdown_center->currentIndex());
+            settings.setValue("SA_FREQUENCY/Span freq. value", ui->spanfreq_spinbox->value());
+            settings.setValue("SA_FREQUENCY/Span freq. unit", ui->frequency_dropdown_span->currentIndex());
         }
         // Step
         // Send SPCI command
         mystring = "FREQ:CENT:STEP %1";
         mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
         mystring = mystring + " MHz\n";
-        send_command(mystring);
+        sa_send_command(mystring);
         mystring = "";
         // Save to the preset file
-        settings.setValue("FREQUENCY/Step freq. value", ui->step_spinbox->value());
-        settings.setValue("FREQUENCY/Step freq. unit", "MHz");
+        settings.setValue("SA_FREQUENCY/Step freq. value", ui->step_spinbox->value());
+        settings.setValue("SA_FREQUENCY/Step freq. unit", "MHz");
         // ************************************************************************************************************************ //
 
         // ************************************************************************************************************************ //
-        // *** SSA3032X Menu -> Amplitude *** //
+        // *** FPL1007 Menu -> Amplitude *** //
         if(ui->referencelevel_checkbox->isChecked())
         {
             // Reference level
             // Send SPCI command
             mystring = "DISP:TRAC:Y:RLEV %1%2\n";
             mystring = mystring.arg(QString::number(ui->referencelevel_spinbox->value()), ui->referencelevel_spinbox->suffix());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
-            settings.setValue("AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
+            settings.setValue("SA_AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
+            settings.setValue("SA_AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
         }
         if(ui->attenuation_checkbox->isChecked())
         {
@@ -129,11 +145,11 @@ void scan_settings::on_apply_clicked()
             // Send SPCI command
             mystring = "INP:ATT %1\n";
             mystring = mystring.arg(QString::number(ui->attenuation_spinbox->value()));
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("AMPLITUDE/Attenuation?", ui->attenuation_checkbox->isChecked());
-            settings.setValue("AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
+            settings.setValue("SA_AMPLITUDE/Attenuation?", ui->attenuation_checkbox->isChecked());
+            settings.setValue("SA_AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
 
         }
         if(ui->leveloffset_checkbox->isChecked())
@@ -142,65 +158,65 @@ void scan_settings::on_apply_clicked()
             // Send SPCI command
             mystring = "DISPl:TRAC:Y:RLEV:OFFS %1\n";
             mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("AMPLITUDE/Level offset?", ui->leveloffset_checkbox->isChecked());
-            settings.setValue("AMPLITUDE/Level offset value",  ui->leveloffset_spinbox->value());
+            settings.setValue("SA_AMPLITUDE/Level offset?", ui->leveloffset_checkbox->isChecked());
+            settings.setValue("SA_AMPLITUDE/Level offset value",  ui->leveloffset_spinbox->value());
         }
 
         // Units
         // Send SPCI command
         mystring = "UNIT:POW %1\n";
         mystring = mystring.arg(ui->units_combobox->currentText().toUpper());
-        send_command(mystring);
+        sa_send_command(mystring);
         mystring = "";
         // Save to the preset file
-        settings.setValue("UNITS/Units",  ui->units_combobox->currentIndex());
+        settings.setValue("SA_UNITS/Units",  ui->units_combobox->currentIndex());
 
         // Scale
         if(ui->scaleCheckbox->isChecked())
         {
             // Send SPCI command
             mystring = "DISP:TRAC:Y:SPAC LOG\n";
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("UNITS/LogScale", true);
+            settings.setValue("SA_UNITS/LogScale", true);
         }
         else
         {
             // Send SPCI command
             mystring = "DISP:TRAC:Y:SPAC LIN\n";
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("UNITS/LogScale", false);
+            settings.setValue("SA_UNITS/LogScale", false);
         }
 
         // ************************************************************************************************************************ //
 
 
         // ************************************************************************************************************************ //
-        // *** SSA3032X Menu -> Sweep *** //
+        // *** FPL1007 Menu -> Sweep *** //
         // Save to the preset file
 
         // Number of sweeps
         // Send SPCI command
         mystring = "SWE:COUN %1\n";
         mystring = mystring.arg(QString::number(ui->no_sweeps_spinbox->value()));
-        send_command(mystring);
+        sa_send_command(mystring);
         mystring = "";
         // Save to the preset file
-        settings.setValue("SWEEP/Number of sweeps",  ui->no_sweeps_spinbox->value());
+        settings.setValue("SA_SWEEP/Number of sweeps",  ui->no_sweeps_spinbox->value());
 
         // Sweep points
         // Send SPCI command
         mystring = "SWE:POIN %1\n";
         mystring = mystring.arg(QString::number(ui->sweep_points_spinbox->value()));
-        send_command(mystring);
+        sa_send_command(mystring);
         // Save to the preset file
-        settings.setValue("SWEEP/Sweep points", ui->sweep_points_spinbox->value());
+        settings.setValue("SA_SWEEP/Sweep points", ui->sweep_points_spinbox->value());
 
 
         if(ui->sweepTime_checkbox->isChecked())
@@ -209,70 +225,133 @@ void scan_settings::on_apply_clicked()
             // Send SPCI command
             mystring = "SWE:TIME %1 ms\n";
             mystring = mystring.arg(QString::number(ui->sweepTime_spinbox->value()));
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
             // Save to the preset file
-            settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
-            settings.setValue("SWEEP/Sweep time",  ui->sweepTime_spinbox->value());
+            settings.setValue("SA_SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
+            settings.setValue("SA_SWEEP/Sweep time",  ui->sweepTime_spinbox->value());
         }
         else
         {
-            settings.setValue("SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
+            settings.setValue("SA_SWEEP/Sweep time?", ui->sweepTime_checkbox->isChecked());
         }
 
         // ************************************************************************************************************************ //
 
         // ************************************************************************************************************************ //
-        // *** SSA3032X Menu -> BW (Bandwidth) *** //
+        // *** FPL1007 Menu -> BW (Bandwidth) *** //
         // Resolution bandwidth
         // Send SPCI command
         mystring = "BAND %1\n";
         mystring = mystring.arg(ui->resolutionBW_comboBox->currentText());
-        send_command(mystring);
+        sa_send_command(mystring);
         mystring = "";
 
         // Save to the preset file
-        settings.setValue("BANDWIDTH/ResolutionBW", ui->resolutionBW_comboBox->currentIndex());
+        settings.setValue("SA_BANDWIDTH/ResolutionBW", ui->resolutionBW_comboBox->currentIndex());
 
         if(ui->same_RBW_VBW_checkBox->isChecked())
         {
             // Send SPCI command
             mystring = "BAND:VID %1\n";
             mystring = mystring.arg(ui->resolutionBW_comboBox->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
 
             // Save to the preset file
-            settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->resolutionBW_comboBox->currentIndex());
+            settings.setValue("SA_BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
+            settings.setValue("SA_BANDWIDTH/VideoBW", ui->resolutionBW_comboBox->currentIndex());
         }
         else
         {
             // Send SPCI command
             mystring = "BAND:VID %1\n";
             mystring = mystring.arg(ui->videoBW_comboBox->currentText());
-            send_command(mystring);
+            sa_send_command(mystring);
             mystring = "";
 
             // Save to the preset file
-            settings.setValue("BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
-            settings.setValue("BANDWIDTH/VideoBW", ui->videoBW_comboBox->currentIndex());
+            settings.setValue("SA_BANDWIDTH/SameRBW_VBW?", ui->same_RBW_VBW_checkBox->isChecked());
+            settings.setValue("SA_BANDWIDTH/VideoBW", ui->videoBW_comboBox->currentIndex());
         }
         // ************************************************************************************************************************ //*/
 
         // *** Detector ***
         mystring = "DET %1\n";
         mystring = mystring.arg(ui->detectorComboBox->currentText());
-        send_command(mystring);
+        sa_send_command(mystring);
         mystring = "";
     }
-    ui->apply->setEnabled(false);
+}
+
+void scan_settings::write_vna_settings()
+{
+    QSettings settings(QCoreApplication::applicationDirPath() + "/scansettings.ini", QSettings::IniFormat);
+
+    QString mystring = "";
+
+    // Delete all existing traces in VNA
+    mystring = "CALC:PAR:DEl:ALL\n";
+    vna_send_command(mystring);
+    mystring = "";
+
+    // Create trace called 'MeasTrace1' with S-Parameter S12
+    mystring = "CALC1:PAR:SDEF 'MeasTrace1', 'S12'\n";
+    vna_send_command(mystring);
+    mystring = "";
+
+    // Display this trace on Window 1
+    mystring = "DISP:WIND1:TRAC:EFE 'MeasTrace1'\n";
+    vna_send_command(mystring);
+    mystring = "";
+
+    // *** VNA ZNB40 *** //
+
+    // *** VNA -> FREQUENCY *** //
+    if(ui->start_stop_radiobutton_VNA->isChecked())
+    {
+        // Start frequency
+        mystring = "SENS1:FREQ:STAR %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->start_freq_value_VNA->value()), ui->start_freq_unit_VNA->currentText());
+        vna_send_command(mystring);
+        mystring = "";
+        // Stop frequency
+        mystring = "SENS1:FREQ:STOP %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->stop_freq_value_VNA->value()), ui->stop_freq_unit_VNA->currentText());
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_FREQUENCY/StartStop?", ui->start_stop_radiobutton_VNA->isChecked());
+        settings.value("VNA_FREQUENCY/CenterSpan?", ui->center_span_radiobutton_VNA->isChecked());
+        settings.value("VNA_FREQUENCY/Start freq. value", ui->start_freq_value_VNA->value());
+        settings.value("VNA_FREQUENCY/Start freq. unit", ui->start_freq_unit_VNA->currentText());
+        settings.value("VNA_FREQUENCY/Stop freq. value", ui->stop_freq_value_VNA->value());
+        settings.value("VNA_FREQUENCY/Stop freq. unit", ui->stop_freq_unit_VNA->currentText());
+    }
+    else if(ui->center_span_radiobutton_VNA->isChecked())
+    {
+        // Center frequency
+        mystring = "SENS1:FREQ:CENT %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->center_freq_value_VNA->value()), ui->center_freq_unit_VNA->currentText());
+        vna_send_command(mystring);
+        mystring = "";
+        // Span
+        mystring = "SENS1:FREQ:SPAN %1 %2\n";
+        mystring = mystring.arg(QString::number(ui->span_freq_value_VNA->value()), ui->span_freq_unit_VNA->currentText());
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_FREQUENCY/StartStop?", ui->start_stop_radiobutton_VNA->isChecked());
+        settings.value("VNA_FREQUENCY/CenterSpan?", ui->center_span_radiobutton_VNA->isChecked());
+        settings.value("VNA_FREQUENCY/Center freq. value", ui->center_freq_value_VNA->value());
+        settings.value("VNA_FREQUENCY/Center freq. unit", ui->center_freq_unit_VNA->currentText());
+        settings.value("VNA_FREQUENCY/Span freq. value", ui->span_freq_value_VNA->value());
+        settings.value("VNA_FREQUENCY/Span freq. unit", ui->span_freq_unit_VNA->currentText());
+    }
 }
 
 void scan_settings::load_previous_settings()
 {
-
-
     QFile settings_file(settings_file_path);
     if(settings_file.exists())
     {
@@ -280,7 +359,7 @@ void scan_settings::load_previous_settings()
 
         // Load last settings from .ini file
         // *** FREQUENCY *** //
-        if(settings.value("FREQUENCY/StartStop?").toBool())
+        if(settings.value("SA_FREQUENCY/StartStop?").toBool())
         {
             ui->start_stop_radiobutton->setChecked(true);
             ui->center_span_radiobutton->setChecked(false);
@@ -290,14 +369,14 @@ void scan_settings::load_previous_settings()
             ui->frequency_dropdown_span->setEnabled(false);
 
             // Start frequency
-            ui->start_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Start freq. unit").toInt());
-            ui->start_freq_spinbox->setValue(settings.value("FREQUENCY/Start freq. value").toDouble());
+            ui->start_freq_dropdown->setCurrentIndex(settings.value("SA_FREQUENCY/Start freq. unit").toInt());
+            ui->start_freq_spinbox->setValue(settings.value("SA_FREQUENCY/Start freq. value").toDouble());
 
             // Stop frequency
-            ui->stop_freq_dropdown->setCurrentIndex(settings.value("FREQUENCY/Stop freq. unit").toInt());
-            ui->stop_freq_spinbox->setValue(settings.value("FREQUENCY/Stop freq. value").toDouble());
+            ui->stop_freq_dropdown->setCurrentIndex(settings.value("SA_FREQUENCY/Stop freq. unit").toInt());
+            ui->stop_freq_spinbox->setValue(settings.value("SA_FREQUENCY/Stop freq. value").toDouble());
         }
-        if(settings.value("FREQUENCY/CenterSpan?").toBool())
+        if(settings.value("SA_FREQUENCY/CenterSpan?").toBool())
         {
             ui->center_span_radiobutton->setChecked(true);
             ui->start_stop_radiobutton->setChecked(false);
@@ -307,45 +386,45 @@ void scan_settings::load_previous_settings()
             ui->stop_freq_dropdown->setEnabled(false);
 
             // Center frequency
-            ui->frequency_dropdown_center->setCurrentIndex(settings.value("FREQUENCY/Center freq. unit").toInt());
-            ui->center_freq_spinbox->setValue(settings.value("FREQUENCY/Center freq. value").toDouble());
+            ui->frequency_dropdown_center->setCurrentIndex(settings.value("SA_FREQUENCY/Center freq. unit").toInt());
+            ui->center_freq_spinbox->setValue(settings.value("SA_FREQUENCY/Center freq. value").toDouble());
 
             // Span frequency
-            ui->frequency_dropdown_span->setCurrentIndex(settings.value("FREQUENCY/Span freq. unit").toInt());
-            ui->spanfreq_spinbox->setValue(settings.value("FREQUENCY/Span freq. value").toDouble());
+            ui->frequency_dropdown_span->setCurrentIndex(settings.value("SA_FREQUENCY/Span freq. unit").toInt());
+            ui->spanfreq_spinbox->setValue(settings.value("SA_FREQUENCY/Span freq. value").toDouble());
         }
 
         // Step
-        ui->step_spinbox->setValue(settings.value("FREQUENCY/Step freq. value").toInt());
-        ui->step_spinbox->setSuffix(settings.value("FREQUENCY/Step freq. unit").toString());
+        ui->step_spinbox->setValue(settings.value("SA_FREQUENCY/Step freq. value").toInt());
+        ui->step_spinbox->setSuffix(settings.value("SA_FREQUENCY/Step freq. unit").toString());
         // *** End of FREQUENCY *** //
 
         // *** Amplitude *** //
-        if(settings.value("AMPLITUDE/Ref. level?").toBool())
+        if(settings.value("SA_AMPLITUDE/Ref. level?").toBool())
         {
             // Reference level
             ui->referencelevel_checkbox->setChecked(true);
-            ui->referencelevel_spinbox->setValue(settings.value("AMPLITUDE/Ref. level value").toDouble());
+            ui->referencelevel_spinbox->setValue(settings.value("SA_AMPLITUDE/Ref. level value").toDouble());
         }
         else
         {
             ui->referencelevel_spinbox->setEnabled(false);
         }
-        if(settings.value("AMPLITUDE/Attenuation?").toBool())
+        if(settings.value("SA_AMPLITUDE/Attenuation?").toBool())
         {
             // Attenuation
             ui->attenuation_checkbox->setChecked(true);
-            ui->attenuation_spinbox->setValue(settings.value("AMPLITUDE/Attenuation value").toInt());
+            ui->attenuation_spinbox->setValue(settings.value("SA_AMPLITUDE/Attenuation value").toInt());
         }
         else
         {
             ui->attenuation_spinbox->setEnabled(false);
         }
-        if(settings.value("AMPLITUDE/Level offset?").toBool())
+        if(settings.value("SA_AMPLITUDE/Level offset?").toBool())
         {
             // Level offset
             ui->leveloffset_checkbox->setChecked(true);
-            ui->leveloffset_spinbox->setValue(settings.value("AMPLITUDE/Level offset value").toInt());
+            ui->leveloffset_spinbox->setValue(settings.value("SA_AMPLITUDE/Level offset value").toInt());
         }
         else
         {
@@ -353,23 +432,23 @@ void scan_settings::load_previous_settings()
         }
 
         // Units
-        ui->units_combobox->setCurrentIndex(settings.value("UNITS/Units").toInt());
+        ui->units_combobox->setCurrentIndex(settings.value("SA_UNITS/Units").toInt());
         // Scale
-        ui->scaleCheckbox->setChecked(settings.value("UNITS/LogScale").toBool());
+        ui->scaleCheckbox->setChecked(settings.value("SA_UNITS/LogScale").toBool());
         // *** End of AMPLITUDE *** //
 
         // *** Sweep *** //
         // Numbers of sweeps
-        ui->no_sweeps_spinbox->setValue(settings.value("SWEEP/Number of sweeps").toInt());
+        ui->no_sweeps_spinbox->setValue(settings.value("SA_SWEEP/Number of sweeps").toInt());
 
         // Sweep points
-        ui->sweep_points_spinbox->setValue(settings.value("SWEEP/Sweep points").toInt());
+        ui->sweep_points_spinbox->setValue(settings.value("SA_SWEEP/Sweep points").toInt());
 
-        if(settings.value("SWEEP/Sweep time?").toBool())
+        if(settings.value("SA_SWEEP/Sweep time?").toBool())
         {
             // Sweep time
             ui->sweepTime_checkbox->setChecked(true);
-            ui->sweepTime_spinbox->setValue(settings.value("SWEEP/Sweep time").toDouble());
+            ui->sweepTime_spinbox->setValue(settings.value("SA_SWEEP/Sweep time").toDouble());
         }
         else
         {
@@ -378,9 +457,9 @@ void scan_settings::load_previous_settings()
         // *** End of sweep *** //
 
         // *** Video Bandwidth *** //
-        ui->resolutionBW_comboBox->setCurrentIndex(settings.value("BANDWIDTH/ResolutionBW").toInt());
+        ui->resolutionBW_comboBox->setCurrentIndex(settings.value("SA_BANDWIDTH/ResolutionBW").toInt());
 
-        if(settings.value("BANDWIDTH/SameRBW_VBW").toBool())
+        if(settings.value("SA_BANDWIDTH/SameRBW_VBW").toBool())
         {
             ui->same_RBW_VBW_checkBox->setChecked(true);
         }
@@ -389,7 +468,7 @@ void scan_settings::load_previous_settings()
             ui->same_RBW_VBW_checkBox->setChecked(false);
         }
 
-        ui->videoBW_comboBox->setCurrentIndex(settings.value("BANDWIDTH/VideoBW").toInt());
+        ui->videoBW_comboBox->setCurrentIndex(settings.value("SA_BANDWIDTH/VideoBW").toInt());
     }
     else
     {
@@ -440,11 +519,16 @@ void scan_settings::on_start_stop_radiobutton_clicked()
     ui->apply->setEnabled(true);
 }
 
-void scan_settings::send_command(const QString &cmd)
+void scan_settings::sa_send_command(const QString &cmd)
 {
-    qDebug() << cmd;
     _socket_sa->write(cmd.toLocal8Bit());
     _socket_sa->waitForBytesWritten(1);
+}
+
+void scan_settings::vna_send_command(const QString &cmd)
+{
+    _socket_vna->write(cmd.toLocal8Bit());
+    _socket_vna->waitForBytesWritten(1);
 }
 
 
@@ -666,4 +750,28 @@ void scan_settings::on_sweepTime_spinbox_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
+}
+
+
+void scan_settings::on_use_signalGen_checkbox_stateChanged(int arg1)
+{
+    ui->signalGen_start_freq_value->setEnabled(arg1);
+    ui->signalGen_start_freq_unit->setEnabled(arg1);
+    ui->signalGen_stop_freq_value->setEnabled(arg1);
+    ui->signalGen_stop_freq_unit->setEnabled(arg1);
+    ui->signalGen_power_value->setEnabled(arg1);
+}
+
+void scan_settings::on_center_span_radiobutton_VNA_toggled(bool checked)
+{
+    ui->start_freq_value_VNA->setEnabled(!checked);
+    ui->start_freq_unit_VNA->setEnabled(!checked);
+    ui->stop_freq_unit_VNA->setEnabled(!checked);
+    ui->stop_freq_value_VNA->setEnabled(!checked);
+
+    ui->center_freq_unit_VNA->setEnabled(checked);
+    ui->center_freq_value_VNA->setEnabled(checked);
+    ui->span_freq_unit_VNA->setEnabled(checked);
+    ui->span_freq_value_VNA->setEnabled(checked);
+
 }

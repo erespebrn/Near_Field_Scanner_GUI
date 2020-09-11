@@ -44,20 +44,17 @@ private slots:
     void on_attenuation_spinbox_valueChanged(int arg1);
     void on_leveloffset_spinbox_valueChanged(int arg1);
     void on_scaleCheckbox_clicked();
-
     void on_pushButton_3_clicked();
-
     void on_pushButton_clicked();
-
     void on_referencelevel_spinbox_valueChanged(double arg1);
-
     void on_resolutionBW_comboBox_currentIndexChanged(int index);
-
     void on_no_sweeps_spinbox_valueChanged(int arg1);
-
     void on_sweep_points_spinbox_valueChanged(int arg1);
-
     void on_sweepTime_spinbox_valueChanged(double arg1);
+
+    void on_use_signalGen_checkbox_stateChanged(int arg1);
+
+    void on_center_span_radiobutton_VNA_toggled(bool checked);
 
 private:
     Ui::scan_settings *ui;
@@ -71,11 +68,13 @@ private:
     const double sa_max_freq = 7.5;
     const uint8_t sa_max_freq_unit = 0; // Dropdown index
 
-    void send_command(const QString &cmd);
+    void sa_send_command(const QString &cmd);
+    void vna_send_command(const QString &cmd);
 
     bool instrument_settings = false;
     void load_previous_settings();
-
+    void write_sa_settings();
+    void write_vna_settings();
 };
 
 #endif // SCAN_SETTINGS_H
