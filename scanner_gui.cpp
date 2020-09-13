@@ -90,12 +90,9 @@ void scanner_gui::robot_init()
        send_msg = "EXECUTE main\n";
        _socket_robot.write(send_msg.toLocal8Bit());
        _socket_robot.waitForReadyRead(20);
-
+        connect(&_socket_robot, SIGNAL(readyRead()), this, SLOT(read_robot_msg()));
        _socket_robot.read(robot_msg,128);
        qDebug() << robot_msg;
-       QTimer * robot_timer = new QTimer;
-       connect(robot_timer, &QTimer::timeout, this, &scanner_gui::read_robot_msg);
-       robot_timer->start(10);
        // *** //
     }
     else
@@ -382,7 +379,7 @@ void scanner_gui::on_Start_scan_button_clicked()
 void scanner_gui::read_robot_msg()
 {
     char robot_msg[32];
-    if(_socket_robot.waitForReadyRead(10))
+    if(1)
     {
         _socket_robot.read(robot_msg, 32);
 
@@ -394,7 +391,6 @@ void scanner_gui::read_robot_msg()
                 buffer[i-1] = robot_msg[i];
             }
             int i = atoi(buffer);
-            qDebug() << robot_msg;
             qDebug() << i;
             switch(i)
             {
@@ -430,6 +426,8 @@ void scanner_gui::read_robot_msg()
                     ui->robotTerminal->setText("");
                     ui->robotTerminal->setText("Reached the PCB's corner!");
                     on_resetCamera_button_clicked();
+                    _socket_robot.write("demo = 1\n");
+                    _socket_robot.waitForBytesWritten();
                     break;
                 case 9:
                     ui->robotTerminal->setText("");

@@ -307,15 +307,17 @@ void scan_settings::write_vna_settings()
 
     // *** VNA ZNB40 *** //
 
-    // *** VNA -> FREQUENCY *** //
+    // **************************************************** VNA -> FREQUENCY ******************************************************** //
     if(ui->start_stop_radiobutton_VNA->isChecked())
     {
         // Start frequency
+        // SPCI command
         mystring = "SENS1:FREQ:STAR %1 %2\n";
         mystring = mystring.arg(QString::number(ui->start_freq_value_VNA->value()), ui->start_freq_unit_VNA->currentText());
         vna_send_command(mystring);
         mystring = "";
         // Stop frequency
+        // SPCI command
         mystring = "SENS1:FREQ:STOP %1 %2\n";
         mystring = mystring.arg(QString::number(ui->stop_freq_value_VNA->value()), ui->stop_freq_unit_VNA->currentText());
         vna_send_command(mystring);
@@ -331,11 +333,13 @@ void scan_settings::write_vna_settings()
     else if(ui->center_span_radiobutton_VNA->isChecked())
     {
         // Center frequency
+        // SPCI command
         mystring = "SENS1:FREQ:CENT %1 %2\n";
         mystring = mystring.arg(QString::number(ui->center_freq_value_VNA->value()), ui->center_freq_unit_VNA->currentText());
         vna_send_command(mystring);
         mystring = "";
         // Span
+        // SPCI command
         mystring = "SENS1:FREQ:SPAN %1 %2\n";
         mystring = mystring.arg(QString::number(ui->span_freq_value_VNA->value()), ui->span_freq_unit_VNA->currentText());
         vna_send_command(mystring);
@@ -348,6 +352,79 @@ void scan_settings::write_vna_settings()
         settings.value("VNA_FREQUENCY/Span freq. value", ui->span_freq_value_VNA->value());
         settings.value("VNA_FREQUENCY/Span freq. unit", ui->span_freq_unit_VNA->currentText());
     }
+
+    // Frequency step
+    mystring = "SWE:STEP %1\n";
+    mystring = mystring.arg(ui->step_valueunit_VNA->text());
+    vna_send_command(mystring);
+    mystring = "";
+    // Save to the preset file
+    settings.value("VNA_FREQUENCY/Step freq.", ui->step_valueunit_VNA->text());
+    // ********************************************************************************************************************************* //
+
+    // ****************************************************** VNA -> SCALE ************************************************************ //
+    if(ui->referencelevel_checkbox_VNA->isChecked())
+    {
+        // Reference level
+        mystring = "DISP:WIND1:TRAC:Y:RLEV %1\n";
+        mystring = mystring.arg(QString::number(ui->referencelevel_spinbox_VNA->value()));
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_SCALE/Reference level", ui->referencelevel_spinbox_VNA->value());
+    }
+
+    // ********************************************************************************************************************************* //
+
+    // ****************************************************** VNA -> SWEEP ************************************************************ //
+    // Sweep points
+    mystring = "SWE:POIN %1\n";
+    mystring = mystring.arg(ui->sweep_points_spinbox_VNA->value());
+    vna_send_command(mystring);
+    mystring = "";
+    // Save to the preset file
+    settings.value("VNA_SWEEP/Sweep points", ui->sweep_points_spinbox_VNA->value());
+
+    if(ui->sweepTime_checkbox_VNA->isChecked())
+    {
+        // Sweep time
+        mystring = "SWE:TIME %1\n";
+        mystring = mystring.arg(ui->sweepTime_spinbox_VNA->value());
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_SWEEP/Sweep points", ui->sweepTime_spinbox_VNA->value());
+    }
+
+    if(ui->scaleCheckbox_VNA->isChecked())
+    {
+        // Log freq.
+        mystring = "SWE:TYPE LOG\n";
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_SWEEP/LogFreq?", ui->scaleCheckbox_VNA->isChecked());
+    }
+    else
+    {
+        // Log freq.
+        mystring = "SWE:TYPE LIN\n";
+        vna_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.value("VNA_SWEEP/LogFreq?", ui->scaleCheckbox_VNA->isChecked());
+    }
+    // ********************************************************************************************************************************* //
+
+    // ****************************************************** VNA -> IF ************************************************************ //
+    // Sweep points
+    mystring = "BAND %1\n";
+    mystring = mystring.arg(ui->resolutionBW_comboBox_VNA->currentText());
+    vna_send_command(mystring);
+    mystring = "";
+    // Save to the preset file
+    settings.value("VNA_SWEEP/Sweep points", ui->resolutionBW_comboBox_VNA->currentText());
+    // ********************************************************************************************************************************* //
 }
 
 void scan_settings::load_previous_settings()
@@ -483,8 +560,6 @@ void scan_settings::load_previous_settings()
         ui->frequency_dropdown_center->setEnabled(false);
         ui->frequency_dropdown_span->setEnabled(false);
     }
-
-
 }
 
 void scan_settings::on_center_span_radiobutton_clicked() //Center frequency and span
@@ -659,6 +734,55 @@ void scan_settings::on_use_instrument_settings_stateChanged(int arg1)
 }
 
 
+void scan_settings::on_scaleCheckbox_clicked()
+{
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_pushButton_3_clicked()
+{
+    if(ui->apply->isEnabled())
+    {
+        this->hide();
+        emit on_apply_clicked();
+    }
+    else
+        this->hide();
+}
+
+void scan_settings::on_pushButton_clicked()
+{
+    this->hide();
+}
+
+
+void scan_settings::on_use_signalGen_checkbox_stateChanged(int arg1)
+{
+    ui->signalGen_start_freq_value->setEnabled(arg1);
+    ui->signalGen_start_freq_unit->setEnabled(arg1);
+    ui->signalGen_stop_freq_value->setEnabled(arg1);
+    ui->signalGen_stop_freq_unit->setEnabled(arg1);
+    ui->signalGen_power_value->setEnabled(arg1);
+
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_center_span_radiobutton_VNA_toggled(bool checked)
+{
+    ui->start_freq_value_VNA->setEnabled(!checked);
+    ui->start_freq_unit_VNA->setEnabled(!checked);
+    ui->stop_freq_unit_VNA->setEnabled(!checked);
+    ui->stop_freq_value_VNA->setEnabled(!checked);
+
+    ui->center_freq_unit_VNA->setEnabled(checked);
+    ui->center_freq_value_VNA->setEnabled(checked);
+    ui->span_freq_unit_VNA->setEnabled(checked);
+    ui->span_freq_value_VNA->setEnabled(checked);
+
+    ui->apply->setEnabled(true);
+}
+
+
 void scan_settings::on_frequency_dropdown_center_currentIndexChanged(int index)
 {
     Q_UNUSED(index);
@@ -683,12 +807,6 @@ void scan_settings::on_step_spinbox_valueChanged(int arg1)
     ui->apply->setEnabled(true);
 }
 
-void scan_settings::on_referencelevel_spinbox_valueChanged(int arg1)
-{
-    Q_UNUSED(arg1);
-    ui->apply->setEnabled(true);
-}
-
 void scan_settings::on_attenuation_spinbox_valueChanged(int arg1)
 {
     Q_UNUSED(arg1);
@@ -699,27 +817,6 @@ void scan_settings::on_leveloffset_spinbox_valueChanged(int arg1)
 {
     Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
-}
-
-void scan_settings::on_scaleCheckbox_clicked()
-{
-    ui->apply->setEnabled(true);
-}
-
-void scan_settings::on_pushButton_3_clicked()
-{
-    if(ui->apply->isEnabled())
-    {
-        this->hide();
-        emit on_apply_clicked();
-    }
-    else
-        this->hide();
-}
-
-void scan_settings::on_pushButton_clicked()
-{
-    this->hide();
 }
 
 void scan_settings::on_referencelevel_spinbox_valueChanged(double arg1)
@@ -752,26 +849,122 @@ void scan_settings::on_sweepTime_spinbox_valueChanged(double arg1)
     ui->apply->setEnabled(true);
 }
 
-
-void scan_settings::on_use_signalGen_checkbox_stateChanged(int arg1)
+void scan_settings::on_referencelevel_checkbox_VNA_stateChanged(int arg1)
 {
-    ui->signalGen_start_freq_value->setEnabled(arg1);
-    ui->signalGen_start_freq_unit->setEnabled(arg1);
-    ui->signalGen_stop_freq_value->setEnabled(arg1);
-    ui->signalGen_stop_freq_unit->setEnabled(arg1);
-    ui->signalGen_power_value->setEnabled(arg1);
+    ui->referencelevel_spinbox_VNA->setEnabled(arg1);
+    ui->apply->setEnabled(true);
 }
 
-void scan_settings::on_center_span_radiobutton_VNA_toggled(bool checked)
+void scan_settings::on_attenuation_checkbox_VNA_stateChanged(int arg1)
 {
-    ui->start_freq_value_VNA->setEnabled(!checked);
-    ui->start_freq_unit_VNA->setEnabled(!checked);
-    ui->stop_freq_unit_VNA->setEnabled(!checked);
-    ui->stop_freq_value_VNA->setEnabled(!checked);
+    ui->attenuation_spinbox_VNA->setEnabled(arg1);
+    ui->apply->setEnabled(true);
+}
 
-    ui->center_freq_unit_VNA->setEnabled(checked);
-    ui->center_freq_value_VNA->setEnabled(checked);
-    ui->span_freq_unit_VNA->setEnabled(checked);
-    ui->span_freq_value_VNA->setEnabled(checked);
+void scan_settings::on_leveloffset_checkbox_VNA_stateChanged(int arg1)
+{
+    ui->leveloffset_spinbox_VNA->setEnabled(arg1);
+    ui->apply->setEnabled(true);
+}
 
+void scan_settings::on_sweepTime_checkbox_VNA_stateChanged(int arg1)
+{
+    ui->sweepTime_spinbox_VNA->setEnabled(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_start_freq_value_VNA_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_start_freq_unit_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_stop_freq_value_VNA_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_stop_freq_unit_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_center_freq_value_VNA_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_center_freq_unit_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_span_freq_value_VNA_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_span_freq_unit_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_step_valueunit_VNA_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_referencelevel_spinbox_VNA_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_attenuation_spinbox_VNA_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_leveloffset_spinbox_VNA_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_scaleCheckbox_VNA_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_sweep_points_spinbox_VNA_valueChanged(int arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_sweepTime_spinbox_VNA_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_resolutionBW_comboBox_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
 }

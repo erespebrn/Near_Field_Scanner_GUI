@@ -40,7 +40,6 @@ private slots:
     void on_spanfreq_spinbox_valueChanged(double arg1);
     void on_frequency_dropdown_span_currentIndexChanged(int index);
     void on_step_spinbox_valueChanged(int arg1);
-    void on_referencelevel_spinbox_valueChanged(int arg1);
     void on_attenuation_spinbox_valueChanged(int arg1);
     void on_leveloffset_spinbox_valueChanged(int arg1);
     void on_scaleCheckbox_clicked();
@@ -51,10 +50,35 @@ private slots:
     void on_no_sweeps_spinbox_valueChanged(int arg1);
     void on_sweep_points_spinbox_valueChanged(int arg1);
     void on_sweepTime_spinbox_valueChanged(double arg1);
-
     void on_use_signalGen_checkbox_stateChanged(int arg1);
-
     void on_center_span_radiobutton_VNA_toggled(bool checked);
+    void on_referencelevel_checkbox_VNA_stateChanged(int arg1);
+    void on_attenuation_checkbox_VNA_stateChanged(int arg1);
+    void on_leveloffset_checkbox_VNA_stateChanged(int arg1);
+    void on_sweepTime_checkbox_VNA_stateChanged(int arg1);
+    void on_start_freq_value_VNA_valueChanged(double arg1);
+    void on_start_freq_unit_VNA_currentIndexChanged(int index);
+    void on_stop_freq_value_VNA_valueChanged(double arg1);
+    void on_stop_freq_unit_VNA_currentIndexChanged(int index);
+    void on_center_freq_value_VNA_valueChanged(double arg1);
+    void on_center_freq_unit_VNA_currentIndexChanged(int index);
+    void on_span_freq_value_VNA_valueChanged(double arg1);
+    void on_span_freq_unit_VNA_currentIndexChanged(int index);
+    void on_step_valueunit_VNA_valueChanged(int arg1);
+
+    void on_referencelevel_spinbox_VNA_valueChanged(int arg1);
+
+    void on_attenuation_spinbox_VNA_valueChanged(int arg1);
+
+    void on_leveloffset_spinbox_VNA_valueChanged(int arg1);
+
+    void on_scaleCheckbox_VNA_stateChanged(int arg1);
+
+    void on_sweep_points_spinbox_VNA_valueChanged(int arg1);
+
+    void on_sweepTime_spinbox_VNA_valueChanged(double arg1);
+
+    void on_resolutionBW_comboBox_VNA_currentIndexChanged(int index);
 
 private:
     Ui::scan_settings *ui;

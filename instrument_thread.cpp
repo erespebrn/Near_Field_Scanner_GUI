@@ -34,10 +34,10 @@ void Instrument_Thread::scan_devices()
         _vna_socket->waitForBytesWritten();
         msg = "";
 
-        msg = "SYST:TSL SCR\n";
-        _vna_socket->write(msg.toLocal8Bit());
-        _vna_socket->waitForBytesWritten();
-        msg = "";
+//        msg = "SYST:TSL SCR\n";
+//        _vna_socket->write(msg.toLocal8Bit());
+//        _vna_socket->waitForBytesWritten();
+//        msg = "";
     }
     if(_sa_socket->state() == QAbstractSocket::UnconnectedState)
     {
