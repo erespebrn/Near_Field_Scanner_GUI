@@ -115,11 +115,18 @@ private:
     QImage lastImage;
     QRect croppedOrigin;
 
-
     void video_thread_init();
     void instrument_thread_init();
     void robot_init();
+    void send_robot_coordinates();
 
+    uint16_t origin_x;
+    uint16_t origin_y;
+
+    uint16_t scan_size_x;
+    uint16_t scan_size_y;
+
+    bool picture_taken = false;
 };
 
 #endif // SCANNER_GUI_H

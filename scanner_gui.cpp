@@ -138,6 +138,7 @@ void scanner_gui::on_Take_img_button_clicked()
     ui->cropped_size_px->setVisible(false);
     ui->Take_img_button->setEnabled(false);
     ui->Take_img_button->setText("Picture taken");
+    picture_taken = true;
     displayCapturedImage();
     processCapturedImage(lastImage);
 }
@@ -226,24 +227,28 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
     float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
 
-
     float x_dist_px = croppedOrigin.x() - cv_robot_origin.x;
     float y_dist_px = croppedOrigin.y() - cv_robot_origin.y;
 
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-    QString msg = "";
-    msg = "x_mes = %1\n";
-    //msg = msg.arg(QString::number((int)(x_dist_mm+(rect.width()/2))));
-    msg = msg.arg(QString::number((int)(x_dist_mm)));
-    _socket_robot.write(msg.toLocal8Bit());
-    _socket_robot.waitForBytesWritten();
-    msg = "";
-    msg = "y_mes = %1\n";
-    msg = msg.arg(QString::number((int)(y_dist_mm)));
-    _socket_robot.write(msg.toLocal8Bit());
-    _socket_robot.waitForBytesWritten();
+    origin_x = (int)x_dist_mm;
+    origin_y = (int)y_dist_mm;
+
+    scan_size_x = (int)width_cropped;
+    scan_size_y = (int)height_cropped;
+
+//    QString msg = "";
+//    msg = "x_mes = %1\n";
+//    msg = msg.arg(QString::number((int)(x_dist_mm)));
+//    _socket_robot.write(msg.toLocal8Bit());
+//    _socket_robot.waitForBytesWritten();
+//    msg = "";
+//    msg = "y_mes = %1\n";
+//    msg = msg.arg(QString::number((int)(y_dist_mm)));
+//    _socket_robot.write(msg.toLocal8Bit());
+//    _socket_robot.waitForBytesWritten();
 
     float distance = sqrt(pow(x_dist_mm,2) + pow(y_dist_mm,2));
 
@@ -368,81 +373,141 @@ void scanner_gui::on_scan_settings_button_clicked()
 
 void scanner_gui::on_Start_scan_button_clicked()
 {
-    _socket_robot.write("Goto_Origin = 1\n");
-    _socket_robot.waitForBytesWritten(30);
-    QString mystring = "dist = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
-    _socket_robot.write(mystring.toLocal8Bit());
-    _socket_robot.waitForBytesWritten(30);
+    if(picture_taken)
+    {
+        ui->Start_scan_button->setEnabled(false);
+        ui->Start_scan_button->setText("Scanning...");
+        _socket_robot.write("mes_abort = 0\n");
+        _socket_robot.waitForBytesWritten(30);
+        send_robot_coordinates();
+        _socket_robot.write("Goto_Origin = 1\n");
+        _socket_robot.waitForBytesWritten(30);
+
+        QString mystring = "dist = %1\n";
+        mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
+        _socket_robot.write(mystring.toLocal8Bit());
+        _socket_robot.waitForBytesWritten();
+
+        picture_taken = false;
+    }
+    else
+    {
+        QMessageBox::critical(this, "Scan error!", "Take picture and mark scanning area first!");
+    }
 }
 
 void scanner_gui::read_robot_msg()
 {
-    char robot_msg[32];
-    if(1)
-    {
-        _socket_robot.read(robot_msg, 32);
+    QString msg = "";
+    char robot_msg[128];
+    char a = ' ';
+    uint16_t y = 0;
+    _socket_robot.read(robot_msg, 128);
 
-        if(robot_msg[0] == '@')
+    while(a != '@')
+    {
+       a = robot_msg[y++];
+       qDebug() << a;
+       if(y == strlen(robot_msg))
+           break;
+    }
+    if(a == '@')
+    {
+        char buffer[3];
+        for(int i=1; i<3; i++)
         {
-            char buffer[3];
-            for(int i=1; i<3; i++)
-            {
-                buffer[i-1] = robot_msg[i];
-            }
-            int i = atoi(buffer);
-            qDebug() << i;
-            switch(i)
-            {
-                case 1:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Scan started");
-                    break;
-                case 2:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Scan in progress...");
-                    break;
-                case 3:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Scan finished!");
-                    break;
-                case 4:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Height measure started...");
-                    break;
-                case 5:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Height measure done!");
-                    break;
-                case 6:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Robot position");
-                    break;
-                case 7:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Going to the PCB's corner...");
-                    break;
-                case 8:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Reached the PCB's corner!");
-                    on_resetCamera_button_clicked();
-                    _socket_robot.write("demo = 1\n");
-                    _socket_robot.waitForBytesWritten();
-                    break;
-                case 9:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Moving to the homeposition...");
-                    break;
-                case 10:
-                    ui->robotTerminal->setText("");
-                    ui->robotTerminal->setText("Reached the homeposition!");
-                    break;
-                default:
-                    ui->robotTerminal->setText("");
-                    break;
-            }
+            buffer[i-1] = robot_msg[y++];
+        }
+        int i = atoi(buffer);
+        qDebug() << buffer;
+        switch(i)
+        {
+            case 1:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Scan started");
+                break;
+            case 2:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Scan in progress...");
+                break;
+            case 3:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Scan finished!");
+                ui->Start_scan_button->setEnabled(true);
+                ui->Start_scan_button->setText("Start scan");
+                break;
+            case 4:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Height measure started...");
+                break;
+            case 5:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Height measure done!");
+                break;
+            case 6:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Robot position");
+                break;
+            case 7:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Going to the PCB's corner...");
+                on_resetCamera_button_clicked();
+                break;
+            case 8:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Reached the PCB's corner!");
+                _socket_robot.write("Mes = 1\n");
+                _socket_robot.waitForBytesWritten();
+                break;
+            case 9:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Moving to the homeposition...");
+                break;
+            case 10:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Reached the homeposition!");
+                ui->Start_scan_button->setEnabled(true);
+                ui->Start_scan_button->setText("Start scan");
+                break;
+            case 11:
+                ui->robotTerminal->setText("");
+                ui->robotTerminal->setText("Scan aborted!");
+                ui->Start_scan_button->setEnabled(true);
+                ui->Start_scan_button->setText("Start scan");
+                break;
+            default:
+                ui->robotTerminal->setText("Waiting...");
+                break;
         }
     }
+}
+
+void scanner_gui::send_robot_coordinates()
+{
+    QString msg = "";
+    msg = "x_mes = %1\n";
+    msg = msg.arg(QString::number(origin_x+10));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
+    msg = "y_mes = %1\n";
+    msg = msg.arg(QString::number(origin_y));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
+    msg = "mes_row_max = %1\n";
+    msg = msg.arg(QString::number(scan_size_y/ui->stepsize_y->value()));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
+    msg = "mes_column_max = %1\n";
+    msg = msg.arg(QString::number(scan_size_x/ui->stepsize_x->value()));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
+    msg = "mes_res = %1\n";
+    msg = msg.arg(QString::number(ui->stepsize_x->value()));
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
+    msg = "mes_delay = 0.1\n";
+    _socket_robot.write(msg.toLocal8Bit());
+    _socket_robot.waitForBytesWritten(10);
 }
 
 void scanner_gui::on_scan_height_valueChanged(double arg1)
@@ -486,7 +551,7 @@ void scanner_gui::on_stepsize_y_valueChanged(double arg1)//stepsize y
 
 void scanner_gui::on_stop_scan_button_clicked()
 {
-    _socket_robot.write("demo = 0\n");
+    _socket_robot.write("mes_abort = 1\n");
     _socket_robot.waitForBytesWritten(30);
     _socket_robot.write("takepic = 1\n");
     _socket_robot.waitForBytesWritten(30);
