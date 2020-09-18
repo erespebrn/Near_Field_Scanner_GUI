@@ -403,11 +403,11 @@ void scanner_gui::read_robot_msg()
     char a = ' ';
     uint16_t y = 0;
     _socket_robot.read(robot_msg, 128);
-
+    qDebug() << robot_msg;
     while(a != '@')
     {
        a = robot_msg[y++];
-       qDebug() << a;
+       //qDebug() << a;
        if(y == strlen(robot_msg))
            break;
     }
@@ -419,7 +419,7 @@ void scanner_gui::read_robot_msg()
             buffer[i-1] = robot_msg[y++];
         }
         int i = atoi(buffer);
-        qDebug() << buffer;
+       // qDebug() << buffer;
         switch(i)
         {
             case 1:
