@@ -33,14 +33,15 @@ void VideoThread::process()
 
         cv::resize(frame_to_resize, frame_cv, cv::Size(1280,960));
         cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
-        cv::GaussianBlur(frame_gray, frame_blur,cv::Size(7,7),1);
-        cv::Canny(frame_blur,frame_canny,70,100);
+        cv::GaussianBlur(frame_gray, frame_blur, cv::Size(5,5),1);
+        cv::Canny(frame_blur,frame_canny,50,100);
 
         std::vector<std::vector<cv::Point>> contours;
         std::vector<cv::Vec4i> hierarchy;
-        cv::findContours(frame_canny(cv::Rect(0,0,80,80)), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(frame_canny(cv::Rect(0,0,80,180)), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
         cv::Point cv_robot_origin;
+
         if(!contours.empty())
         {
             cv_robot_origin = contours[0][0];
@@ -63,9 +64,13 @@ void VideoThread::start()
     if(cv_camera->open(0, cv::CAP_ANY))
     {
         emit cameraOpened();
-        cv_camera->set(3, resolution_max_width);
-        cv_camera->set(4, resolution_max_height);
-        cv_camera->set(10, 2);
+        cv_camera->set(cv::CAP_PROP_FRAME_WIDTH, resolution_max_width);
+        cv_camera->set(cv::CAP_PROP_FRAME_HEIGHT, resolution_max_height);
+        cv_camera->set(cv::CAP_PROP_CONTRAST, 10);
+        cv_camera->set(cv::CAP_PROP_FOCUS, 50);
+        cv_camera->set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        cv_camera->set(cv::CAP_PROP_SATURATION, 20);
+        cv_camera->set(cv::CAP_PROP_BRIGHTNESS, 2);
         timer = new QTimer;
         connect(timer, &QTimer::timeout, this, &VideoThread::process);
         timer->start(1);

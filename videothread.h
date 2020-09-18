@@ -34,6 +34,7 @@ private:
     cv::VideoCapture * cv_camera;
     QTimer * timer;
     QImage MatToQImage(const cv::Mat& mat);
+
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
 };

@@ -1,5 +1,6 @@
 #ifndef SCANNER_GUI_H
 #define SCANNER_GUI_H
+
 #include <QCamera>
 #include <QCameraImageCapture>
 #include <QMediaRecorder>
@@ -11,7 +12,10 @@
 #include <QRubberBand>
 #include <QTcpSocket>
 #include <QPainter>
+
 #include "videothread.h"
+#include "instrument_thread.h"
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -30,6 +34,8 @@ public:
     scanner_gui();
     ~scanner_gui();
 
+signals:
+    void insthread_stop();
 private slots:
 
     //Scan start stop
@@ -55,9 +61,6 @@ private slots:
     void processCapturedImage(const QImage &img);
     void displayCroppedImage(QRect& rect);
 
-    //void readyForCapture(bool ready);
-    void imageSaved(int id, const QString &fileName);
-
     //Camera settings
     void on_resetCamera_button_clicked();
 
@@ -68,41 +71,34 @@ private slots:
 
     //void on_actionSettings_triggered();
 
-    void sa_connected();
-    void sa_disconnected();
-    void on_sa_connect_btn_clicked();
     void on_camera_connect_button_clicked();
+
+    void SA_online(bool);
+    void VNA_online(bool);
 
     void cv_getframe(QImage, int, int);
     void cameraError(QString);
     void cameraConnected();
     void on_robot_connect_button_clicked();
 
+    void read_robot_msg();
+
 private:
     Ui::scanner_gui *ui;
 
     //TCP sockets
     QTcpSocket _socket_sa;
+    QTcpSocket _socket_vna;
+
     QTcpSocket _socket_robot;
 
+    // IP addresses
     const QString sa_ip_address = "192.168.11.4";
+    const QString vna_ip_address = "192.168.11.6";
     const QString robot_ip_address = "192.168.11.2";
 
-    //Camera settings
-    QScopedPointer<QCamera> m_camera;
-    QScopedPointer<QCameraImageCapture> m_imageCapture;
-    QScopedPointer<QMediaRecorder> m_mediaRecorder;
-
-    QImageEncoderSettings m_imageSettings;
-    QAudioEncoderSettings m_audioSettings;
-    QVideoEncoderSettings m_videoSettings;
-
-    QString m_videoContainerFormat;
-
-    bool m_isCapturingImage = false;
-    bool m_applicationExiting = false;
-
-    bool  sa_connected_bool = false;
+    bool sa_connected_bool = false;
+    bool vna_connected_bool = false;
 
     // Camera image sensor dimensions
     const float sensor_width = 4.54;
@@ -119,11 +115,18 @@ private:
     QImage lastImage;
     QRect croppedOrigin;
 
-    QThread * thread;
-    VideoThread * videothread;
-
     void video_thread_init();
+    void instrument_thread_init();
     void robot_init();
+    void send_robot_coordinates();
+
+    uint16_t origin_x;
+    uint16_t origin_y;
+
+    uint16_t scan_size_x;
+    uint16_t scan_size_y;
+
+    bool picture_taken = false;
 };
 
 #endif // SCANNER_GUI_H
