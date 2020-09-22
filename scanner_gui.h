@@ -12,6 +12,7 @@
 #include <QRubberBand>
 #include <QTcpSocket>
 #include <QPainter>
+#include <QWizard>
 
 #include "videothread.h"
 #include "instrument_thread.h"
@@ -76,7 +77,8 @@ private slots:
     void SA_online(bool);
     void VNA_online(bool);
 
-    void cv_getframe(QImage, int, int);
+    void cv_getframe(QImage);
+    void cv_getcoord(int, int, int, int, int, int);
     void cameraError(QString);
     void cameraConnected();
     void on_robot_connect_button_clicked();
@@ -120,11 +122,9 @@ private:
     void robot_init();
     void send_robot_coordinates();
 
-    uint16_t origin_x;
-    uint16_t origin_y;
-
-    uint16_t scan_size_x;
-    uint16_t scan_size_y;
+    QPoint origin;
+    QPoint pcb_corner;
+    QRect pcb_size;
 
     bool picture_taken = false;
 };

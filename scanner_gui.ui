@@ -891,12 +891,12 @@ p, li { white-space: pre-wrap; }
            <item row="0" column="0">
             <widget class="QLabel" name="cropped_label">
              <property name="text">
-              <string>Scanning area size:</string>
+              <string>PCB size:</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLabel" name="cropped_size">
+            <widget class="QLabel" name="PCB_size">
              <property name="text">
               <string>x=0, y=0</string>
              </property>
@@ -910,7 +910,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="cropped_size_px">
+            <widget class="QLabel" name="origin_distance">
              <property name="minimumSize">
               <size>
                <width>0</width>

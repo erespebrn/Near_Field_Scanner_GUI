@@ -27,13 +27,15 @@ signals:
     void finished();
     void error(QString err);
     void cameraOpened();
-    void readyImg(QImage, int, int);
+    void readyImg(QImage);
+    void positions(int, int, int, int, int, int);
 
 private:
     cv::Mat mat;
     cv::VideoCapture * cv_camera;
     QTimer * timer;
     QImage MatToQImage(const cv::Mat& mat);
+    std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
 
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
