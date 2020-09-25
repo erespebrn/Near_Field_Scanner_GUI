@@ -331,15 +331,15 @@ void scanner_gui::on_scan_settings_button_clicked()
 
                 if(_socket_vna.state() == QAbstractSocket::ConnectedState)
                 {
-                    msg = "SYST:TSL OFF\n";
-                    _socket_vna.write(msg.toLocal8Bit());
-                    _socket_vna.waitForBytesWritten();
-                    msg = "";
+//                    msg = "SYST:TSL OFF\n";
+//                    _socket_vna.write(msg.toLocal8Bit());
+//                    _socket_vna.waitForBytesWritten();
+//                    msg = "";
 
-                    msg = "SYST:TSL SCR\n";
-                    _socket_vna.write(msg.toLocal8Bit());
-                    _socket_vna.waitForBytesWritten();
-                    msg = "";
+//                    msg = "SYST:TSL SCR\n";
+//                    _socket_vna.write(msg.toLocal8Bit());
+//                    _socket_vna.waitForBytesWritten();
+//                    msg = "";
 
 //                    msg = "SYST:DISP:BAR:STO OFF\n";
 //                    _socket_vna.write(msg.toLocal8Bit());
@@ -492,8 +492,8 @@ void scanner_gui::read_robot_msg()
             case 8:
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Reached the PCB's corner!");
-                _socket_robot.write("Mes = 1\n");
-                _socket_robot.waitForBytesWritten();
+//                _socket_robot.write("Mes = 1\n");
+//                _socket_robot.waitForBytesWritten();
                 break;
             case 9:
                 ui->robotTerminal->setText("");

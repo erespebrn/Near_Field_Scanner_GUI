@@ -62,7 +62,7 @@ void VideoThread::process()
             for(std::vector<cv::Point>contour : contours)
             {
                 double area = cv::contourArea(contour);
-                if(area > 10000 && area < 800000)
+                if(area > 10000 && area < 700000)
                 {
                     std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
                     //cv::polylines(frame_cv, ConvexHullPoints, true, cv::Scalar(255,0,0),2);
@@ -75,7 +75,7 @@ void VideoThread::process()
                 }
             }
             cv::circle(frame_cv, start, 5, cv::Scalar(255,255,0),2);
-            cv::circle(frame_cv, stop, 5, cv::Scalar(255,255,0),2);
+            //cv::circle(frame_cv, stop, 5, cv::Scalar(255,255,0),2);
             cv::putText(frame_cv, "Start", start, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             //cv::putText(frame_cv, "Stop", stop, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
         }

@@ -156,7 +156,7 @@ void scan_settings::write_sa_settings()
         {
             // Level offset
             // Send SPCI command
-            mystring = "DISPl:TRAC:Y:RLEV:OFFS %1\n";
+            mystring = "DISP:TRAC:Y:RLEV:OFFS %1\n";
             mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
             sa_send_command(mystring);
             mystring = "";
