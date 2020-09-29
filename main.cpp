@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     a.setOrganizationName("SDU Søndeborg");
     a.setOrganizationDomain("EMC LAB");
     a.setApplicationName("Near Field Scanner");
-    //w.setWindowState(Qt::WindowFullScreen);
     w.show();
+    w.reset();
     return a.exec();
 }

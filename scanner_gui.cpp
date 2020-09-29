@@ -5,10 +5,8 @@
 #include <cstdio>
 
 #include <cmath>
-#include <QMediaService>
 #include <QDebug>
 #include <QTimer>
-#include <QMediaRecorder>
 #include <QCameraViewfinder>
 #include <QCameraInfo>
 #include <QMediaMetaData>
@@ -20,7 +18,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>
-#include <QPainter>
+#include <QApplication>
+#include <QProcess>
+
 
 char Shift_string[80];
 QByteArray array;
@@ -43,23 +43,19 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui), _socket_robot(this)
         file.remove();
 
     // Minor init settings
-    QSizePolicy sp_croppedsize = ui->PCB_size->sizePolicy();
-    sp_croppedsize.setRetainSizeWhenHidden(true);
-    ui->PCB_size->setSizePolicy(sp_croppedsize);
-    sp_croppedsize = ui->origin_distance->sizePolicy();
-    sp_croppedsize.setRetainSizeWhenHidden(true);
-    ui->origin_distance->setSizePolicy(sp_croppedsize);
-    ui->PCB_size->setVisible(false);
-    ui->origin_distance->setVisible(false);
     ui->stackedWidget->setCurrentIndex(0);
 
 }
 
+void scanner_gui::reset()
+{
+    _socket_robot.write("takepic = 1\n");
+    _socket_robot.waitForBytesWritten(1000);
+    _socket_robot.disconnect();
+}
+
 scanner_gui::~scanner_gui()
 {
-    _socket_robot.write("demo = 0");
-    _socket_robot.waitForBytesWritten();
-    _socket_robot.disconnect();
     delete ui;
 }
 
@@ -106,7 +102,7 @@ void scanner_gui::robot_init()
 void scanner_gui::video_thread_init()
 {
     QThread* thread1 = new QThread;
-    VideoThread* videothread = new VideoThread;
+    videothread = new VideoThread;
     videothread->moveToThread(thread1);
     connect(thread1, SIGNAL(started()), videothread, SLOT(start()));
     connect(thread1, SIGNAL(finished()), thread1, SLOT(deleteLater()));
@@ -137,22 +133,13 @@ void scanner_gui::instrument_thread_init()
 
 void scanner_gui::on_Take_img_button_clicked()
 {
-//    ui->cropped_size->setVisible(false);
-//    ui->cropped_size_px->setVisible(false);
-//    ui->Take_img_button->setEnabled(false);
-//    ui->Take_img_button->setText("Picture taken");
-//    picture_taken = true;
-//    displayCapturedImage();
-//    processCapturedImage(lastImage);
+    displayCapturedImage();
+    processCapturedImage(lastImage);
 }
 
 void scanner_gui::on_resetCamera_button_clicked()
 {
-//    displayViewfinder();
-//    ui->Take_img_button->setEnabled(true);
-//    ui->Take_img_button->setText("Take Picture");
-//    ui->cropped_size->setVisible(false);
-//    ui->cropped_size_px->setVisible(false);
+    displayViewfinder();
 }
 
 void scanner_gui::cameraConnected()
@@ -167,6 +154,8 @@ void scanner_gui::cameraError(QString error)
     ui->camera_connect_button->setText("Connect");
     ui->liveStream->setText("Camera error. Try to reconect!");
     QMessageBox::critical(this, "Camera error", error);
+//    qApp->quit();
+//    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
 }
 
 void scanner_gui::on_camera_connect_button_clicked()
@@ -203,8 +192,6 @@ void scanner_gui::cv_getframe(QImage frame)
 
 void scanner_gui::cv_getcoord(int o_x, int o_y, int pcb_x, int pcb_y, int pcb_w, int pcb_h)
 {
-    ui->PCB_size->setVisible(true);
-    ui->origin_distance->setVisible(true);
     origin = QPoint(o_x, o_y);
 
     float scale_factor = (float)resolution_max_height/(float)ui->liveStream->height();
@@ -221,10 +208,7 @@ void scanner_gui::cv_getcoord(int o_x, int o_y, int pcb_x, int pcb_y, int pcb_w,
 
     pcb_corner = QPoint(x_dist_mm, y_dist_mm);
     pcb_size = QRect(x_dist_mm, y_dist_mm, width_cropped, height_cropped);
-
-    float length = sqrt(pow(pcb_corner.x(),2)+pow(pcb_corner.y(),2));
-    ui->PCB_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ", y: " + QString::number((uint16_t)height_cropped) + "mm" );
-    ui->origin_distance->setText("x: "+ QString::number((uint16_t)x_dist_mm) +"mm" + ", y: " + QString::number((uint16_t)y_dist_mm) + "mm \n Length: " + QString::number((uint16_t)length));
+    emit send_coord_to_wizard(pcb_corner, pcb_size);
 }
 
 void scanner_gui::processCapturedImage(const QImage &img)
@@ -236,17 +220,16 @@ void scanner_gui::processCapturedImage(const QImage &img)
 
 void scanner_gui::displayCroppedImage(QRect &rect)
 {
-//    ui->cropped_size->setVisible(true);
-//    ui->cropped_size_px->setVisible(true);
+
     croppedOrigin = rect;
 
-//    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
-//    QImage image( pixmap->toImage() );
-//    QImage cropped = image.copy(rect);
-//    QImage scaledImage = cropped.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
+    QImage image( pixmap->toImage() );
+    QImage cropped = image.copy(rect);
+    QImage scaledImage = cropped.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-//    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-//    scaledImage.save(QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
+    ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
+    scaledImage.save(QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
 
     // *** Determine the real size of the object on an image *** //
     //Since the image taken is scaled, scale factor must be used
@@ -262,27 +245,7 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-//    origin_x = (int)x_dist_mm;
-//    origin_y = (int)y_dist_mm;
-
-//    scan_size_x = (int)width_cropped;
-//    scan_size_y = (int)height_cropped;
-
-//    QString msg = "";
-//    msg = "x_mes = %1\n";
-//    msg = msg.arg(QString::number((int)(x_dist_mm)));
-//    _socket_robot.write(msg.toLocal8Bit());
-//    _socket_robot.waitForBytesWritten();
-//    msg = "";
-//    msg = "y_mes = %1\n";
-//    msg = msg.arg(QString::number((int)(y_dist_mm)));
-//    _socket_robot.write(msg.toLocal8Bit());
-//    _socket_robot.waitForBytesWritten();
-
     float distance = sqrt(pow(x_dist_mm,2) + pow(y_dist_mm,2));
-
-//    ui->cropped_size->setText("x: "+ QString::number((uint16_t)width_cropped) +"mm" + ", y: " + QString::number((uint16_t)height_cropped) + "mm" );
-//    ui->cropped_size_px->setText("x: "+ QString::number((uint16_t)x_dist_mm) +"mm" + ", y: " + QString::number((uint16_t)y_dist_mm) + "mm \n Lenght: " + QString::number((uint16_t)distance) + "mm");
 }
 
 void scanner_gui::on_scan_settings_button_clicked()
@@ -402,34 +365,18 @@ void scanner_gui::on_scan_settings_button_clicked()
 
 void scanner_gui::on_Start_scan_button_clicked()
 {
-    send_robot_coordinates();
-    _socket_robot.write("Goto_Origin = 1\n");
-    _socket_robot.waitForBytesWritten();
+    wizard = new ScanWizard(this);
 
-    QString mystring = "dist = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
-    _socket_robot.write(mystring.toLocal8Bit());
-    _socket_robot.waitForBytesWritten();
+    connect(wizard, SIGNAL(detect_pcb(bool)), videothread, SLOT(start_detection(bool)));
+    connect(videothread, SIGNAL(pcb_found()), wizard, SLOT(pcb_found()));
+    connect(this, SIGNAL(send_coord_to_wizard(QPoint, QRect)), wizard, SLOT(take_coord(QPoint, QRect)));
+    connect(wizard, SIGNAL(send_robot_to_origin(bool)), this, SLOT(wizard_robot_to_origin(bool)));
 
-//    if(picture_taken)
-//    {
-//        ui->Start_scan_button->setEnabled(false);
-//        ui->Start_scan_button->setText("Scanning...");
-//        send_robot_coordinates();
-//        _socket_robot.write("Goto_Origin = 1\n");
-//        _socket_robot.waitForBytesWritten();
-
-//        QString mystring = "dist = %1\n";
-//        mystring = mystring.arg(QString::number(ui->stepsize_x->value()));
-//        _socket_robot.write(mystring.toLocal8Bit());
-//        _socket_robot.waitForBytesWritten();
-
-//        picture_taken = false;
-//    }
-//    else
-//    {
-//        QMessageBox::critical(this, "Scan error!", "Take picture and mark scanning area first!");
-//    }
+    wizard->setWindowFlag(Qt::WindowStaysOnTopHint);
+    wizard->setWindowTitle("Scan Wizard");
+    wizard->move(1300,100);
+    wizard->setStyleSheet("background-color: rgba(180,210,210,1)");
+    wizard->show();
 }
 
 void scanner_gui::read_robot_msg()
@@ -518,17 +465,39 @@ void scanner_gui::read_robot_msg()
     }
 }
 
-void scanner_gui::send_robot_coordinates()
+void scanner_gui::wizard_robot_to_origin(bool middle)
+{
+    send_robot_coordinates(middle);
+    _socket_robot.write("Goto_Origin = 1\n");
+    _socket_robot.waitForBytesWritten();
+}
+
+void scanner_gui::send_robot_coordinates(bool middle)
 {
     QString msg = "";
+    uint16_t x = 0;
+    uint16_t y = 0;
+
+    if(middle)
+    {
+        x = pcb_corner.x()+5+(pcb_size.width()/2);
+        y = pcb_corner.y()+(pcb_size.height()/2);
+    }
+    else if(!middle)
+    {
+        x = pcb_corner.x()+5;
+        y = pcb_corner.y();
+    }
+
     msg = "x_mes = %1\n";
-    msg = msg.arg(QString::number(pcb_corner.x()+5));
+    msg = msg.arg(QString::number(x));
     _socket_robot.write(msg.toLocal8Bit());
     _socket_robot.waitForBytesWritten(10);
     msg = "y_mes = %1\n";
-    msg = msg.arg(QString::number(pcb_corner.y()));
+    msg = msg.arg(QString::number(y));
     _socket_robot.write(msg.toLocal8Bit());
     _socket_robot.waitForBytesWritten(10);
+
     msg = "mes_row_max = %1\n";
     msg = msg.arg(QString::number(pcb_size.width()/ui->stepsize_y->value()));
     _socket_robot.write(msg.toLocal8Bit());
@@ -665,4 +634,13 @@ void scanner_gui::on_home_button_clicked()
     _socket_robot.waitForReadyRead(50);
     _socket_robot.waitForReadyRead(50);
     array = _socket_robot.readAll();
+}
+
+void scanner_gui::closeEvent (QCloseEvent *event)
+{
+    qDebug("closing event");
+    _socket_robot.write("mes_abort = 1\n");
+    _socket_robot.waitForBytesWritten(30);
+    _socket_robot.write("takepic = 1\n");
+    _socket_robot.waitForBytesWritten(30);
 }

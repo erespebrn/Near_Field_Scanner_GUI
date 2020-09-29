@@ -1,9 +1,6 @@
 #ifndef SCANNER_GUI_H
 #define SCANNER_GUI_H
 
-#include <QCamera>
-#include <QCameraImageCapture>
-#include <QMediaRecorder>
 #include <QScopedPointer>
 #include <QMainWindow>
 #include <QLabel>
@@ -13,9 +10,10 @@
 #include <QTcpSocket>
 #include <QPainter>
 #include <QWizard>
-
+#include <QCloseEvent>
 #include "videothread.h"
 #include "instrument_thread.h"
+#include "scanwizard.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
@@ -33,15 +31,20 @@ class scanner_gui : public QMainWindow
 
 public:
     scanner_gui();
+    void reset();
     ~scanner_gui();
 
 signals:
     void insthread_stop();
+    void send_coord_to_wizard(QPoint, QRect);
+
 private slots:
 
     //Scan start stop
     void on_Start_scan_button_clicked();
     void on_stop_scan_button_clicked();
+
+    void closeEvent(QCloseEvent *event) override;
 
     //Robot control buttons and settings
     void on_Y_plus_button_pressed();
@@ -84,9 +87,11 @@ private slots:
     void on_robot_connect_button_clicked();
 
     void read_robot_msg();
+    void wizard_robot_to_origin(bool);
 
 private:
     Ui::scanner_gui *ui;
+    ScanWizard * wizard;
 
     //TCP sockets
     QTcpSocket _socket_sa;
@@ -116,11 +121,11 @@ private:
     cv::Mat cv_lastImage;
     QImage lastImage;
     QRect croppedOrigin;
-
+    VideoThread* videothread;
     void video_thread_init();
     void instrument_thread_init();
     void robot_init();
-    void send_robot_coordinates();
+    void send_robot_coordinates(bool);
 
     QPoint origin;
     QPoint pcb_corner;

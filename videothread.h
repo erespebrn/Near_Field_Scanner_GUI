@@ -22,6 +22,7 @@ public:
 public slots:
     void process();
     void start();
+    void start_detection(bool);
 
 signals:
     void finished();
@@ -29,6 +30,7 @@ signals:
     void cameraOpened();
     void readyImg(QImage);
     void positions(int, int, int, int, int, int);
+    void pcb_found();
 
 private:
     cv::Mat mat;
@@ -37,6 +39,7 @@ private:
     QImage MatToQImage(const cv::Mat& mat);
     std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
 
+    bool detect = false;
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
 };

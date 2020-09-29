@@ -16,9 +16,7 @@ VideoThread::~VideoThread()
 void VideoThread::process()
 {
     cv::Mat frame_cv;
-    cv::Mat frame_trun;
     cv::Mat frame_to_resize;
-    cv::Mat frame_denoised;
     cv::Mat frame_gray;
     cv::Mat frame_blur;
     cv::Mat frame_canny;
@@ -34,61 +32,61 @@ void VideoThread::process()
     {
 
         cv::resize(frame_to_resize, frame_cv, cv::Size(1280,960));
-        cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
-        cv::GaussianBlur(frame_gray, frame_blur, cv::Size(5,5),1);
-        cv::Canny(frame_blur,frame_canny_to_dilate,50,100);
-        cv::Mat kernel = cv::Mat(5, 5, CV_8UC1, cv::Scalar(1));
 
-        cv::dilate(frame_canny_to_dilate, frame_canny, kernel);
-
-//        cv::namedWindow("a");
-//        cv::imshow("a", frame_canny);
-//        cv::namedWindow("b");
-//        cv::imshow("b", frame_gray);
-
-
-        std::vector<std::vector<cv::Point>> contours;
-        std::vector<std::vector<cv::Point>> contours_2;
-        std::vector<cv::Vec4i> hierarchy;
-        std::vector<cv::Vec4i> hierarchy_2;
-        cv::findContours(frame_canny, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-        cv::findContours(frame_canny(cv::Rect(0,0,150,150)), contours_2, hierarchy_2, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-        cv::Point cv_robot_origin;
-        cv::Point start;
-        cv::Point stop;
-        cv::Rect shape;
-        if(!contours.empty() && !contours_2.empty())
+        if(detect)
         {
-            for(std::vector<cv::Point>contour : contours)
+            cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(frame_gray, frame_blur, cv::Size(5,5),1);
+            cv::Canny(frame_blur,frame_canny_to_dilate,50,100);
+            cv::Mat kernel = cv::Mat(2, 2, CV_8SC1, cv::Scalar(1));
+
+            cv::dilate(frame_canny_to_dilate, frame_canny, kernel);
+
+            std::vector<std::vector<cv::Point>> contours;
+            std::vector<std::vector<cv::Point>> contours_2;
+            std::vector<cv::Vec4i> hierarchy;
+            std::vector<cv::Vec4i> hierarchy_2;
+
+            cv::Rect origin = cv::Rect(0,0,120,190);
+            cv::findContours(frame_canny, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+            cv::findContours(frame_canny(origin), contours_2, hierarchy_2, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+
+
+            cv::Point cv_robot_origin;
+            cv::Point start;
+            cv::Rect shape;
+            cv::Rect org;
+
+            if(!contours.empty())
             {
-                double area = cv::contourArea(contour);
-                if(area > 10000 && area < 700000)
+                for(std::vector<cv::Point>contour : contours)
                 {
-                    std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
-                    //cv::polylines(frame_cv, ConvexHullPoints, true, cv::Scalar(255,0,0),2);
-                    shape = cv::boundingRect(ConvexHullPoints);
-                    cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
-                    start = cv::Point(shape.x,shape.y);
-                    //stop = cv::Point(shape.x+shape.width, shape.y+shape.height);
-                    frame_trun = frame_cv(shape);
-                    //cv::drawContours(frame_cv, std::vector<std::vector<cv::Point>>(1,contour), -1, cv::Scalar(0,0,255), 2);
+                    double area = cv::contourArea(contour);
+                    if(area > 10000 && area < 700000)
+                    {
+                        std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
+                        shape = cv::boundingRect(ConvexHullPoints);
+                        cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
+                        start = cv::Point(shape.x,shape.y);
+                        emit pcb_found();
+                    }
                 }
+                cv::circle(frame_cv, start, 5, cv::Scalar(255,255,0),2);
+                cv::putText(frame_cv, "Start", start, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             }
-            cv::circle(frame_cv, start, 5, cv::Scalar(255,255,0),2);
-            //cv::circle(frame_cv, stop, 5, cv::Scalar(255,255,0),2);
-            cv::putText(frame_cv, "Start", start, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
-            //cv::putText(frame_cv, "Stop", stop, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
-        }
-        if(!contours_2.empty())
-        {
-            cv_robot_origin = contours_2[0][0];
-            cv::putText(frame_cv, "(0,0)", cv::Point(cv_robot_origin.x+6, cv_robot_origin.y+6), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
-            cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
+
+            if(!contours_2.empty())
+            {
+                org = cv::boundingRect(contours_2[0]);
+                cv_robot_origin = org.tl();
+                cv::putText(frame_cv, "(0,0)", cv::Point(cv_robot_origin.x+6, cv_robot_origin.y-6), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
+                cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
+            }
+            emit positions(cv_robot_origin.x, cv_robot_origin.y, start.x, start.y, shape.width, shape.height);
         }
 
         QImage frame_qt = MatToQImage(frame_cv);
         emit readyImg(frame_qt);
-        emit positions(cv_robot_origin.x, cv_robot_origin.y, start.x, start.y, shape.width, shape.height);
     }
 
 }
@@ -103,7 +101,7 @@ void VideoThread::start()
         cv_camera->set(cv::CAP_PROP_FRAME_WIDTH, resolution_max_width);
         cv_camera->set(cv::CAP_PROP_FRAME_HEIGHT, resolution_max_height);
         cv_camera->set(cv::CAP_PROP_CONTRAST, -10);
-        cv_camera->set(cv::CAP_PROP_FOCUS, 50);
+        cv_camera->set(cv::CAP_PROP_AUTOFOCUS, 1);
         cv_camera->set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
         cv_camera->set(cv::CAP_PROP_SATURATION, 20);
         cv_camera->set(cv::CAP_PROP_BRIGHTNESS, 2);
@@ -116,6 +114,11 @@ void VideoThread::start()
         emit error("No device connected!");
         emit finished();
     }
+}
+
+void VideoThread::start_detection(bool dct)
+{
+    detect = dct;
 }
 
 QImage VideoThread::MatToQImage(const cv::Mat& mat)
