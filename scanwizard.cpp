@@ -6,6 +6,9 @@ ScanWizard::ScanWizard(QWidget *parent) :
 {
     ui->setupUi(this);
     par = parent;
+
+    ui->takepic_btn->setVisible(false);
+    ui->resetview_btn->setVisible(false);
 }
 
 ScanWizard::~ScanWizard()
@@ -15,13 +18,23 @@ ScanWizard::~ScanWizard()
 
 void ScanWizard::on_Next_button_clicked()
 {
+    connect(ui->takepic_btn, SIGNAL(clicked()), par, SLOT(on_Take_img_button_clicked()));
+    connect(ui->resetview_btn, SIGNAL(clicked()), par, SLOT(on_resetCamera_button_clicked()));
+    ui->takepic_btn->setText("Take Picture");
+    ui->resetview_btn->setText("Reset view");
+    ui->takepic_btn->setStyleSheet("font: bold;");
+    ui->resetview_btn->setStyleSheet("font: bold;");
+
     switch(step++)
     {
         case(0):
+        {
             ui->label_2->setText("Place your PCB on the scannig mat as much parallel to the bottom edge as possible");
             ui->Next_button->setText("Next");
             break;
+        }
         case(1):
+        {
             ui->label_2->setText("Waiting for PCB...");
             ui->Next_button->setEnabled(false);
 
@@ -31,25 +44,33 @@ void ScanWizard::on_Next_button_clicked()
 
             emit detect_pcb(true);
             break;
+        }
         case(2):
+        {
             ui->label_2->setText("Measuring PCB height...");
             emit detect_pcb(false);
             emit send_robot_to_origin(true);
             break;
+        }
         case(3):
+        {
             ui->label_2->setText("Using the Robot Manual control panel on the right side of the window, find the relevant camera position and take the picture of the PCB. "
                                  "Next, by using of mousie, select the area of scan");
-            QPushButton * takepic_btn = new QPushButton;
-            QPushButton * resetviev_btn = new QPushButton;
-            takepic_btn->setText("Take Picture");
-            resetviev_btn->setText("Reset view");
-            takepic_btn->setStyleSheet("font: bold;");
-            resetviev_btn->setStyleSheet("font: bold;");
-            ui->horizontalLayout->addWidget(takepic_btn);
-            ui->horizontalLayout->addWidget(resetviev_btn);
-            connect(takepic_btn, SIGNAL(clicked()), par, SLOT(on_Take_img_button_clicked()));
-            connect(resetviev_btn, SIGNAL(clicked()), par, SLOT(on_resetCamera_button_clicked()));
+            emit scan_area_origin_detect(true);
+            ui->takepic_btn->setVisible(true);
+            ui->resetview_btn->setVisible(true);
             break;
+        }
+        case(4):
+        {
+            ui->label_2->setText("Check if the robot is in the corner of the desired scanning area and press START to run the scan!");
+            ui->takepic_btn->setVisible(false);
+            ui->resetview_btn->setVisible(false);
+            emit send_robot_to_origin(false);
+            emit ui->resetview_btn->clicked();
+            emit scan_area_origin_detect(false);
+            break;
+        }
 
 
     }

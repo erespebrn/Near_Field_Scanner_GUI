@@ -32,7 +32,6 @@ void VideoThread::process()
     {
 
         cv::resize(frame_to_resize, frame_cv, cv::Size(1280,960));
-
         if(detect)
         {
             cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
@@ -82,9 +81,46 @@ void VideoThread::process()
                 cv::putText(frame_cv, "(0,0)", cv::Point(cv_robot_origin.x+6, cv_robot_origin.y-6), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
                 cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
             }
-            emit positions(cv_robot_origin.x, cv_robot_origin.y, start.x, start.y, shape.width, shape.height);
+            emit positions(zoomed_origin, cv_robot_origin.x, cv_robot_origin.y, start.x, start.y, shape.width, shape.height);
         }
+        else if(zoomed_origin)
+        {
+            cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(frame_gray, frame_blur, cv::Size(15,15),0);
+            cv::Canny(frame_blur,frame_canny_to_dilate,30,90);
+            cv::Mat kernel = cv::Mat(5, 5, CV_8SC1, cv::Scalar(1));
 
+            cv::dilate(frame_canny_to_dilate, frame_canny, kernel);
+
+            std::vector<std::vector<cv::Point>> contours;
+            std::vector<cv::Vec4i> hierarchy;
+
+            cv::findContours(frame_canny, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+            cv::Point pcb_origin;
+            cv::Rect shape;
+
+            cv::namedWindow("a", cv::WINDOW_NORMAL);
+            cv::imshow("a", frame_canny);
+
+            if(!contours.empty())
+            {
+                for(std::vector<cv::Point>contour : contours)
+                {
+                    double area = cv::contourArea(contour);
+                    if(area > 10000)
+                    {
+                        std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
+                        shape = cv::boundingRect(ConvexHullPoints);
+                        cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
+                        pcb_origin = shape.tl();
+                    }
+                }
+                cv::circle(frame_cv, pcb_origin , 5, cv::Scalar(255,255,0),2);
+                cv::putText(frame_cv, "Start", pcb_origin, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
+            }
+            emit positions(zoomed_origin, pcb_origin.x, pcb_origin.y, 0, 0, 0, 0);
+        }
         QImage frame_qt = MatToQImage(frame_cv);
         emit readyImg(frame_qt);
     }
@@ -119,6 +155,11 @@ void VideoThread::start()
 void VideoThread::start_detection(bool dct)
 {
     detect = dct;
+}
+
+void VideoThread::scan_origin_detect(bool b)
+{
+    zoomed_origin = b;
 }
 
 QImage VideoThread::MatToQImage(const cv::Mat& mat)

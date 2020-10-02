@@ -23,13 +23,14 @@ public slots:
     void process();
     void start();
     void start_detection(bool);
+    void scan_origin_detect(bool);
 
 signals:
     void finished();
     void error(QString err);
     void cameraOpened();
     void readyImg(QImage);
-    void positions(int, int, int, int, int, int);
+    void positions(bool, int, int, int, int, int, int);
     void pcb_found();
 
 private:
@@ -40,6 +41,8 @@ private:
     std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
 
     bool detect = false;
+    bool zoomed_origin = false;
+
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
 };

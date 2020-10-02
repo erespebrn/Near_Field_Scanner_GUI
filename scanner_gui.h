@@ -37,6 +37,7 @@ public:
 signals:
     void insthread_stop();
     void send_coord_to_wizard(QPoint, QRect);
+    void cropped_image_coord();
 
 private slots:
 
@@ -81,7 +82,7 @@ private slots:
     void VNA_online(bool);
 
     void cv_getframe(QImage);
-    void cv_getcoord(int, int, int, int, int, int);
+    void cv_getcoord(bool, int, int, int, int, int, int);
     void cameraError(QString);
     void cameraConnected();
     void on_robot_connect_button_clicked();
@@ -113,6 +114,8 @@ private:
     const float focal_lenght = 3.81;
     uint16_t camera_distance = 890;
 
+    uint16_t camera_distance_2 = 230;
+
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
 
@@ -130,6 +133,9 @@ private:
     QPoint origin;
     QPoint pcb_corner;
     QRect pcb_size;
+    QPoint scan_pcb_corner;
+    QPoint scan_area_corner;
+    QRect scan_area_size;
 
     bool picture_taken = false;
 };

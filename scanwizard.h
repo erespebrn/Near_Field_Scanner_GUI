@@ -18,6 +18,7 @@ public:
 signals:
     void detect_pcb(bool);
     void send_robot_to_origin(bool);
+    void scan_area_origin_detect(bool);
 
 private slots:
     void on_Next_button_clicked();
@@ -36,6 +37,8 @@ private:
     uint8_t step = 0;
     uint8_t tries = 0;
     QWidget * par;
+
+    bool area_selected = false;
 };
 
 #endif // SCANWIZARD_H

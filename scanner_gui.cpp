@@ -109,8 +109,8 @@ void scanner_gui::video_thread_init()
     connect(videothread, SIGNAL(finished()), thread1, SLOT(quit()));
     connect(videothread, SIGNAL(finished()), videothread, SLOT(deleteLater()));
     connect(videothread, SIGNAL(readyImg(QImage)), this, SLOT(cv_getframe(QImage)));
-    connect(videothread, SIGNAL(positions(int, int, int, int, int, int)), this,
-            SLOT(cv_getcoord(int, int, int, int, int, int)));
+    connect(videothread, SIGNAL(positions(bool, int, int, int, int, int, int)), this,
+            SLOT(cv_getcoord(bool, int, int, int, int, int, int)));
     connect(videothread, SIGNAL(error(QString)), this, SLOT(cameraError(QString)));
     connect(videothread, SIGNAL(cameraOpened()), this, SLOT(cameraConnected()));
     thread1->start();
@@ -190,7 +190,7 @@ void scanner_gui::cv_getframe(QImage frame)
     ui->liveStream->setPixmap(QPixmap::fromImage(scaledframe_cv));
 }
 
-void scanner_gui::cv_getcoord(int o_x, int o_y, int pcb_x, int pcb_y, int pcb_w, int pcb_h)
+void scanner_gui::cv_getcoord(bool scan, int o_x, int o_y, int pcb_x, int pcb_y, int pcb_w, int pcb_h)
 {
     origin = QPoint(o_x, o_y);
 
@@ -206,9 +206,16 @@ void scanner_gui::cv_getcoord(int o_x, int o_y, int pcb_x, int pcb_y, int pcb_w,
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-    pcb_corner = QPoint(x_dist_mm, y_dist_mm);
-    pcb_size = QRect(x_dist_mm, y_dist_mm, width_cropped, height_cropped);
-    emit send_coord_to_wizard(pcb_corner, pcb_size);
+    if(!scan)
+    {
+        pcb_corner = QPoint(x_dist_mm, y_dist_mm);
+        pcb_size = QRect(x_dist_mm, y_dist_mm, width_cropped, height_cropped);
+        emit send_coord_to_wizard(pcb_corner, pcb_size);
+    }
+    else
+    {
+        scan_pcb_corner = QPoint(o_x, o_y);
+    }
 }
 
 void scanner_gui::processCapturedImage(const QImage &img)
@@ -233,19 +240,24 @@ void scanner_gui::displayCroppedImage(QRect &rect)
 
     // *** Determine the real size of the object on an image *** //
     //Since the image taken is scaled, scale factor must be used
-    float scale_factor = (float)resolution_max_height/(float)ui->lastImagePreviewLabel->height();
+    float scale_factor = (float)resolution_max_height/(float)ui->liveStream->height();
 
     //Height and width of cropped image (marked using mouse) can be computed using the following equations
-    float height_cropped = (camera_distance*rect.height()*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
-    float width_cropped = (camera_distance*rect.width()*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
+    float height_cropped = (camera_distance_2*rect.height()*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
+    float width_cropped = (camera_distance_2*rect.width()*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
 
-    float x_dist_px = croppedOrigin.x() - cv_robot_origin.x;
-    float y_dist_px = croppedOrigin.y() - cv_robot_origin.y;
+    float x_dist_px = croppedOrigin.x() - scan_pcb_corner.x();
+    float y_dist_px = croppedOrigin.y() - scan_pcb_corner.y();
 
-    float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
-    float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
+    float x_dist_mm = (camera_distance_2*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
+    float y_dist_mm = (camera_distance_2*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-    float distance = sqrt(pow(x_dist_mm,2) + pow(y_dist_mm,2));
+    scan_area_corner = QPoint(x_dist_mm, y_dist_mm);
+    scan_area_size = QRect(scan_area_corner.x(), scan_area_corner.y(), width_cropped, height_cropped);
+
+    qDebug() << scan_area_corner;
+    qDebug() << scan_area_size;
+
 }
 
 void scanner_gui::on_scan_settings_button_clicked()
@@ -371,6 +383,7 @@ void scanner_gui::on_Start_scan_button_clicked()
     connect(videothread, SIGNAL(pcb_found()), wizard, SLOT(pcb_found()));
     connect(this, SIGNAL(send_coord_to_wizard(QPoint, QRect)), wizard, SLOT(take_coord(QPoint, QRect)));
     connect(wizard, SIGNAL(send_robot_to_origin(bool)), this, SLOT(wizard_robot_to_origin(bool)));
+    connect(wizard, SIGNAL(scan_area_origin_detect(bool)), videothread, SLOT(scan_origin_detect(bool)));
 
     wizard->setWindowFlag(Qt::WindowStaysOnTopHint);
     wizard->setWindowTitle("Scan Wizard");
@@ -478,19 +491,21 @@ void scanner_gui::send_robot_coordinates(bool middle)
     uint16_t x = 0;
     uint16_t y = 0;
 
+    qDebug() << pcb_corner.x() << " " << pcb_corner.y();
+    qDebug() << scan_area_corner.x() << " " << scan_area_corner.y();
     if(middle)
     {
         x = pcb_corner.x()+5+(pcb_size.width()/2);
-        y = pcb_corner.y()+(pcb_size.height()/2);
+        y = pcb_corner.y();
     }
     else if(!middle)
     {
-        x = pcb_corner.x()+5;
-        y = pcb_corner.y();
+        x = pcb_corner.x() + scan_area_corner.x();
+        y = pcb_corner.y() + scan_area_corner.y();
     }
 
-    msg = "x_mes = %1\n";
-    msg = msg.arg(QString::number(x));
+     msg = "x_mes = %1\n";
+     msg = msg.arg(QString::number(x));
     _socket_robot.write(msg.toLocal8Bit());
     _socket_robot.waitForBytesWritten(10);
     msg = "y_mes = %1\n";
@@ -499,11 +514,11 @@ void scanner_gui::send_robot_coordinates(bool middle)
     _socket_robot.waitForBytesWritten(10);
 
     msg = "mes_row_max = %1\n";
-    msg = msg.arg(QString::number(pcb_size.width()/ui->stepsize_y->value()));
+    msg = msg.arg(QString::number(pcb_size.width()));
     _socket_robot.write(msg.toLocal8Bit());
     _socket_robot.waitForBytesWritten(10);
     msg = "mes_column_max = %1\n";
-    msg = msg.arg(QString::number(pcb_size.height()/ui->stepsize_x->value()));
+    msg = msg.arg(QString::number(pcb_size.height()));
     _socket_robot.write(msg.toLocal8Bit());
     _socket_robot.waitForBytesWritten(10);
     msg = "mes_res = %1\n";

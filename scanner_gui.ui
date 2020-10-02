@@ -489,7 +489,7 @@ p, li { white-space: pre-wrap; }
               </font>
              </property>
              <property name="text">
-              <string>Stepsize - X</string>
+              <string>Stepsize - XY</string>
              </property>
             </widget>
            </item>
@@ -542,7 +542,7 @@ p, li { white-space: pre-wrap; }
               </font>
              </property>
              <property name="text">
-              <string>Stepsize - Y</string>
+              <string>Stepsize - Z</string>
              </property>
             </widget>
            </item>
