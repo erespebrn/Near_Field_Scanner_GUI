@@ -100,8 +100,8 @@ void VideoThread::process()
             cv::Point pcb_origin;
             cv::Rect shape;
 
-            cv::namedWindow("a", cv::WINDOW_NORMAL);
-            cv::imshow("a", frame_canny);
+//            cv::namedWindow("a", cv::WINDOW_NORMAL);
+//            cv::imshow("a", frame_canny);
 
             if(!contours.empty())
             {
@@ -112,12 +112,12 @@ void VideoThread::process()
                     {
                         std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
                         shape = cv::boundingRect(ConvexHullPoints);
-                        cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
+                        //cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
                         pcb_origin = shape.tl();
                     }
                 }
-                cv::circle(frame_cv, pcb_origin , 5, cv::Scalar(255,255,0),2);
-                cv::putText(frame_cv, "Start", pcb_origin, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
+                cv::circle(frame_cv, cv::Point(pcb_origin.x+15, pcb_origin.y+5), 5, cv::Scalar(255,255,0),2);
+                cv::putText(frame_cv, "Corner", cv::Point(pcb_origin.x, pcb_origin.y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             }
             emit positions(zoomed_origin, pcb_origin.x, pcb_origin.y, 0, 0, 0, 0);
         }

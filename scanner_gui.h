@@ -43,8 +43,7 @@ private slots:
 
     //Scan start stop
     void on_Start_scan_button_clicked();
-    void on_stop_scan_button_clicked();
-
+    void stop_scan_button_clicked();
     void closeEvent(QCloseEvent *event) override;
 
     //Robot control buttons and settings
@@ -58,16 +57,16 @@ private slots:
     void on_stepsize_x_valueChanged(double arg1);
     void on_stepsize_y_valueChanged(double arg1);
     void on_scan_height_valueChanged(double arg1);
-    void on_measure_height_clicked();
+    void measure_height_clicked();
 
     //Take and process the image
-    void on_Take_img_button_clicked();
+    void Take_img_button_clicked();
     void displayCapturedImage();
     void processCapturedImage(const QImage &img);
     void displayCroppedImage(QRect& rect);
 
     //Camera settings
-    void on_resetCamera_button_clicked();
+    void resetCamera_button_clicked();
 
     //Camera recording settings
 
@@ -75,8 +74,6 @@ private slots:
     void on_scan_settings_button_clicked();
 
     //void on_actionSettings_triggered();
-
-    void on_camera_connect_button_clicked();
 
     void SA_online(bool);
     void VNA_online(bool);
@@ -90,15 +87,22 @@ private slots:
     void read_robot_msg();
     void wizard_robot_to_origin(bool);
 
+    void on_actionReset_Camera_triggered();
+
+    void on_datasave_test_clicked();
+    void wizard_mark_background(int);
+    void scan_control(bool);
+    void sa_dataread();
+    void get_sweep_points(qint32);
+
 private:
     Ui::scanner_gui *ui;
     ScanWizard * wizard;
 
     //TCP sockets
-    QTcpSocket _socket_sa;
+    QTcpSocket *_socket_sa;
     QTcpSocket _socket_vna;
-
-    QTcpSocket _socket_robot;
+    QTcpSocket *_socket_robot;
 
     // IP addresses
     const QString sa_ip_address = "192.168.11.4";
@@ -129,6 +133,9 @@ private:
     void instrument_thread_init();
     void robot_init();
     void send_robot_coordinates(bool);
+    void set_scan_step_sizes();
+    void start_scan();
+    void stop_scan();
 
     QPoint origin;
     QPoint pcb_corner;
@@ -137,7 +144,10 @@ private:
     QPoint scan_area_corner;
     QRect scan_area_size;
 
+    QColor laststyle;
     bool picture_taken = false;
+
+    qint32 sweep_points;
 };
 
 #endif // SCANNER_GUI_H

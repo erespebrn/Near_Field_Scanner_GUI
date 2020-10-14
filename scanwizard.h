@@ -19,12 +19,16 @@ signals:
     void detect_pcb(bool);
     void send_robot_to_origin(bool);
     void scan_area_origin_detect(bool);
+    void set_scan_settings(int);
+    void run_scan(bool);
 
 private slots:
     void on_Next_button_clicked();
     void pcb_found();
     void check_for_pcb();
     void take_coord(QPoint, QRect);
+
+    void on_Cancel_button_clicked();
 
 private:
     Ui::ScanWizard *ui;
