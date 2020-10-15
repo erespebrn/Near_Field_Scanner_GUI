@@ -12,6 +12,6 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("EMC LAB");
     a.setApplicationName("Near Field Scanner");
     w.show();
-    w.reset();
+    w.init();
     return a.exec();
 }

@@ -31,7 +31,7 @@ class scanner_gui : public QMainWindow
 
 public:
     scanner_gui();
-    void reset();
+    void init();
     ~scanner_gui();
 
 signals:
@@ -47,6 +47,7 @@ private slots:
     void closeEvent(QCloseEvent *event) override;
 
     //Robot control buttons and settings
+    void on_robot_connect_button_clicked();
     void on_Y_plus_button_pressed();
     void on_Y_minus_button_pressed();
     void on_X_plus_button_pressed();
@@ -57,45 +58,39 @@ private slots:
     void on_stepsize_x_valueChanged(double arg1);
     void on_stepsize_y_valueChanged(double arg1);
     void on_scan_height_valueChanged(double arg1);
-    void measure_height_clicked();
+    void measure_height();
+    void read_robot_msg();
 
-    //Take and process the image
+    //Camera, Take and process the image
     void Take_img_button_clicked();
     void displayCapturedImage();
     void processCapturedImage(const QImage &img);
     void displayCroppedImage(QRect& rect);
-
-    //Camera settings
     void resetCamera_button_clicked();
-
-    //Camera recording settings
-
     void displayViewfinder();
-    void on_scan_settings_button_clicked();
-
-    //void on_actionSettings_triggered();
-
-    void SA_online(bool);
-    void VNA_online(bool);
-
     void cv_getframe(QImage);
     void cv_getcoord(bool, int, int, int, int, int, int);
     void cameraError(QString);
     void cameraConnected();
-    void on_robot_connect_button_clicked();
-
-    void read_robot_msg();
-    void wizard_robot_to_origin(bool);
-
     void on_actionReset_Camera_triggered();
 
+    //Scan settings
+    void on_scan_settings_button_clicked();
+
+    //Measurement instruments slots
+    void SA_online(bool);
+    void VNA_online(bool);
     void on_datasave_test_clicked();
-    void wizard_mark_background(int);
-    void scan_control(bool);
     void sa_dataread();
-    void get_sweep_points(qint32);
+
+    //Wizard slots
+    void wizard_robot_to_origin(bool);
+    void wizard_mark_background(int);
+    void wizard_scan_control(bool);
 
 private:
+
+    //Widgets
     Ui::scanner_gui *ui;
     ScanWizard * wizard;
 
@@ -109,6 +104,7 @@ private:
     const QString vna_ip_address = "192.168.11.6";
     const QString robot_ip_address = "192.168.11.2";
 
+    //Autodetect measurement instruments
     bool sa_connected_bool = false;
     bool vna_connected_bool = false;
 
@@ -116,14 +112,14 @@ private:
     const float sensor_width = 4.54;
     const float sensor_height = 3.42;
     const float focal_lenght = 3.81;
-    uint16_t camera_distance = 890;
-
-    uint16_t camera_distance_2 = 230;
-
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;
 
-    //OpenCV
+    //Camera distances
+    uint16_t camera_distance = 890;
+    uint16_t camera_distance_2 = 230;
+
+    //OpenCV and image processing
     cv::Point cv_robot_origin;
     cv::Mat cv_lastImage;
     QImage lastImage;
@@ -131,12 +127,8 @@ private:
     VideoThread* videothread;
     void video_thread_init();
     void instrument_thread_init();
-    void robot_init();
-    void send_robot_coordinates(bool);
-    void set_scan_step_sizes();
-    void start_scan();
-    void stop_scan();
 
+    //PCB, Scan Area distances and sizes
     QPoint origin;
     QPoint pcb_corner;
     QRect pcb_size;
@@ -144,10 +136,21 @@ private:
     QPoint scan_area_corner;
     QRect scan_area_size;
 
-    QColor laststyle;
-    bool picture_taken = false;
+    //Robot functions
+    void robot_init();
+    void send_robot_coordinates(bool);
+    void set_scan_step_sizes();
+    void start_scan();
+    void stop_scan();
 
-    qint32 sweep_points;
+    //Data storage variables
+    QString datapath = "C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage/scan_data/";
+    QString current_scan_datapath;
+    uint16_t scan_point = 0;
+    int hm = 0;
+
+    //Minor variables
+    QColor laststyle;
 };
 
 #endif // SCANNER_GUI_H

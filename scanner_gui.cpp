@@ -10,32 +10,36 @@
 #include <ctype.h>
 #include <QTimer>
 #include <QCameraViewfinder>
-#include <QCameraInfo>
-#include <QMediaMetaData>
 #include <QMessageBox>
-#include <QPalette>
 #include <QtWidgets>
 #include <QLabel>
 #include <QFile>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QHostAddress>
 #include <QApplication>
 #include <QProcess>
 
-
-char Shift_string[80];
-QByteArray array;
-
-Q_DECLARE_METATYPE(QCameraInfo)
+//Constructor destructor
 scanner_gui::scanner_gui() : ui(new Ui::scanner_gui)
 {
     ui->setupUi(this);
+}
 
+scanner_gui::~scanner_gui()
+{
+    delete _socket_sa;
+    delete wizard;
+    delete ui;
+}
+
+
+
+//Init functions
+void scanner_gui::init()
+{
     robot_init();
     video_thread_init();
     instrument_thread_init();
-
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
 
@@ -46,39 +50,16 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui)
 
     // Minor init settings
     ui->stackedWidget->setCurrentIndex(0);
-
-}
-
-void scanner_gui::reset()
-{
-    _socket_robot->write("takepic = 1\n");
-    _socket_robot->waitForBytesWritten(1000);
-}
-
-scanner_gui::~scanner_gui()
-{
-    delete ui;
-}
-
-void scanner_gui::on_robot_connect_button_clicked()
-{
-    robot_init();
 }
 
 void scanner_gui::robot_init()
 {
-
     QString send_msg = "";
-
     // *** Robot TCP connection *** //
-    this->_socket_robot = new QTcpSocket(this);
-
-
+    _socket_robot = new QTcpSocket(this);
     _socket_robot->connectToHost(robot_ip_address, 23);
     _socket_robot->waitForConnected();
     connect(_socket_robot, SIGNAL(readyRead()), this, SLOT(read_robot_msg()));
-    qDebug() << _socket_robot->state();
-
     if(_socket_robot->state() == QAbstractSocket::ConnectedState)
     {
        ui->robot_connect_button->setEnabled(false);
@@ -91,13 +72,11 @@ void scanner_gui::robot_init()
        _socket_robot->write(send_msg.toLocal8Bit());
        _socket_robot->waitForBytesWritten(40);
 
-       send_msg = "as";
+       send_msg = "as\n";
        _socket_robot->write(send_msg.toLocal8Bit());
        _socket_robot->waitForBytesWritten(20);
 
-       send_msg = "\r\n";
-       _socket_robot->write(send_msg.toLocal8Bit());
-       _socket_robot->waitForBytesWritten(40);
+       QThread::sleep(1);
 
        send_msg = "ZPOWER ON\n";
        _socket_robot->write(send_msg.toLocal8Bit());
@@ -148,6 +127,13 @@ void scanner_gui::instrument_thread_init()
     thread2->start();
 }
 
+void scanner_gui::on_robot_connect_button_clicked()
+{
+    robot_init();
+}
+
+
+//Video and image processing functions
 void scanner_gui::Take_img_button_clicked()
 {
     displayCapturedImage();
@@ -173,26 +159,6 @@ void scanner_gui::cameraError(QString error)
     QMessageBox::critical(this, "Camera error", error);
 //    qApp->quit();
 //    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
-}
-
-void scanner_gui::SA_online(bool state)
-{
-    sa_connected_bool = state;
-
-    if(state)
-        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
-    else
-        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
-}
-
-void scanner_gui::VNA_online(bool state)
-{
-    vna_connected_bool = state;
-
-    if(state)
-        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
-    else
-        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
 }
 
 void scanner_gui::cv_getframe(QImage frame)
@@ -267,6 +233,159 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     scan_area_corner = QPoint(x_dist_mm, y_dist_mm);
     scan_area_size = QRect(scan_area_corner.x(), scan_area_corner.y(), width_cropped, height_cropped);
 
+    qDebug() << scan_area_size;
+
+}
+
+void scanner_gui::displayCapturedImage()
+{
+    ui->stackedWidget->setCurrentIndex(1);
+}
+
+void scanner_gui::on_actionReset_Camera_triggered()
+{
+    video_thread_init();
+}
+
+void scanner_gui::displayViewfinder()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+
+//Scan wizard functions
+void scanner_gui::on_Start_scan_button_clicked()
+{
+    if(_socket_robot->state() == QAbstractSocket::ConnectedState)
+    {
+        _socket_robot->write("takepic = 1\n");
+        _socket_robot->waitForBytesWritten(1000);
+
+        wizard = new ScanWizard(this);
+        connect(wizard, SIGNAL(detect_pcb(bool)), videothread, SLOT(start_detection(bool)));
+        connect(videothread, SIGNAL(pcb_found()), wizard, SLOT(pcb_found()));
+        connect(this, SIGNAL(send_coord_to_wizard(QPoint, QRect)), wizard, SLOT(take_coord(QPoint, QRect)));
+        connect(wizard, SIGNAL(send_robot_to_origin(bool)), this, SLOT(wizard_robot_to_origin(bool)));
+        connect(wizard, SIGNAL(scan_area_origin_detect(bool)), videothread, SLOT(scan_origin_detect(bool)));
+        connect(wizard, SIGNAL(set_scan_settings(int)), this, SLOT(wizard_mark_background(int)));
+        connect(wizard, SIGNAL(run_scan(bool)), this, SLOT(wizard_scan_control(bool)));
+
+        wizard->setWindowFlag(Qt::WindowStaysOnTopHint);
+        wizard->setWindowTitle("Scan Wizard");
+        wizard->move(1300,100);
+        wizard->setStyleSheet("background-color: rgba(180,210,210,1)");
+        wizard->show();
+    }
+    else
+    {
+        QMessageBox::critical(this, "Critial error!", "Scan cannot be performed when robot is offline. Turn on the robot, connect using button on the right toolbar and try again!");
+    }
+}
+
+void scanner_gui::wizard_robot_to_origin(bool middle)
+{
+    send_robot_coordinates(middle);
+    _socket_robot->write("Goto_Origin = 1\n");
+    _socket_robot->waitForBytesWritten();
+}
+
+void scanner_gui::wizard_mark_background(int r)
+{
+    switch(r)
+    {
+        case(4):
+        {
+            ui->robotManualControl_frame->setStyleSheet("background-color: rgb(150,220,150)");
+            break;
+        }
+        case(5):
+        {
+            ui->robotManualControl_frame->setStyleSheet("");
+            laststyle = ui->scan_settings_button->palette().button().color();
+            ui->scan_settings_button->setStyleSheet("background-color: rgb(150,220,150)");
+            break;
+        }
+        case(6):
+        {
+            ui->scan_settings_button->setStyleSheet("");
+            ui->stepsize_xy->setStyleSheet("background-color: rgb(150,220,150)");
+            ui->stepsize_z->setStyleSheet("background-color: rgb(150,220,150)");
+            ui->scan_height->setStyleSheet("background-color: rgb(150,220,150)");
+            break;
+        }
+        case(7):
+        {
+            ui->stepsize_xy->setStyleSheet("");
+            ui->stepsize_z->setStyleSheet("");
+            ui->scan_height->setStyleSheet("");
+            break;
+        }
+    }
+}
+
+void scanner_gui::wizard_scan_control(bool run)
+{
+    if(run)
+    {
+        set_scan_step_sizes();
+        start_scan();
+    }
+    else
+    {
+        stop_scan();
+    }
+}
+
+
+//Scan control functions
+void scanner_gui::stop_scan_button_clicked()
+{
+    _socket_robot->write("mes_abort = 1\n");
+    _socket_robot->waitForBytesWritten(30);
+    _socket_robot->write("takepic = 1\n");
+    _socket_robot->waitForBytesWritten(30);
+}
+
+void scanner_gui::start_scan()
+{
+    current_scan_datapath = datapath + "SCAN_" + QDate::currentDate().toString("dd_MM_yyyy") + "__" + QTime::currentTime().toString("hh_mm_ss") + "/";
+    qDebug() << current_scan_datapath;
+    if(!QDir(current_scan_datapath).exists())
+        qDebug() << QDir().mkdir(current_scan_datapath);
+
+    _socket_robot->write("Mes = 1\n");
+    _socket_robot->waitForBytesWritten(20);
+}
+
+void scanner_gui::stop_scan()
+{
+    _socket_robot->write("mes_abort = 1\n");
+    _socket_robot->waitForBytesWritten(20);
+    _socket_robot->write("takepic = 1\n");
+    _socket_robot->waitForBytesWritten(20);
+    scan_point = 0;
+}
+
+
+//Measure instruments functions
+void scanner_gui::SA_online(bool state)
+{
+    sa_connected_bool = state;
+
+    if(state)
+        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
+    else
+        ui->SA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
+}
+
+void scanner_gui::VNA_online(bool state)
+{
+    vna_connected_bool = state;
+
+    if(state)
+        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_on.png"));
+    else
+        ui->VNA_indicator->setPixmap(QPixmap(":/img/images/led_off.png"));
 }
 
 void scanner_gui::on_scan_settings_button_clicked()
@@ -392,32 +511,65 @@ void scanner_gui::on_scan_settings_button_clicked()
     }
 }
 
-void scanner_gui::on_Start_scan_button_clicked()
+void scanner_gui::on_datasave_test_clicked()
 {
-    if(_socket_robot->state() == QAbstractSocket::ConnectedState)
-    {
-        reset();
-        wizard = new ScanWizard(this);
-        connect(wizard, SIGNAL(detect_pcb(bool)), videothread, SLOT(start_detection(bool)));
-        connect(videothread, SIGNAL(pcb_found()), wizard, SLOT(pcb_found()));
-        connect(this, SIGNAL(send_coord_to_wizard(QPoint, QRect)), wizard, SLOT(take_coord(QPoint, QRect)));
-        connect(wizard, SIGNAL(send_robot_to_origin(bool)), this, SLOT(wizard_robot_to_origin(bool)));
-        connect(wizard, SIGNAL(scan_area_origin_detect(bool)), videothread, SLOT(scan_origin_detect(bool)));
-        connect(wizard, SIGNAL(set_scan_settings(int)), this, SLOT(wizard_mark_background(int)));
-        connect(wizard, SIGNAL(run_scan(bool)), this, SLOT(scan_control(bool)));
+    _socket_sa->write("INIT;*WAI\n");
+    _socket_sa->waitForBytesWritten(20);
+    _socket_sa->write("FORM:DATA REAL,32\n");
+    _socket_sa->waitForBytesWritten(20);
+    _socket_sa->write("TRAC:DATA? TRACE1\n");
+}
 
-        wizard->setWindowFlag(Qt::WindowStaysOnTopHint);
-        wizard->setWindowTitle("Scan Wizard");
-        wizard->move(1300,100);
-        wizard->setStyleSheet("background-color: rgba(180,210,210,1)");
-        wizard->show();
-    }
-    else
+void scanner_gui::sa_dataread()
+{
+
+    QString file_name = "scanpoint_%1.bin";
+    file_name = file_name.arg(QString::number(scan_point));
+    QFile file(current_scan_datapath + file_name);
+    char data[4];
+    char no[8];
+    bool bytes_now = false;
+    uint8_t p = 0;
+    QByteArray b_data;
+    if(file.open(QIODevice::ReadWrite))
     {
-        QMessageBox::critical(this, "Critial error!", "Scan cannot be performed when robot is offline. Turn on the robot, connect using button on the right toolbar and try again!");
+        for(int i=0; i<8; i++)
+        {
+            _socket_sa->read(data,1);
+
+            if(data[0] == '#')
+                continue;
+
+            if(isdigit(data[0]))
+            {
+                if(!bytes_now)
+                    bytes_now = true;
+                else
+                {
+                    no[p] = data[0];
+                    p++;
+                }
+            }
+            else
+            {
+                b_data.append(data[0]);
+                break;
+            }
+        }
+        uint32_t bytes = atoi(no);
+        b_data.append(_socket_sa->read(bytes));
+        QDataStream stream(&file);
+        stream.setByteOrder(QDataStream::LittleEndian);
+        stream.setVersion(QDataStream::Qt_5_12);
+        stream << b_data;
+        file.flush();
+        file.close();
+        scan_point++;
     }
 }
 
+
+//Robot control functions
 void scanner_gui::read_robot_msg()
 {
     QString msg = "";
@@ -450,6 +602,7 @@ void scanner_gui::read_robot_msg()
             case 2:
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Scan in progress...");
+                on_datasave_test_clicked();
                 break;
             case 3:
                 ui->robotTerminal->setText("");
@@ -477,8 +630,6 @@ void scanner_gui::read_robot_msg()
             case 8:
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Reached the PCB's corner!");
-//                _socket_robot->write("Mes = 1\n");
-//                _socket_robot->waitForBytesWritten();
                 break;
             case 9:
                 ui->robotTerminal->setText("");
@@ -487,27 +638,18 @@ void scanner_gui::read_robot_msg()
             case 10:
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Reached the homeposition!");
-                ui->Start_scan_button->setEnabled(true);
-                ui->Start_scan_button->setText("Start scan");
+                scan_point = 0;
                 break;
             case 11:
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Scan aborted!");
-                ui->Start_scan_button->setEnabled(true);
-                ui->Start_scan_button->setText("Start scan");
+                scan_point = 0;
                 break;
             default:
                 ui->robotTerminal->setText("Waiting...");
                 break;
         }
     }
-}
-
-void scanner_gui::wizard_robot_to_origin(bool middle)
-{
-    send_robot_coordinates(middle);
-    _socket_robot->write("Goto_Origin = 1\n");
-    _socket_robot->waitForBytesWritten();
 }
 
 void scanner_gui::send_robot_coordinates(bool middle)
@@ -541,18 +683,22 @@ void scanner_gui::set_scan_step_sizes()
 {
     QString msg = "";
     msg = "mes_row_max = %1\n";
-    msg = msg.arg(QString::number(pcb_size.width()));
+    msg = msg.arg(QString::number(scan_area_size.height()/ui->stepsize_xy->value()));
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(10);
     msg = "mes_column_max = %1\n";
-    msg = msg.arg(QString::number(pcb_size.height()));
+    msg = msg.arg(QString::number(scan_area_size.width()/ui->stepsize_xy->value()));
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(10);
-    msg = "mes_res = %1\n";
+    msg = "mes_row_res = %1\n";
     msg = msg.arg(QString::number(ui->stepsize_xy->value()));
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(10);
-    msg = "mes_delay = 0.1\n";
+    msg = "mes_column_res = %1\n";
+    msg = msg.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(10);
+    msg = "mes_delay = 1\n";
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(10);
 }
@@ -568,11 +714,9 @@ void scanner_gui::on_scan_height_valueChanged(double arg1)
     _socket_robot->waitForBytesWritten(30);
 }
 
-void scanner_gui::measure_height_clicked()
+void scanner_gui::measure_height()
 {
-    _socket_robot->write("mesheight = 1");
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    _socket_robot->write("mesheight = 1\n");
     _socket_robot->waitForBytesWritten(30);
 }
 
@@ -596,76 +740,52 @@ void scanner_gui::on_stepsize_y_valueChanged(double arg1)//stepsize y
     _socket_robot->write(QByteArray("\n"));
 }
 
-void scanner_gui::stop_scan_button_clicked()
-{
-    _socket_robot->write("mes_abort = 1\n");
-    _socket_robot->waitForBytesWritten(30);
-    _socket_robot->write("takepic = 1\n");
-    _socket_robot->waitForBytesWritten(30);
-}
-
-void scanner_gui::displayCapturedImage()
-{
-    ui->stackedWidget->setCurrentIndex(1);
-}
-
-void scanner_gui::displayViewfinder()
-{
-    ui->stackedWidget->setCurrentIndex(0);
-}
-
 void scanner_gui::on_Y_plus_button_pressed()
 {
-    double stepsize_y = ui->stepsize_xy->value();
-    sprintf(Shift_string, "yShift = %lf", -stepsize_y);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "yShift = %1\n";
+    msg = msg.arg(QString::number(-ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_Y_minus_button_pressed()
 {
-    double stepsize_y = ui->stepsize_xy->value();
-    sprintf(Shift_string, "yShift = %lf", stepsize_y);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "yShift = %1\n";
+    msg = msg.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_X_plus_button_pressed()
 {
-    double stepsize_x = ui->stepsize_xy->value();
-    sprintf(Shift_string, "xShift = %lf", -stepsize_x);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "xShift = %1\n";
+    msg = msg.arg(QString::number(-ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_X_minus_button_pressed()
 {
-    double stepsize_x = ui->stepsize_xy->value();
-    sprintf(Shift_string, "xShift = %lf", stepsize_x);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "xShift = %1\n";
+    msg = msg.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_Z_plus_pressed()
 {
-    double stepsize_z = ui->stepsize_xy->value();
-    sprintf(Shift_string, "zShift = %lf", stepsize_z);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "zShift = %1\n";
+    msg = msg.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_Z_minus_pressed()
 {
-    double stepsize_z = ui->stepsize_z->value();
-    sprintf(Shift_string, "zShift = %lf", -stepsize_z);
-    _socket_robot->write(QByteArray(Shift_string));
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
+    QString msg = "zShift = %1\n";
+    msg = msg.arg(QString::number(-ui->stepsize_xy->value()));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::on_home_button_clicked()
@@ -675,163 +795,13 @@ void scanner_gui::on_home_button_clicked()
     _socket_robot->write(QByteArray("\n"));
     _socket_robot->waitForReadyRead(50);
     _socket_robot->waitForReadyRead(50);
-    array = _socket_robot->readAll();
 }
 
 void scanner_gui::closeEvent (QCloseEvent *event)
 {
     Q_UNUSED(event);
-    qDebug("closing event");
     _socket_robot->write("mes_abort = 1\n");
     _socket_robot->waitForBytesWritten(30);
     _socket_robot->write("takepic = 1\n");
     _socket_robot->waitForBytesWritten(30);
-}
-
-void scanner_gui::on_actionReset_Camera_triggered()
-{
-    video_thread_init();
-}
-
-void scanner_gui::on_datasave_test_clicked()
-{
-    _socket_sa->write("INIT;*WAI\n");
-    _socket_sa->waitForBytesWritten(20);
-    _socket_sa->write("FORM:DATA REAL,32\n");
-    _socket_sa->waitForBytesWritten(20);
-    _socket_sa->write("TRAC:DATA? TRACE1\n");
-}
-
-void scanner_gui::sa_dataread()
-{
-    QFile file("C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage_test/test.bin");
-    char data[4];
-    QByteArray b_data;
-    if(file.open(QIODevice::ReadWrite))
-    {
-        for(int i=0; i<8; i++)
-        {
-            _socket_sa->read(data,1);
-            if(data[0] == '#')
-            {
-                continue;
-            }
-            if(isdigit(data[0]))
-                qDebug() << data[0] << ":" << isdigit(data[0]);
-            else
-            {
-                b_data.append(data[0]);
-                break;
-            }
-        }
-
-        while(_socket_sa->bytesAvailable())
-        {
-            qDebug() << _socket_sa->bytesAvailable();
-            b_data.append(_socket_sa->readAll());
-        }
-
-        QDataStream stream(&file);
-        stream.setByteOrder(QDataStream::LittleEndian);
-        stream.setVersion(QDataStream::Qt_5_12);
-        stream << b_data;
-        file.flush();
-        file.close();
-        system("cd C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage_test&&matlab -nosplash -nodesktop -nodisplay -r \"try; matlab; end;quit();\"");
-    }
-
-    {
-        //    QFile file("C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage_test/test.bin");
-        //    if(file.open(QIODevice::ReadWrite))
-        //    {
-        //        QDataStream stream(&file);
-        //        stream.setByteOrder(QDataStream::LittleEndian);
-        //        stream.setVersion(QDataStream::Qt_5_12);
-        //        while(_socket_sa->bytesAvailable())
-        //        {
-        //            QByteArray data_in = _socket_sa->readAll();
-        //            data_in = data_in.remove(0,2);
-        //            int numSamples = data_in.size() / 4;
-
-        //            const float* ptrFloat = reinterpret_cast<const float*>(data_in.constData());
-
-        //            for (int i=0; i<numSamples; ++i)
-        //            {
-        //                if(i < 2)
-        //                    continue;
-        //                stream << *ptrFloat;
-        //                ptrFloat++;
-        //            }
-        //        }
-        //        file.flush();
-        //        file.close();
-        //    }
-    }
-}
-
-void scanner_gui::get_sweep_points(qint32 pts)
-{
-    sweep_points = pts;
-}
-
-void scanner_gui::wizard_mark_background(int r)
-{
-    switch(r)
-    {
-        case(4):
-        {
-            ui->robotManualControl_frame->setStyleSheet("background-color: rgb(150,220,150)");
-            break;
-        }
-        case(5):
-        {
-            ui->robotManualControl_frame->setStyleSheet("");
-            laststyle = ui->scan_settings_button->palette().button().color();
-            ui->scan_settings_button->setStyleSheet("background-color: rgb(150,220,150)");
-            break;
-        }
-        case(6):
-        {
-            qDebug() << laststyle.name();
-            ui->scan_settings_button->setStyleSheet("");
-            ui->stepsize_xy->setStyleSheet("background-color: rgb(150,220,150)");
-            ui->stepsize_z->setStyleSheet("background-color: rgb(150,220,150)");
-            ui->scan_height->setStyleSheet("background-color: rgb(150,220,150)");
-            break;
-        }
-        case(7):
-        {
-            ui->stepsize_xy->setStyleSheet("");
-            ui->stepsize_z->setStyleSheet("");
-            ui->scan_height->setStyleSheet("");
-            break;
-        }
-    }
-}
-
-void scanner_gui::scan_control(bool run)
-{
-    if(run)
-    {
-        set_scan_step_sizes();
-        start_scan();
-    }
-    else
-    {
-        stop_scan();
-    }
-}
-
-void scanner_gui::start_scan()
-{
-    _socket_robot->write("Mes = 1\n");
-    _socket_robot->waitForBytesWritten(20);
-}
-
-void scanner_gui::stop_scan()
-{
-    _socket_robot->write("mes_abort = 1\n");
-    _socket_robot->waitForBytesWritten(20);
-    _socket_robot->write("takepic = 1\n");
-    _socket_robot->waitForBytesWritten(20);
 }
