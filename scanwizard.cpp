@@ -32,7 +32,8 @@ void ScanWizard::on_Next_button_clicked()
         case(0):
         {
             ui->label->setText("Place PCB");
-            ui->label_2->setText("Place your PCB on the scannig mat as much parallel to the bottom edge as possible");
+            ui->label_2->setText("Place your PCB on the scannig mat.\n\n"
+                                 "* Important is to place is as much parallel to the bottom table edge as possible.");
             ui->Next_button->setText("Next");
             break;
         }
@@ -60,8 +61,10 @@ void ScanWizard::on_Next_button_clicked()
         case(3):
         {
             ui->label->setText("Scan area");
-            ui->label_2->setText("Using the Robot Manual control panel on the right side of the window, find the relevant camera position.\n"
-                                 "Make sure that the 'Corner' circle is still present and take a picture. Next, by using of mousie, select the area of scan");
+            ui->label_2->setText("* Using the Robot Manual control panel on the right side of the window, find the relevant camera position.\n\n"
+                                 "* Make sure that the 'Corner' circle is still present and take a picture.\n\n"
+                                 "* If the picture is blured, move the robot higher using Z+\n\n"
+                                 "* Next, by using of mousie, select the area of scan");
             emit set_scan_settings(step);
             emit scan_area_origin_detect(true);
             ui->takepic_btn->setVisible(true);
@@ -71,7 +74,8 @@ void ScanWizard::on_Next_button_clicked()
         case(4):
         {
             ui->label->setText("Scan settings");
-            ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
+            ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n "
+                                 "* Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
             ui->takepic_btn->setVisible(false);
             ui->resetview_btn->setVisible(false);
             emit send_robot_to_origin(false);
@@ -150,4 +154,12 @@ void ScanWizard::on_Cancel_button_clicked()
     emit detect_pcb(false);
     emit ui->resetview_btn->clicked();
     this->hide();
+}
+
+void ScanWizard::scan_finished()
+{
+    ui->label->setText("Scan finished");
+    ui->label_2->setText("Scanning process finished!");
+    ui->Next_button->setVisible(false);
+    ui->Cancel_button->setText("Close");
 }

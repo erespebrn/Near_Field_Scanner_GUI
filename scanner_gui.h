@@ -38,6 +38,7 @@ signals:
     void insthread_stop();
     void send_coord_to_wizard(QPoint, QRect);
     void cropped_image_coord();
+    void scan_finished_to_wizard();
 
 private slots:
 
@@ -81,6 +82,7 @@ private slots:
     void SA_online(bool);
     void VNA_online(bool);
     void on_datasave_test_clicked();
+    void get_trace_data(bool);
     void sa_dataread();
 
     //Wizard slots
@@ -116,8 +118,8 @@ private:
     const uint16_t resolution_max_height = 3120;
 
     //Camera distances
-    uint16_t camera_distance = 890;
-    uint16_t camera_distance_2 = 230;
+    uint16_t camera_distance = 900;
+    uint16_t camera_distance_2 = 220;
 
     //OpenCV and image processing
     cv::Point cv_robot_origin;
@@ -143,14 +145,17 @@ private:
     void start_scan();
     void stop_scan();
 
-    //Data storage variables
+    //Data storage variables and functions
     QString datapath = "C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage/scan_data/";
+    QString matlab_script_path = "C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage/";
+    QString foldername = "SCAN_21_10_2020__15_34_11";
     QString current_scan_datapath;
     uint16_t scan_point = 0;
     int hm = 0;
 
     //Minor variables
     QColor laststyle;
+    bool time_for_amplitude = false;
 };
 
 #endif // SCANNER_GUI_H

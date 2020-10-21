@@ -218,7 +218,6 @@ void scan_settings::write_sa_settings()
         mystring = "";
         // Save to the preset file
         settings.setValue("SA_SWEEP/Sweep points", ui->sweep_points_spinbox->value());
-        emit sweep_points_for_data(ui->sweep_points_spinbox->value());
 
         //Trace hold seeting
         //Send SPCI command

@@ -63,14 +63,14 @@ void VideoThread::process()
                     double area = cv::contourArea(contour);
                     if(area > 10000 && area < 700000)
                     {
-                        std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
-                        shape = cv::boundingRect(ConvexHullPoints);
-                        cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
+                        //std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
+                        shape = cv::boundingRect(contour);
+                        //cv::rectangle(frame_cv, shape, cv::Scalar(0,255,0),2);
                         start = cv::Point(shape.x,shape.y);
                         emit pcb_found();
                     }
                 }
-                cv::circle(frame_cv, start, 5, cv::Scalar(255,255,0),2);
+                cv::circle(frame_cv, start, 3, cv::Scalar(255,255,0),2);
                 cv::putText(frame_cv, "Start", start, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             }
 
@@ -88,21 +88,30 @@ void VideoThread::process()
             cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
             cv::GaussianBlur(frame_gray, frame_blur, cv::Size(15,15),0);
             cv::Canny(frame_blur,frame_canny_to_dilate,30,90);
-            cv::Mat kernel = cv::Mat(5, 5, CV_8SC1, cv::Scalar(1));
+            cv::Mat kernel = cv::Mat(6, 6, CV_8SC1, cv::Scalar(1));
 
             cv::dilate(frame_canny_to_dilate, frame_canny, kernel);
 
             std::vector<std::vector<cv::Point>> contours;
             std::vector<cv::Vec4i> hierarchy;
+            cv::Mat bin;
 
-            cv::findContours(frame_canny, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+            cv::threshold(frame_gray, bin, 0, 255, cv::THRESH_OTSU+cv::THRESH_BINARY);
+            cv::findContours(bin, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
             cv::Point pcb_origin;
-            cv::Rect shape;
+            cv::RotatedRect shape;
+            cv::Point2f points[4];
+            std::vector<cv::Point2f> corners;
 
-//            cv::namedWindow("a", cv::WINDOW_NORMAL);
-//            cv::imshow("a", frame_canny);
-
+//            cv::goodFeaturesToTrack(frame_canny, corners, 10, 0.01, 1000);
+//            if(!corners.empty())
+//            {
+//                for (size_t idx = 0; idx < corners.size(); idx++)
+//                {
+//                        cv::circle(frame_cv,corners.at(idx),1,cv::Scalar(255,255,0),2);
+//                }
+//            }
             if(!contours.empty())
             {
                 for(std::vector<cv::Point>contour : contours)
@@ -110,13 +119,15 @@ void VideoThread::process()
                     double area = cv::contourArea(contour);
                     if(area > 10000)
                     {
-                        std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
-                        shape = cv::boundingRect(ConvexHullPoints);
+                        cv::approxPolyDP(contour, corners, 0.05*cv::arcLength(contour,true), true);
+                        //std::vector<cv::Point> ConvexHullPoints = contourConvexHull(contour);
+                        shape = cv::minAreaRect(corners);
+                        shape.points(points);
                         //cv::rectangle(frame_cv, shape.tl(), shape.br(), cv::Scalar(0,255,0),2);
-                        pcb_origin = shape.tl();
+                        pcb_origin = cv::Point(points[2].x, points[2].y);
                     }
                 }
-                cv::circle(frame_cv, cv::Point(pcb_origin.x+15, pcb_origin.y+5), 5, cv::Scalar(255,255,0),2);
+                cv::circle(frame_cv, cv::Point(pcb_origin.x, pcb_origin.y), 3, cv::Scalar(255,255,0),2);
                 cv::putText(frame_cv, "Corner", cv::Point(pcb_origin.x, pcb_origin.y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             }
             emit positions(zoomed_origin, pcb_origin.x, pcb_origin.y, 0, 0, 0, 0);
@@ -138,9 +149,9 @@ void VideoThread::start()
         cv_camera->set(cv::CAP_PROP_FRAME_HEIGHT, resolution_max_height);
         cv_camera->set(cv::CAP_PROP_CONTRAST, -10);
         cv_camera->set(cv::CAP_PROP_AUTOFOCUS, 1);
-        cv_camera->set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        cv_camera->set(cv::CAP_PROP_EXPOSURE, -3);
         cv_camera->set(cv::CAP_PROP_SATURATION, 20);
-        cv_camera->set(cv::CAP_PROP_BRIGHTNESS, 2);
+        cv_camera->set(cv::CAP_PROP_BRIGHTNESS, 3);
         timer = new QTimer;
         connect(timer, &QTimer::timeout, this, &VideoThread::process);
         timer->start(1);

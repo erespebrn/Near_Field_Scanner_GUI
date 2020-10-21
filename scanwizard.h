@@ -27,8 +27,8 @@ private slots:
     void pcb_found();
     void check_for_pcb();
     void take_coord(QPoint, QRect);
-
     void on_Cancel_button_clicked();
+    void scan_finished();
 
 private:
     Ui::ScanWizard *ui;

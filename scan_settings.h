@@ -20,7 +20,6 @@ public:
     ~scan_settings();
 
 signals:
-    void sweep_points_for_data(qint32);
 
 private slots:
 
