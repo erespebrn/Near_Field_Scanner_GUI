@@ -38,6 +38,7 @@ signals:
     void insthread_stop();
     void send_coord_to_wizard(QPoint, QRect);
     void cropped_image_coord();
+    void height_measured();
     void scan_finished_to_wizard();
 
 private slots:
@@ -58,8 +59,6 @@ private slots:
     void on_home_button_clicked();
     void on_stepsize_x_valueChanged(double arg1);
     void on_stepsize_y_valueChanged(double arg1);
-    void on_scan_height_valueChanged(double arg1);
-    void measure_height();
     void read_robot_msg();
 
     //Camera, Take and process the image
@@ -118,8 +117,8 @@ private:
     const uint16_t resolution_max_height = 3120;
 
     //Camera distances
-    uint16_t camera_distance = 900;
-    uint16_t camera_distance_2 = 220;
+    uint32_t camera_distance = 900;
+    uint32_t camera_distance_2 = 220;
 
     //OpenCV and image processing
     cv::Point cv_robot_origin;
@@ -156,6 +155,7 @@ private:
     //Minor variables
     QColor laststyle;
     bool time_for_amplitude = false;
+    bool robot_first_run = true;
 };
 
 #endif // SCANNER_GUI_H

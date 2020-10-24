@@ -59,7 +59,6 @@ void scanner_gui::robot_init()
     _socket_robot = new QTcpSocket(this);
     _socket_robot->connectToHost(robot_ip_address, 23);
     _socket_robot->waitForConnected();
-    connect(_socket_robot, SIGNAL(readyRead()), this, SLOT(read_robot_msg()));
     if(_socket_robot->state() == QAbstractSocket::ConnectedState)
     {
        ui->robot_connect_button->setEnabled(false);
@@ -86,6 +85,12 @@ void scanner_gui::robot_init()
        _socket_robot->write(send_msg.toLocal8Bit());
        _socket_robot->waitForBytesWritten(20);
        // *** //
+
+        QThread::sleep(1);
+
+       connect(_socket_robot, SIGNAL(readyRead()), this, SLOT(read_robot_msg()));
+
+       QThread::sleep(1);
     }
     else
     {
@@ -269,6 +274,7 @@ void scanner_gui::on_Start_scan_button_clicked()
         connect(wizard, SIGNAL(scan_area_origin_detect(bool)), videothread, SLOT(scan_origin_detect(bool)));
         connect(wizard, SIGNAL(set_scan_settings(int)), this, SLOT(wizard_mark_background(int)));
         connect(wizard, SIGNAL(run_scan(bool)), this, SLOT(wizard_scan_control(bool)));
+        connect(this, SIGNAL(height_measured()), wizard, SLOT(height_measure_finished()));
         connect(this, SIGNAL(scan_finished_to_wizard()), wizard, SLOT(scan_finished()));
 
         wizard->setWindowFlag(Qt::WindowStaysOnTopHint);
@@ -283,13 +289,23 @@ void scanner_gui::on_Start_scan_button_clicked()
     {
         QMessageBox::critical(this, "Critial error!", "Scan cannot be performed when robot is offline. Turn on the robot, connect using button on the right toolbar and try again!");
     }
+    wizard_mark_background(10);
 }
 
 void scanner_gui::wizard_robot_to_origin(bool middle)
 {
-    send_robot_coordinates(middle);
-    _socket_robot->write("Goto_Origin = 1\n");
-    _socket_robot->waitForBytesWritten();
+    if(middle)
+    {
+        send_robot_coordinates(middle);
+        _socket_robot->write("mesheight = 1\n");
+        _socket_robot->waitForBytesWritten(10);
+    }
+    else
+    {
+        send_robot_coordinates(middle);
+        _socket_robot->write("Goto_Origin = 1\n");
+        _socket_robot->waitForBytesWritten();
+    }
 }
 
 void scanner_gui::wizard_mark_background(int r)
@@ -318,6 +334,14 @@ void scanner_gui::wizard_mark_background(int r)
         }
         case(7):
         {
+            ui->stepsize_xy->setStyleSheet("");
+            ui->stepsize_z->setStyleSheet("");
+            ui->scan_height->setStyleSheet("");
+            break;
+        }
+        case(10):
+        {
+            ui->robotManualControl_frame->setStyleSheet("");
             ui->stepsize_xy->setStyleSheet("");
             ui->stepsize_z->setStyleSheet("");
             ui->scan_height->setStyleSheet("");
@@ -639,88 +663,118 @@ void scanner_gui::sa_dataread()
 //Robot control functions
 void scanner_gui::read_robot_msg()
 {
-    QString msg = "";
-    char robot_msg[128];
-    char a = ' ';
-    uint16_t y = 0;
-    _socket_robot->read(robot_msg, 128);
-    while(a != '@')
+    char robot_msg_raw[2];
+    char msg_arg[2];
+    char msg[20];
+    uint8_t i = 0;
+    float height = 0.0;
+
+    if(robot_first_run)
     {
-       a = robot_msg[y++];
-       //qDebug() << a;
-       if(y == strlen(robot_msg))
-           break;
-    }
-    if(a == '@')
-    {
-        char buffer[3];
-        for(int i=1; i<3; i++)
+        while(_socket_robot->bytesAvailable())
         {
-            buffer[i-1] = robot_msg[y++];
+            qDebug() << _socket_robot->readAll();
         }
-        int i = atoi(buffer);
-       // qDebug() << buffer;
-        switch(i)
+        robot_first_run = false;
+    }
+
+    if(_socket_robot->bytesAvailable() && !robot_first_run)
+    {
+        while(_socket_robot->bytesAvailable())
         {
-            case 1:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Scan started");
-                break;
-            case 2:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Scan in progress...");
-                if(sa_connected_bool)
-                    get_trace_data(time_for_amplitude);
-                break;
-            case 3:
+            _socket_robot->read(robot_msg_raw, 1);
+            if(robot_msg_raw[0] == '@')
             {
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Scan finished!");
-                emit scan_finished_to_wizard();
-                ui->Start_scan_button->setEnabled(true);
-                ui->Start_scan_button->setText("Start scan");
+                int z = 0;
+                while(msg_arg[0] != '\r')
+                {
+                    _socket_robot->read(msg_arg, 1);
+                    msg[z]=msg_arg[0];
+                    z++;
+                } 
+                msg[z]='\0';
                 break;
             }
-            case 4:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Height measure started...");
-                break;
-            case 5:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Height measure done!");
-                break;
-            case 6:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Robot position");
-                break;
-            case 7:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Going to the PCB's corner...");
-                resetCamera_button_clicked();
-                break;
-            case 8:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Reached the PCB's corner!");
-                break;
-            case 9:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Moving to the homeposition...");
-                break;
-            case 10:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Reached the homeposition!");
-                scan_point = 0;
-                break;
-            case 11:
-                ui->robotTerminal->setText("");
-                ui->robotTerminal->setText("Scan aborted!");
-                scan_point = 0;
-                break;
-            default:
-                ui->robotTerminal->setText("Waiting...");
-                break;
         }
+        char arg_to_cvt[3];
+        arg_to_cvt[0] = msg[0];
+        arg_to_cvt[1] = msg[1];
+        arg_to_cvt[2] = '\n';
+        i = atoi(arg_to_cvt);
     }
+
+
+    switch(i)
+    {
+        case 1:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Scan started");
+            break;
+        case 2:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Scan in progress...");
+            if(sa_connected_bool)
+                get_trace_data(time_for_amplitude);
+            break;
+        case 3:
+        {
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Scan finished!");
+            emit scan_finished_to_wizard();
+            break;
+        }
+        case 4:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Height measure started...");
+            break;
+        case 5:
+        {
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Height measure done!");
+
+            char value_to_cvt[10];
+
+            for(size_t i=2; i<strlen(msg); i++)
+                value_to_cvt[i-2] = msg[i];
+
+            height = atof(value_to_cvt);
+            height = roundf(height);
+            camera_distance_2 = int(sqrt(pow(height,2)));
+            emit height_measured();
+            break;
+        }
+        case 6:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Robot position");
+            break;
+        case 7:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Going to the PCB's corner...");
+            resetCamera_button_clicked();
+            break;
+        case 8:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Reached the PCB's corner!");
+            break;
+        case 9:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Moving to the homeposition...");
+            break;
+        case 10:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Reached the homeposition!");
+            scan_point = 0;
+            break;
+        case 11:
+            ui->robotTerminal->setText("");
+            ui->robotTerminal->setText("Scan aborted!");
+            scan_point = 0;
+            break;
+        default:
+            ui->robotTerminal->setText("Waiting...");
+            break;
+    }
+
 }
 
 void scanner_gui::send_robot_coordinates(bool middle)
@@ -732,21 +786,31 @@ void scanner_gui::send_robot_coordinates(bool middle)
     if(middle)
     {
         x = pcb_corner.x()+5+(pcb_size.width()/2);
-        y = pcb_corner.y()-10;
+        y = pcb_corner.y()+(pcb_size.height()/2)+5;
+
+        msg = "fast_x = %1\n";
+        msg = msg.arg(QString::number(x));
+        _socket_robot->write(msg.toLocal8Bit());
+        _socket_robot->waitForBytesWritten(10);
+        msg = "fast_y = %1\n";
+        msg = msg.arg(QString::number(y));
+        _socket_robot->write(msg.toLocal8Bit());
+        _socket_robot->waitForBytesWritten(10);
     }
     else if(!middle)
     {
         x = pcb_corner.x() + scan_area_corner.x();
         y = pcb_corner.y() + scan_area_corner.y();
+
+        msg = "x_mes = %1\n";
+        msg = msg.arg(QString::number(x));
+        _socket_robot->write(msg.toLocal8Bit());
+        _socket_robot->waitForBytesWritten(10);
+        msg = "y_mes = %1\n";
+        msg = msg.arg(QString::number(y));
+        _socket_robot->write(msg.toLocal8Bit());
+        _socket_robot->waitForBytesWritten(10);
     }
-     msg = "x_mes = %1\n";
-     msg = msg.arg(QString::number(x));
-    _socket_robot->write(msg.toLocal8Bit());
-    _socket_robot->waitForBytesWritten(10);
-    msg = "y_mes = %1\n";
-    msg = msg.arg(QString::number(y));
-    _socket_robot->write(msg.toLocal8Bit());
-    _socket_robot->waitForBytesWritten(10);
 }
 
 void scanner_gui::set_scan_step_sizes()
@@ -771,23 +835,6 @@ void scanner_gui::set_scan_step_sizes()
     msg = "mes_delay = 1\n";
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(10);
-}
-
-void scanner_gui::on_scan_height_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1);
-    QString mystring = "measuring_height = %1";
-    mystring = mystring.arg(QString::number(ui->scan_height->value()));
-    _socket_robot->write("measuring_height = 1");
-    _socket_robot->waitForReadyRead();
-    _socket_robot->write(QByteArray("\n"));
-    _socket_robot->waitForBytesWritten(30);
-}
-
-void scanner_gui::measure_height()
-{
-    _socket_robot->write("mesheight = 1\n");
-    _socket_robot->waitForBytesWritten(30);
 }
 
 void scanner_gui::on_stepsize_x_valueChanged(double arg1)//stepsize x

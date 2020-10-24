@@ -21,6 +21,7 @@ signals:
     void scan_area_origin_detect(bool);
     void set_scan_settings(int);
     void run_scan(bool);
+    void measure_height();
 
 private slots:
     void on_Next_button_clicked();
@@ -28,6 +29,7 @@ private slots:
     void check_for_pcb();
     void take_coord(QPoint, QRect);
     void on_Cancel_button_clicked();
+    void height_measure_finished();
     void scan_finished();
 
 private:

@@ -1,6 +1,8 @@
 #include "scanwizard.h"
 #include "ui_scanwizard.h"
 #include <cmath>
+#include <QThread>
+#include <QDebug>
 ScanWizard::ScanWizard(QWidget *parent) :
     ui(new Ui::ScanWizard)
 {
@@ -17,6 +19,7 @@ ScanWizard::ScanWizard(QWidget *parent) :
 
 ScanWizard::~ScanWizard()
 {
+    emit set_scan_settings(10);
     delete ui;
 }
 
@@ -54,6 +57,7 @@ void ScanWizard::on_Next_button_clicked()
         {
             ui->label->setText("PCB height");
             ui->label_2->setText("Measuring PCB height...");
+            ui->Next_button->setVisible(false);
             emit detect_pcb(false);
             emit send_robot_to_origin(true);
             break;
@@ -153,7 +157,16 @@ void ScanWizard::on_Cancel_button_clicked()
     emit scan_area_origin_detect(false);
     emit detect_pcb(false);
     emit ui->resetview_btn->clicked();
+    this->deleteLater();
     this->hide();
+}
+
+void ScanWizard::height_measure_finished()
+{
+    ui->label->setText("Height measured");
+    ui->label_2->setText("Height measured!");
+    ui->Next_button->setVisible(true);
+    emit ui->Next_button->clicked();
 }
 
 void ScanWizard::scan_finished()
