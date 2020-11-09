@@ -28,6 +28,8 @@ scanner_gui::scanner_gui() : ui(new Ui::scanner_gui)
 scanner_gui::~scanner_gui()
 {
     delete _socket_sa;
+    delete _socket_robot;
+    delete videothread;
     delete wizard;
     delete ui;
 }
@@ -114,13 +116,14 @@ void scanner_gui::video_thread_init()
             SLOT(cv_getcoord(bool, int, int, int, int, int, int)));
     connect(videothread, SIGNAL(error(QString)), this, SLOT(cameraError(QString)));
     connect(videothread, SIGNAL(cameraOpened()), this, SLOT(cameraConnected()));
+    connect(ui->camera_focus_dial, SIGNAL(valueChanged(int)), videothread, SLOT(refocus(int)));
     thread1->start();
 }
 
 void scanner_gui::instrument_thread_init()
 {
     QThread * thread2 = new QThread;
-    Instrument_Thread * insthread = new Instrument_Thread(sa_ip_address, vna_ip_address);
+    insthread = new Instrument_Thread(sa_ip_address, vna_ip_address);
     insthread->moveToThread(thread2);
     connect(thread2, SIGNAL(started()), insthread, SLOT(start()));
     connect(thread2, SIGNAL(finished()), thread2, SLOT(deleteLater()));
@@ -189,10 +192,13 @@ void scanner_gui::cv_getcoord(bool scan, int o_x, int o_y, int pcb_x, int pcb_y,
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
+    width_cropped += 1;
+    height_cropped -= 2;
+
     if(!scan)
     {
-        pcb_corner = QPoint(x_dist_mm, y_dist_mm);
-        pcb_size = QRect(x_dist_mm, y_dist_mm, width_cropped, height_cropped);
+        pcb_corner = QPoint(int(round(x_dist_mm)), int(round(y_dist_mm)));
+        pcb_size = QRect(pcb_corner.x(), pcb_corner.y(), int(round(width_cropped)), int(round(height_cropped)));
         emit send_coord_to_wizard(pcb_corner, pcb_size);
     }
     else
@@ -210,9 +216,7 @@ void scanner_gui::processCapturedImage(const QImage &img)
 
 void scanner_gui::displayCroppedImage(QRect &rect)
 {
-
     croppedOrigin = rect;
-
     const QPixmap* pixmap = ui->lastImagePreviewLabel->pixmap();
     QImage image( pixmap->toImage() );
     QImage cropped = image.copy(rect);
@@ -229,14 +233,14 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     float height_cropped = (camera_distance_2*rect.height()*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
     float width_cropped = (camera_distance_2*rect.width()*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
 
-    float x_dist_px = croppedOrigin.x() - scan_pcb_corner.x();
-    float y_dist_px = croppedOrigin.y() - scan_pcb_corner.y();
+    float x_dist_px = scan_pcb_corner.x() - croppedOrigin.x();
+    float y_dist_px = scan_pcb_corner.y() - croppedOrigin.y();
 
     float x_dist_mm = (camera_distance_2*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance_2*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-    scan_area_corner = QPoint(x_dist_mm+5, y_dist_mm+5);
-    scan_area_size = QRect(scan_area_corner.x(), scan_area_corner.y(), width_cropped, height_cropped);
+    scan_area_corner = QPoint(int(round(x_dist_mm)), int(round(y_dist_mm)));
+    scan_area_size = QRect(scan_area_corner.x(), scan_area_corner.y(), int(round(width_cropped)), int(round(height_cropped)));
 
     qDebug() << scan_area_corner;
 
@@ -274,6 +278,8 @@ void scanner_gui::on_Start_scan_button_clicked()
         connect(wizard, SIGNAL(scan_area_origin_detect(bool)), videothread, SLOT(scan_origin_detect(bool)));
         connect(wizard, SIGNAL(set_scan_settings(int)), this, SLOT(wizard_mark_background(int)));
         connect(wizard, SIGNAL(run_scan(bool)), this, SLOT(wizard_scan_control(bool)));
+        connect(wizard, SIGNAL(send_for_2nd_takepic()), this, SLOT(send_to_top_pcb_edge()));
+        connect(wizard, SIGNAL(ask_for_cam_height()), this, SLOT(ask_robot_for_cam_height()));
         connect(this, SIGNAL(height_measured()), wizard, SLOT(height_measure_finished()));
         connect(this, SIGNAL(scan_finished_to_wizard()), wizard, SLOT(scan_finished()));
 
@@ -342,6 +348,7 @@ void scanner_gui::wizard_mark_background(int r)
         case(10):
         {
             ui->robotManualControl_frame->setStyleSheet("");
+            ui->scan_settings_button->setStyleSheet("");
             ui->stepsize_xy->setStyleSheet("");
             ui->stepsize_z->setStyleSheet("");
             ui->scan_height->setStyleSheet("");
@@ -380,7 +387,7 @@ void scanner_gui::start_scan()
     if(!QDir(current_scan_datapath).exists())
         qDebug() << QDir().mkdir(current_scan_datapath);
 
-    get_trace_data(time_for_amplitude);
+    //get_trace_data(time_for_amplitude);
 
     _socket_robot->write("Mes = 1\n");
     _socket_robot->waitForBytesWritten(20);
@@ -663,11 +670,10 @@ void scanner_gui::sa_dataread()
 //Robot control functions
 void scanner_gui::read_robot_msg()
 {
-    char robot_msg_raw[2];
-    char msg_arg[2];
+    char robot_msg_raw[10];
+    char msg_arg[10];
     char msg[20];
     uint8_t i = 0;
-    float height = 0.0;
 
     if(robot_first_run)
     {
@@ -686,7 +692,7 @@ void scanner_gui::read_robot_msg()
             if(robot_msg_raw[0] == '@')
             {
                 int z = 0;
-                while(msg_arg[0] != '\r')
+                while(msg_arg[0] != '\r' && z < 20)
                 {
                     _socket_robot->read(msg_arg, 1);
                     msg[z]=msg_arg[0];
@@ -696,13 +702,12 @@ void scanner_gui::read_robot_msg()
                 break;
             }
         }
-        char arg_to_cvt[3];
+        char arg_to_cvt[5];
         arg_to_cvt[0] = msg[0];
         arg_to_cvt[1] = msg[1];
         arg_to_cvt[2] = '\n';
         i = atoi(arg_to_cvt);
     }
-
 
     switch(i)
     {
@@ -713,8 +718,8 @@ void scanner_gui::read_robot_msg()
         case 2:
             ui->robotTerminal->setText("");
             ui->robotTerminal->setText("Scan in progress...");
-            if(sa_connected_bool)
-                get_trace_data(time_for_amplitude);
+//            if(sa_connected_bool)
+//                get_trace_data(time_for_amplitude);
             break;
         case 3:
         {
@@ -736,10 +741,11 @@ void scanner_gui::read_robot_msg()
 
             for(size_t i=2; i<strlen(msg); i++)
                 value_to_cvt[i-2] = msg[i];
-
+            float height = 0.0;
             height = atof(value_to_cvt);
             height = roundf(height);
-            camera_distance_2 = int(sqrt(pow(height,2)));
+            real_height = int(sqrt(pow(height,2)));
+            qDebug() << "PCB height: " << real_height;
             emit height_measured();
             break;
         }
@@ -755,6 +761,7 @@ void scanner_gui::read_robot_msg()
         case 8:
             ui->robotTerminal->setText("");
             ui->robotTerminal->setText("Reached the PCB's corner!");
+            ask_robot_for_cam_height();
             break;
         case 9:
             ui->robotTerminal->setText("");
@@ -770,6 +777,18 @@ void scanner_gui::read_robot_msg()
             ui->robotTerminal->setText("Scan aborted!");
             scan_point = 0;
             break;
+        case 15:
+        {
+            char value_to_cvt[10];
+            for(size_t i=2; i<strlen(msg); i++)
+                value_to_cvt[i-2] = msg[i];
+            float height = 0.0;
+            height = atof(value_to_cvt);
+            height = roundf(height);
+            camera_distance_2 = height;
+            qDebug() << "Camera distance: " << camera_distance_2;
+            break;
+        }
         default:
             ui->robotTerminal->setText("Waiting...");
             break;
@@ -785,8 +804,11 @@ void scanner_gui::send_robot_coordinates(bool middle)
 
     if(middle)
     {
-        x = pcb_corner.x()+5+(pcb_size.width()/2);
-        y = pcb_corner.y()+(pcb_size.height()/2)+5;
+        x = pcb_corner.x()-(pcb_size.width()/2);
+        y = pcb_corner.y()-5-(pcb_size.height()/2);
+
+        x+= 17;
+        y+= 5;
 
         msg = "fast_x = %1\n";
         msg = msg.arg(QString::number(x));
@@ -799,8 +821,11 @@ void scanner_gui::send_robot_coordinates(bool middle)
     }
     else if(!middle)
     {
-        x = pcb_corner.x() + scan_area_corner.x();
-        y = pcb_corner.y() + scan_area_corner.y();
+        x = pcb_corner.x() - scan_area_corner.x();
+        y = pcb_corner.y() - scan_area_corner.y();
+
+        x+= 17;
+        y+= 5;
 
         msg = "x_mes = %1\n";
         msg = msg.arg(QString::number(x));
@@ -811,6 +836,43 @@ void scanner_gui::send_robot_coordinates(bool middle)
         _socket_robot->write(msg.toLocal8Bit());
         _socket_robot->waitForBytesWritten(10);
     }
+}
+
+void scanner_gui::send_to_top_pcb_edge()
+{
+    QString msg = "";
+    uint16_t x = 0;
+    uint16_t y = 0;
+
+    x = pcb_corner.x()-(pcb_size.width()/2);
+    y = pcb_corner.y()-10-(pcb_size.height());
+
+    x+= 17;
+    y+= 5;
+
+    msg = "x_mes = %1\n";
+    msg = msg.arg(QString::number(x));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(10);
+    msg = "y_mes = %1\n";
+    msg = msg.arg(QString::number(y));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(10);
+    msg = "Goto_Origin = 1\n";
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(10);
+
+}
+
+void scanner_gui::ask_robot_for_cam_height()
+{
+    qDebug() << "Asking for cam_h";
+    _socket_robot->write("cam_h = 1\n");
+    _socket_robot->waitForBytesWritten(150);
+    _socket_robot->write("cam_h = 1\n");
+    _socket_robot->waitForBytesWritten(150);
+    _socket_robot->write("cam_h = 1\n");
+    _socket_robot->waitForBytesWritten(150);
 }
 
 void scanner_gui::set_scan_step_sizes()
@@ -837,24 +899,35 @@ void scanner_gui::set_scan_step_sizes()
     _socket_robot->waitForBytesWritten(10);
 }
 
-void scanner_gui::on_stepsize_x_valueChanged(double arg1)//stepsize x
+void scanner_gui::on_stepsize_xy_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
-    QString mystring = "dist = %1";
+    QString mystring = "xshift = %1\n";
     mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
-    _socket_robot->write(mystring.toLocal8Bit());       //if it doesn't work, try toUtf8()
+    _socket_robot->write(mystring.toLocal8Bit());
     _socket_robot->waitForBytesWritten(30);
-    _socket_robot->write(QByteArray("\n"));
+    mystring = "yshift = %1\n";
+    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(mystring.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(30);
 }
 
-void scanner_gui::on_stepsize_y_valueChanged(double arg1)//stepsize y
+void scanner_gui::on_stepsize_z_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
-    QString mystring = "dist = %1";
-    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
-    _socket_robot->write(mystring.toLocal8Bit());       //if it doesn't work, try toUtf8()
+    QString mystring = "zshift = %1\n";
+    mystring = mystring.arg(QString::number(ui->stepsize_z->value()));
+    _socket_robot->write(mystring.toLocal8Bit());
     _socket_robot->waitForBytesWritten(30);
-    _socket_robot->write(QByteArray("\n"));
+}
+
+void scanner_gui::on_scan_height_valueChanged(double arg1)
+{
+    Q_UNUSED(arg1);
+    QString mystring = "measuring_height = %1\n";
+    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
+    _socket_robot->write(mystring.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(30);
 }
 
 void scanner_gui::on_Y_plus_button_pressed()
@@ -905,22 +978,20 @@ void scanner_gui::on_Z_minus_pressed()
     _socket_robot->write(msg.toLocal8Bit());
     _socket_robot->waitForBytesWritten(20);
     camera_distance_2 -= ui->stepsize_xy->value();
+    qDebug() << camera_distance_2;
 }
 
 void scanner_gui::on_home_button_clicked()
 {
-    _socket_robot->write("takepic = 1");
-    _socket_robot->waitForReadyRead(150);
-    _socket_robot->write(QByteArray("\n"));
-    _socket_robot->waitForReadyRead(50);
-    _socket_robot->waitForReadyRead(50);
+    _socket_robot->write("takepic = 1\n");
+    _socket_robot->waitForBytesWritten(20);
 }
 
 void scanner_gui::closeEvent (QCloseEvent *event)
 {
     Q_UNUSED(event);
-    _socket_robot->write("mes_abort = 1\n");
-    _socket_robot->waitForBytesWritten(30);
-    _socket_robot->write("takepic = 1\n");
-    _socket_robot->waitForBytesWritten(30);
+//    _socket_robot->write("mes_abort = 1\n");
+//    _socket_robot->waitForBytesWritten(30);
+//    _socket_robot->write("takepic = 1\n");
+//    _socket_robot->waitForBytesWritten(30);
 }

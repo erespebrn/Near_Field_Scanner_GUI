@@ -24,6 +24,7 @@ public slots:
     void start();
     void start_detection(bool);
     void scan_origin_detect(bool);
+    void refocus(int);
 
 signals:
     void finished();
@@ -32,6 +33,7 @@ signals:
     void readyImg(QImage);
     void positions(bool, int, int, int, int, int, int);
     void pcb_found();
+    void corner_found();
 
 private:
     cv::Mat mat;
@@ -39,6 +41,7 @@ private:
     QTimer * timer;
     QImage MatToQImage(const cv::Mat& mat);
     std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
+    cv::Point pcb_origin;
 
     bool detect = false;
     bool zoomed_origin = false;

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <QThread>
 #include <QDebug>
+
 ScanWizard::ScanWizard(QWidget *parent) :
     ui(new Ui::ScanWizard)
 {
@@ -20,6 +21,7 @@ ScanWizard::ScanWizard(QWidget *parent) :
 ScanWizard::~ScanWizard()
 {
     emit set_scan_settings(10);
+    delete timer;
     delete ui;
 }
 
@@ -69,7 +71,9 @@ void ScanWizard::on_Next_button_clicked()
                                  "* Make sure that the 'Corner' circle is still present and take a picture.\n\n"
                                  "* If the picture is blured, move the robot higher using Z+\n\n"
                                  "* Next, by using of mousie, select the area of scan");
+            emit ask_for_cam_height();
             emit set_scan_settings(step);
+            emit send_for_2nd_takepic();
             emit scan_area_origin_detect(true);
             ui->takepic_btn->setVisible(true);
             ui->resetview_btn->setVisible(true);
@@ -77,21 +81,22 @@ void ScanWizard::on_Next_button_clicked()
         }
         case(4):
         {
-            ui->label->setText("Scan settings");
-            ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n "
-                                 "* Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
+            emit scan_area_origin_detect(false);
             ui->takepic_btn->setVisible(false);
             ui->resetview_btn->setVisible(false);
             emit send_robot_to_origin(false);
-            emit ui->resetview_btn->clicked();
-            emit scan_area_origin_detect(false);
             emit set_scan_settings(step);
+            ui->label->setText("Scan settings");
+            ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n "
+                                 "* Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
             break;
         }
         case(5):
         {
-            ui->label->setText("Step size/scan height");
+            emit scan_area_origin_detect(false);
+            emit ui->resetview_btn->clicked();
             emit set_scan_settings(step);
+            ui->label->setText("Step size/scan height");
             ui->label_2->setText("Set the scanning step size and scanning height on the right side option bar (highlighted in green)");
             break;
         }
@@ -164,9 +169,10 @@ void ScanWizard::on_Cancel_button_clicked()
 void ScanWizard::height_measure_finished()
 {
     ui->label->setText("Height measured");
-    ui->label_2->setText("Height measured!");
+    ui->label_2->setText("Height measured! \n\nFinding the spot!");    
     ui->Next_button->setVisible(true);
-    emit ui->Next_button->clicked();
+    ui->Next_button->clicked();
+    qDebug() << "Crash";
 }
 
 void ScanWizard::scan_finished()
@@ -176,3 +182,4 @@ void ScanWizard::scan_finished()
     ui->Next_button->setVisible(false);
     ui->Cancel_button->setText("Close");
 }
+
