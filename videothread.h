@@ -22,18 +22,31 @@ public:
 public slots:
     void process();
     void start();
+    void start_detection(bool);
+    void scan_origin_detect(bool);
+    void refocus(int);
+    void recontrast(int);
+    void rebrightness(int);
 
 signals:
     void finished();
     void error(QString err);
     void cameraOpened();
-    void readyImg(QImage, int, int);
+    void readyImg(QImage);
+    void positions(bool, int, int, int, int, int, int);
+    void pcb_found();
+    void corner_found();
 
 private:
     cv::Mat mat;
     cv::VideoCapture * cv_camera;
     QTimer * timer;
     QImage MatToQImage(const cv::Mat& mat);
+    std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
+    cv::Point pcb_origin;
+
+    bool detect = false;
+    bool zoomed_origin = false;
 
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;

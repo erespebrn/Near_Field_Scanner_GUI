@@ -23,8 +23,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += C:\opencv\build\include
 
-INCLUDEPATH += C:\Program Files\Rohde-Schwarz\RsVisa
-
 LIBS += C:\opencv\release\bin\libopencv_core420.dll
 LIBS += C:\opencv\release\bin\libopencv_highgui420.dll
 LIBS += C:\opencv\release\bin\libopencv_imgcodecs420.dll
@@ -35,14 +33,13 @@ LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
 LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
 LIBS += C:\opencv\release\bin\libopencv_photo420.dll
 
-LIBS += C:/Windows/System32/visa32.dll
-
 SOURCES += \
     instrument_thread.cpp \
     main.cpp \
     qlabel_mouseevent.cpp \
     scan_settings.cpp \
     scanner_gui.cpp \
+    scanwizard.cpp \
     videothread.cpp
 
 HEADERS += \
@@ -50,11 +47,13 @@ HEADERS += \
     qlabel_mouseevent.h \
     scan_settings.h \
     scanner_gui.h \
+    scanwizard.h \
     videothread.h
 
 FORMS += \
     scan_settings.ui \
-    scanner_gui.ui
+    scanner_gui.ui \
+    scanwizard.ui
 
 RESOURCES += camera.qrc \
     img.qrc

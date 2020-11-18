@@ -113,15 +113,8 @@ void scan_settings::write_sa_settings()
             settings.setValue("SA_FREQUENCY/Span freq. value", ui->spanfreq_spinbox->value());
             settings.setValue("SA_FREQUENCY/Span freq. unit", ui->frequency_dropdown_span->currentIndex());
         }
-        // Step
-        // Send SPCI command
-        mystring = "FREQ:CENT:STEP %1";
-        mystring = mystring.arg(QString::number(ui->step_spinbox->value()));
-        mystring = mystring + " MHz\n";
-        sa_send_command(mystring);
-        mystring = "";
+
         // Save to the preset file
-        settings.setValue("SA_FREQUENCY/Step freq. value", ui->step_spinbox->value());
         settings.setValue("SA_FREQUENCY/Step freq. unit", "MHz");
         // ************************************************************************************************************************ //
 
@@ -139,6 +132,7 @@ void scan_settings::write_sa_settings()
             settings.setValue("SA_AMPLITUDE/Ref. Level?", ui->referencelevel_checkbox->isChecked());
             settings.setValue("SA_AMPLITUDE/Ref. level value",  ui->referencelevel_spinbox->value());
         }
+
         if(ui->attenuation_checkbox->isChecked())
         {
             // Attenuation
@@ -152,11 +146,17 @@ void scan_settings::write_sa_settings()
             settings.setValue("SA_AMPLITUDE/Attenuation value",  ui->attenuation_spinbox->value());
 
         }
+        else
+        {
+            _socket_sa->write("INP:ATT:AUTO ON\n");
+            _socket_sa->waitForBytesWritten(20);
+        }
+
         if(ui->leveloffset_checkbox->isChecked())
         {
             // Level offset
             // Send SPCI command
-            mystring = "DISPl:TRAC:Y:RLEV:OFFS %1\n";
+            mystring = "DISP:TRAC:Y:RLEV:OFFS %1\n";
             mystring = mystring.arg(QString::number(ui->leveloffset_spinbox->value()));
             sa_send_command(mystring);
             mystring = "";
@@ -215,9 +215,27 @@ void scan_settings::write_sa_settings()
         mystring = "SWE:POIN %1\n";
         mystring = mystring.arg(QString::number(ui->sweep_points_spinbox->value()));
         sa_send_command(mystring);
+        mystring = "";
         // Save to the preset file
         settings.setValue("SA_SWEEP/Sweep points", ui->sweep_points_spinbox->value());
 
+        //Trace hold seeting
+        //Send SPCI command
+        mystring = "DISP:TRAC1:MODE " + ui->no_sweeps_dropdown->currentText() + "\n";
+        sa_send_command(mystring);
+        mystring = "";
+        mystring = "DISP:WIND:TRAC1:MODE:HCON ON\n";
+        sa_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.setValue("SA_SWEEP/Trace hold", ui->no_sweeps_dropdown->currentText());
+
+        //Detector
+        mystring = "DET " + ui->detectorComboBox->currentText() + "\n";
+        sa_send_command(mystring);
+        mystring = "";
+        // Save to the preset file
+        settings.setValue("SA_SWEEP/Detector", ui->detectorComboBox->currentText());
 
         if(ui->sweepTime_checkbox->isChecked())
         {
@@ -353,13 +371,6 @@ void scan_settings::write_vna_settings()
         settings.value("VNA_FREQUENCY/Span freq. unit", ui->span_freq_unit_VNA->currentText());
     }
 
-    // Frequency step
-    mystring = "SWE:STEP %1\n";
-    mystring = mystring.arg(ui->step_valueunit_VNA->text());
-    vna_send_command(mystring);
-    mystring = "";
-    // Save to the preset file
-    settings.value("VNA_FREQUENCY/Step freq.", ui->step_valueunit_VNA->text());
     // ********************************************************************************************************************************* //
 
     // ****************************************************** VNA -> SCALE ************************************************************ //
@@ -471,10 +482,6 @@ void scan_settings::load_previous_settings()
             ui->spanfreq_spinbox->setValue(settings.value("SA_FREQUENCY/Span freq. value").toDouble());
         }
 
-        // Step
-        ui->step_spinbox->setValue(settings.value("SA_FREQUENCY/Step freq. value").toInt());
-        ui->step_spinbox->setSuffix(settings.value("SA_FREQUENCY/Step freq. unit").toString());
-        // *** End of FREQUENCY *** //
 
         // *** Amplitude *** //
         if(settings.value("SA_AMPLITUDE/Ref. level?").toBool())
@@ -681,7 +688,9 @@ void scan_settings::on_leveloffset_checkbox_stateChanged(int arg1)
 void scan_settings::on_attenuation_checkbox_stateChanged(int arg1)
 {
     if(arg1 == 0)
+    {
         ui->attenuation_spinbox->setEnabled(false);
+    }
     else
         ui->attenuation_spinbox->setEnabled(true);
 
@@ -801,11 +810,7 @@ void scan_settings::on_frequency_dropdown_span_currentIndexChanged(int index)
     ui->apply->setEnabled(true);
 }
 
-void scan_settings::on_step_spinbox_valueChanged(int arg1)
-{
-    Q_UNUSED(arg1);
-    ui->apply->setEnabled(true);
-}
+
 
 void scan_settings::on_attenuation_spinbox_valueChanged(int arg1)
 {
@@ -921,12 +926,6 @@ void scan_settings::on_span_freq_unit_VNA_currentIndexChanged(int index)
     ui->apply->setEnabled(true);
 }
 
-void scan_settings::on_step_valueunit_VNA_valueChanged(int arg1)
-{
-    Q_UNUSED(arg1);
-    ui->apply->setEnabled(true);
-}
-
 void scan_settings::on_referencelevel_spinbox_VNA_valueChanged(int arg1)
 {
     Q_UNUSED(arg1);
@@ -964,6 +963,18 @@ void scan_settings::on_sweepTime_spinbox_VNA_valueChanged(double arg1)
 }
 
 void scan_settings::on_resolutionBW_comboBox_VNA_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_no_sweeps_dropdown_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_detectorComboBox_currentIndexChanged(int index)
 {
     Q_UNUSED(index);
     ui->apply->setEnabled(true);

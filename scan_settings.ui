@@ -35,7 +35,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="SA_tab">
       <attribute name="title">
@@ -461,6 +461,18 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
+            <item row="8" column="0">
+             <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Center frequency:</string>
+              </property>
+             </widget>
+            </item>
             <item row="8" column="1">
              <widget class="QDoubleSpinBox" name="center_freq_spinbox">
               <property name="font">
@@ -476,53 +488,8 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Start frequency:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Step:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="1">
-             <widget class="QDoubleSpinBox" name="spanfreq_spinbox">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="2">
-             <widget class="QComboBox" name="stop_freq_dropdown">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
+            <item row="8" column="2">
+             <widget class="QComboBox" name="frequency_dropdown_center">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -550,30 +517,15 @@
               </item>
              </widget>
             </item>
-            <item row="6" column="1">
-             <widget class="QDoubleSpinBox" name="stop_freq_spinbox">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>25</height>
-               </size>
-              </property>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_5">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.899999999999977</double>
-              </property>
-              <property name="value">
-               <double>2.000000000000000</double>
+              <property name="text">
+               <string>Start frequency:</string>
               </property>
              </widget>
             </item>
@@ -624,29 +576,8 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="1">
-             <widget class="QSpinBox" name="step_spinbox">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="suffix">
-               <string> MHz</string>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>10000</number>
-              </property>
-              <property name="stepType">
-               <enum>QAbstractSpinBox::DefaultStepType</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="2">
-             <widget class="QComboBox" name="frequency_dropdown_center">
+            <item row="5" column="2">
+             <widget class="QComboBox" name="start_freq_dropdown">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -674,15 +605,18 @@
               </item>
              </widget>
             </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label">
+            <item row="4" column="0" colspan="3">
+             <widget class="QRadioButton" name="start_stop_radiobutton">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>Center frequency:</string>
+               <string>Start and stop frequency</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -716,30 +650,18 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0" colspan="3">
-             <widget class="QRadioButton" name="start_stop_radiobutton">
+            <item row="9" column="1">
+             <widget class="QDoubleSpinBox" name="spanfreq_spinbox">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
-               <string>Start and stop frequency</string>
+              <property name="decimals">
+               <number>1</number>
               </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Stop frequency:</string>
+              <property name="value">
+               <double>1.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -755,8 +677,14 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="2">
-             <widget class="QComboBox" name="start_freq_dropdown">
+            <item row="6" column="2">
+             <widget class="QComboBox" name="stop_freq_dropdown">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -784,6 +712,45 @@
               </item>
              </widget>
             </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Stop frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QDoubleSpinBox" name="stop_freq_spinbox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="minimum">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>999.899999999999977</double>
+              </property>
+              <property name="value">
+               <double>3.000000000000000</double>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -807,6 +774,11 @@
               <item>
                <property name="text">
                 <string>MAXH</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>AVER</string>
                </property>
               </item>
              </widget>
@@ -934,12 +906,17 @@
            </property>
            <item>
             <property name="text">
-             <string>Average</string>
+             <string>AVERAGE</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>APeak</string>
+             <string>APEAK</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>QPEAK</string>
             </property>
            </item>
           </widget>
@@ -1036,6 +1013,9 @@
               <property name="maximum">
                <number>1000000000</number>
               </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
               <property name="value">
                <number>10</number>
               </property>
@@ -1109,6 +1089,9 @@
                <font>
                 <pointsize>10</pointsize>
                </font>
+              </property>
+              <property name="currentIndex">
+               <number>5</number>
               </property>
               <item>
                <property name="text">
@@ -1199,7 +1182,7 @@
                <string/>
               </property>
               <property name="suffix">
-               <string>dBm</string>
+               <string> dBuV</string>
               </property>
               <property name="minimum">
                <double>-999.000000000000000</double>
@@ -1537,6 +1520,196 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="start_freq_value_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="stop_freq_value_VNA">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>999.899999999999977</double>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QComboBox" name="stop_freq_unit_VNA">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <widget class="QRadioButton" name="center_span_radiobutton_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTipDuration">
+             <number>0</number>
+            </property>
+            <property name="text">
+             <string>Center frequency and span</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QDoubleSpinBox" name="span_freq_value_VNA">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QComboBox" name="start_freq_unit_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>GHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>MHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>kHz</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hz</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="3">
+           <widget class="QRadioButton" name="start_stop_radiobutton_VNA">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Start and stop frequency</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Start frequency:</string>
+            </property>
+           </widget>
+          </item>
           <item row="8" column="1">
            <widget class="QDoubleSpinBox" name="center_freq_value_VNA">
             <property name="enabled">
@@ -1558,18 +1731,27 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0" colspan="3">
-           <widget class="QRadioButton" name="start_stop_radiobutton_VNA">
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_19">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
             <property name="text">
-             <string>Start and stop frequency</string>
+             <string>Center frequency:</string>
             </property>
-            <property name="checked">
-             <bool>true</bool>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_21">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Span:</string>
             </property>
            </widget>
           </item>
@@ -1617,114 +1799,6 @@
             </item>
            </widget>
           </item>
-          <item row="7" column="0" colspan="2">
-           <widget class="QRadioButton" name="center_span_radiobutton_VNA">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="toolTipDuration">
-             <number>0</number>
-            </property>
-            <property name="text">
-             <string>Center frequency and span</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_19">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Center frequency:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="start_freq_value_VNA">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>1000000.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="label_21">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Span:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_17">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Start frequency:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QDoubleSpinBox" name="span_freq_value_VNA">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
           <item row="8" column="2">
            <widget class="QComboBox" name="center_freq_unit_VNA">
             <property name="enabled">
@@ -1755,133 +1829,6 @@
               <string>Hz</string>
              </property>
             </item>
-           </widget>
-          </item>
-          <item row="6" column="2">
-           <widget class="QComboBox" name="stop_freq_unit_VNA">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <item>
-             <property name="text">
-              <string>GHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>kHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Hz</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QDoubleSpinBox" name="stop_freq_value_VNA">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>999.899999999999977</double>
-            </property>
-            <property name="value">
-             <double>2.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QComboBox" name="start_freq_unit_VNA">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <item>
-             <property name="text">
-              <string>GHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>kHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Hz</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="10" column="1">
-           <widget class="QSpinBox" name="step_valueunit_VNA">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="suffix">
-             <string> MHz</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="stepType">
-             <enum>QAbstractSpinBox::DefaultStepType</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="0">
-           <widget class="QLabel" name="label_18">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Step:</string>
-            </property>
            </widget>
           </item>
          </layout>

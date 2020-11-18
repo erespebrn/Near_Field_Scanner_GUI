@@ -19,6 +19,8 @@ public:
     explicit scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *parent = nullptr);
     ~scan_settings();
 
+signals:
+
 private slots:
 
     void on_center_span_radiobutton_clicked();
@@ -39,7 +41,6 @@ private slots:
     void on_frequency_dropdown_center_currentIndexChanged(int index);
     void on_spanfreq_spinbox_valueChanged(double arg1);
     void on_frequency_dropdown_span_currentIndexChanged(int index);
-    void on_step_spinbox_valueChanged(int arg1);
     void on_attenuation_spinbox_valueChanged(int arg1);
     void on_leveloffset_spinbox_valueChanged(int arg1);
     void on_scaleCheckbox_clicked();
@@ -64,7 +65,6 @@ private slots:
     void on_center_freq_unit_VNA_currentIndexChanged(int index);
     void on_span_freq_value_VNA_valueChanged(double arg1);
     void on_span_freq_unit_VNA_currentIndexChanged(int index);
-    void on_step_valueunit_VNA_valueChanged(int arg1);
 
     void on_referencelevel_spinbox_VNA_valueChanged(int arg1);
 
@@ -79,6 +79,10 @@ private slots:
     void on_sweepTime_spinbox_VNA_valueChanged(double arg1);
 
     void on_resolutionBW_comboBox_VNA_currentIndexChanged(int index);
+
+    void on_no_sweeps_dropdown_currentIndexChanged(int index);
+
+    void on_detectorComboBox_currentIndexChanged(int index);
 
 private:
     Ui::scan_settings *ui;
