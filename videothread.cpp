@@ -35,7 +35,7 @@ void VideoThread::process()
         if(detect)
         {
             cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
-            cv::GaussianBlur(frame_gray, frame_blur, cv::Size(5,5),0);
+            cv::GaussianBlur(frame_gray, frame_blur, cv::Size(7,7),1);
             cv::Canny(frame_blur,frame_canny_to_dilate,30,90);
             cv::Mat kernel = cv::Mat(4, 4, CV_8U, cv::Scalar(1));
             cv::dilate(frame_canny_to_dilate, frame_canny, kernel);
@@ -52,8 +52,8 @@ void VideoThread::process()
             cv::Mat eroded;
             cv::Mat eroded_2;
             cv::Mat dilated;
-            cv::Mat kernel_2 = cv::Mat(1, 1, CV_8U, cv::Scalar(1));
-            cv::Rect internal = cv::Rect(cv::Point((frame_cv.cols/2)-200,(frame_cv.rows/2)-200),cv::Point((frame_cv.cols/2)+200,(frame_cv.rows/2)+200));
+            cv::Mat kernel_2 = cv::Mat(1, 1, CV_8UC1, cv::Scalar(1));
+            cv::Rect internal = cv::Rect(cv::Point((frame_cv.cols/2)-400,(frame_cv.rows/2)-200),cv::Point((frame_cv.cols/2)+400,(frame_cv.rows/2)+400));
             std::vector<cv::Point2f> corners;
 
             cv::Rect origin = cv::Rect(0,0,120,190);
@@ -68,9 +68,8 @@ void VideoThread::process()
                 cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
             }
 
-            cv::threshold(frame_gray(internal), bin, 0, 255, cv::THRESH_OTSU+cv::THRESH_BINARY);
-            cv::morphologyEx(bin, eroded_2, cv::MORPH_OPEN, kernel_2);
-            cv::morphologyEx(eroded_2, eroded, cv::MORPH_CLOSE, kernel_2);
+            cv::threshold(frame_gray(internal), bin, 100, 255, cv::THRESH_OTSU+cv::THRESH_BINARY);
+            cv::morphologyEx(bin, eroded, cv::MORPH_OPEN, kernel_2);
             cv::dilate(eroded, dilated, kernel_2);
             cv::findContours(dilated, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
             cv::namedWindow("b", cv::WINDOW_NORMAL);
@@ -81,12 +80,12 @@ void VideoThread::process()
                 for(std::vector<cv::Point>contour : contours)
                 {
                     double area = cv::contourArea(contour);
-                    if(area > 100)
+                    if(area > 1000)
                     {
-                        cv::approxPolyDP(contour, corners, 0.01*cv::arcLength(contour,true), true);
+                        cv::approxPolyDP(contour, corners, 0.05*cv::arcLength(contour,true), true);
                         shape = cv::boundingRect(corners);
                         //cv::rectangle(frame_cv, shape, cv::Scalar(255,255,0), 1);
-                        start = cv::Point(shape.br().x+(frame_cv.cols/2)-200, shape.br().y+(frame_cv.rows/2)-200);
+                        start = cv::Point(shape.br().x+(frame_cv.cols/2)-400, shape.br().y+(frame_cv.rows/2)-200);
                         emit pcb_found();
                     }
                 }
@@ -109,17 +108,16 @@ void VideoThread::process()
 
             cv::threshold(frame_gray, bin, 0, 255, cv::THRESH_OTSU+cv::THRESH_BINARY);
 
-            cv::Mat kernel = cv::Mat(2, 2, CV_8SC1, cv::Scalar(1));
+            cv::Mat kernel = cv::Mat(2, 2, CV_8U, cv::Scalar(1));
 
             cv::morphologyEx(bin, eroded, cv::MORPH_OPEN, kernel);
-            cv::morphologyEx(bin, eroded, cv::MORPH_CLOSE, kernel);
 
             cv::findContours(eroded, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
             cv::namedWindow("a", cv::WINDOW_NORMAL);
             cv::imshow("a",eroded);
 
-            cv::RotatedRect shape;
+            cv::Rect shape;
             cv::Point2f points[4];
             std::vector<cv::Point2f> corners;
 
@@ -132,10 +130,8 @@ void VideoThread::process()
                     if(area > 50000)
                     {
                         cv::approxPolyDP(contour, corners, 0.01*cv::arcLength(contour,true), true);
-                        shape = cv::minAreaRect(corners);
-                        shape.points(points);
-
-                        pcb_origin = points[3];
+                        shape = cv::boundingRect(corners);
+                        pcb_origin = shape.br();
                         cv::circle(frame_cv, cv::Point(pcb_origin.x, pcb_origin.y), 5, cv::Scalar(255,255,0),2);
                         cv::putText(frame_cv, "Corner", cv::Point(pcb_origin.x, pcb_origin.y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
                         emit positions(1, pcb_origin.x, pcb_origin.y, 0, 0, 0, 0);
@@ -158,9 +154,9 @@ void VideoThread::start()
         emit cameraOpened();
         cv_camera->set(cv::CAP_PROP_FRAME_WIDTH, resolution_max_width);
         cv_camera->set(cv::CAP_PROP_FRAME_HEIGHT, resolution_max_height);
-        cv_camera->set(cv::CAP_PROP_CONTRAST, -10);
+        cv_camera->set(cv::CAP_PROP_CONTRAST, -90);
         cv_camera->set(cv::CAP_PROP_AUTOFOCUS, 0);
-        //cv_camera->set(cv::CAP_PROP_EXPOSURE, -3);
+        cv_camera->set(cv::CAP_PROP_EXPOSURE, -3);
         cv_camera->set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
         cv_camera->set(cv::CAP_PROP_SATURATION, 20);
         cv_camera->set(cv::CAP_PROP_BRIGHTNESS, 3);
@@ -188,6 +184,18 @@ void VideoThread::scan_origin_detect(bool b)
 void VideoThread::refocus(int fcs)
 {
     cv_camera->set(cv::CAP_PROP_FOCUS, fcs);
+}
+
+void VideoThread::recontrast(int cv)
+{
+    cv_camera->set(cv::CAP_PROP_CONTRAST, cv);
+    qDebug() << "Contrast: " << cv;
+}
+
+void VideoThread::rebrightness(int cv)
+{
+    cv_camera->set(cv::CAP_PROP_BRIGHTNESS, cv);
+    qDebug() << "Brigthness: " << cv;
 }
 
 QImage VideoThread::MatToQImage(const cv::Mat& mat)

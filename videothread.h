@@ -25,6 +25,8 @@ public slots:
     void start_detection(bool);
     void scan_origin_detect(bool);
     void refocus(int);
+    void recontrast(int);
+    void rebrightness(int);
 
 signals:
     void finished();

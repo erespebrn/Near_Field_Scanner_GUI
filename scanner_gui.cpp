@@ -117,6 +117,8 @@ void scanner_gui::video_thread_init()
     connect(videothread, SIGNAL(error(QString)), this, SLOT(cameraError(QString)));
     connect(videothread, SIGNAL(cameraOpened()), this, SLOT(cameraConnected()));
     connect(ui->camera_focus_dial, SIGNAL(valueChanged(int)), videothread, SLOT(refocus(int)));
+    connect(ui->camera_contrast_dial, SIGNAL(valueChanged(int)), videothread, SLOT(recontrast(int)));
+    connect(ui->camera_brightness_dial, SIGNAL(valueChanged(int)), videothread, SLOT(rebrightness(int)));
     thread1->start();
 }
 
@@ -192,7 +194,7 @@ void scanner_gui::cv_getcoord(bool scan, int o_x, int o_y, int pcb_x, int pcb_y,
     float x_dist_mm = (camera_distance*x_dist_px*sensor_width/(focal_lenght*(float)resolution_max_width))*scale_factor;
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*(float)resolution_max_height))*scale_factor;
 
-    width_cropped += 1;
+    width_cropped += 0;
     height_cropped -= 2;
 
     if(!scan)
@@ -387,7 +389,7 @@ void scanner_gui::start_scan()
     if(!QDir(current_scan_datapath).exists())
         qDebug() << QDir().mkdir(current_scan_datapath);
 
-    //get_trace_data(time_for_amplitude);
+    get_trace_data(time_for_amplitude);
 
     _socket_robot->write("Mes = 1\n");
     _socket_robot->waitForBytesWritten(20);
@@ -718,8 +720,8 @@ void scanner_gui::read_robot_msg()
         case 2:
             ui->robotTerminal->setText("");
             ui->robotTerminal->setText("Scan in progress...");
-//            if(sa_connected_bool)
-//                get_trace_data(time_for_amplitude);
+            if(sa_connected_bool)
+                get_trace_data(time_for_amplitude);
             break;
         case 3:
         {
@@ -807,8 +809,8 @@ void scanner_gui::send_robot_coordinates(bool middle)
         x = pcb_corner.x()-(pcb_size.width()/2);
         y = pcb_corner.y()-5-(pcb_size.height()/2);
 
-        x+= 17;
-        y+= 5;
+        x+= 15;
+        y+= 0;
 
         msg = "fast_x = %1\n";
         msg = msg.arg(QString::number(x));
@@ -825,7 +827,7 @@ void scanner_gui::send_robot_coordinates(bool middle)
         y = pcb_corner.y() - scan_area_corner.y();
 
         x+= 17;
-        y+= 5;
+        y+= 0;
 
         msg = "x_mes = %1\n";
         msg = msg.arg(QString::number(x));
@@ -845,7 +847,7 @@ void scanner_gui::send_to_top_pcb_edge()
     uint16_t y = 0;
 
     x = pcb_corner.x()-(pcb_size.width()/2);
-    y = pcb_corner.y()-10-(pcb_size.height());
+    y = pcb_corner.y()-15-(pcb_size.height());
 
     x+= 17;
     y+= 5;
@@ -902,30 +904,30 @@ void scanner_gui::set_scan_step_sizes()
 void scanner_gui::on_stepsize_xy_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
-    QString mystring = "xshift = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
-    _socket_robot->write(mystring.toLocal8Bit());
-    _socket_robot->waitForBytesWritten(30);
-    mystring = "yshift = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
-    _socket_robot->write(mystring.toLocal8Bit());
-    _socket_robot->waitForBytesWritten(30);
+//    QString mystring = "xshift = %1\n";
+//    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
+//    _socket_robot->write(mystring.toLocal8Bit());
+//    _socket_robot->waitForBytesWritten(30);
+//    mystring = "yshift = %1\n";
+//    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
+//    _socket_robot->write(mystring.toLocal8Bit());
+//    _socket_robot->waitForBytesWritten(30);
 }
 
 void scanner_gui::on_stepsize_z_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
-    QString mystring = "zshift = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_z->value()));
-    _socket_robot->write(mystring.toLocal8Bit());
-    _socket_robot->waitForBytesWritten(30);
+//    QString mystring = "zshift = %1\n";
+//    mystring = mystring.arg(QString::number(ui->stepsize_z->value()));
+//    _socket_robot->write(mystring.toLocal8Bit());
+//    _socket_robot->waitForBytesWritten(30);
 }
 
 void scanner_gui::on_scan_height_valueChanged(double arg1)
 {
     Q_UNUSED(arg1);
     QString mystring = "measuring_height = %1\n";
-    mystring = mystring.arg(QString::number(ui->stepsize_xy->value()));
+    mystring = mystring.arg(QString::number(ui->scan_height->value()));
     _socket_robot->write(mystring.toLocal8Bit());
     _socket_robot->waitForBytesWritten(30);
 }

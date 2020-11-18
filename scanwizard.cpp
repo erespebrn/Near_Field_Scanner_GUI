@@ -38,7 +38,8 @@ void ScanWizard::on_Next_button_clicked()
         {
             ui->label->setText("Place PCB");
             ui->label_2->setText("Place your PCB on the scannig mat.\n\n"
-                                 "* Important is to place is as much parallel to the bottom table edge as possible.");
+                                 "* Important is to place is as much parallel to the bottom table edge as possible.\n\n"
+                                 "* Adjust the camera focus using knob on the right to achieve maximum sharpeness of the picture");
             ui->Next_button->setText("Next");
             break;
         }
@@ -67,10 +68,11 @@ void ScanWizard::on_Next_button_clicked()
         case(3):
         {
             ui->label->setText("Scan area");
-            ui->label_2->setText("* Using the Robot Manual control panel on the right side of the window, find the relevant camera position.\n\n"
+            ui->label_2->setText("* Adjust the camera focus using knob on the right to achieve maximum sharpeness of the picture\n\n"
+                                 "* Using the Robot Manual control panel on the right side of the window, find the relevant camera position.\n\n"
                                  "* Make sure that the 'Corner' circle is still present and take a picture.\n\n"
                                  "* If the picture is blured, move the robot higher using Z+\n\n"
-                                 "* Next, by using of mousie, select the area of scan");
+                                 "* Next, by using of mouse, select the area of scan");
             emit ask_for_cam_height();
             emit set_scan_settings(step);
             emit send_for_2nd_takepic();
@@ -88,6 +90,7 @@ void ScanWizard::on_Next_button_clicked()
             emit set_scan_settings(step);
             ui->label->setText("Scan settings");
             ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n "
+                                 "* If needed, compensate the position of the robot manually\n\n"
                                  "* Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
             break;
         }
