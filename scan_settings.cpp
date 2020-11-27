@@ -152,6 +152,7 @@ void scan_settings::write_sa_settings()
             _socket_sa->waitForBytesWritten(20);
         }
 
+
         if(ui->leveloffset_checkbox->isChecked())
         {
             // Level offset
@@ -173,6 +174,26 @@ void scan_settings::write_sa_settings()
         mystring = "";
         // Save to the preset file
         settings.setValue("SA_UNITS/Units",  ui->units_combobox->currentIndex());
+
+        // Preamp
+        if(ui->preamp_on_checkbox->isChecked())
+        {
+            // Send SPCI command
+            mystring = "INP:GAIN:STAT ON\n";
+            sa_send_command(mystring);
+            mystring = "";
+            // Save to the preset file
+            settings.setValue("SA_AMPLITUDE/Preamp", true);
+        }
+        else
+        {
+            // Send SPCI command
+            mystring = "INP:GAIN:STAT OFF\n";
+            sa_send_command(mystring);
+            mystring = "";
+            // Save to the preset file
+            settings.setValue("SA_AMPLITUDE/Preamp", false);
+        }
 
         // Scale
         if(ui->scaleCheckbox->isChecked())
@@ -215,6 +236,7 @@ void scan_settings::write_sa_settings()
         mystring = "SWE:POIN %1\n";
         mystring = mystring.arg(QString::number(ui->sweep_points_spinbox->value()));
         sa_send_command(mystring);
+        emit send_sweep_points_amount(ui->sweep_points_spinbox->value());
         mystring = "";
         // Save to the preset file
         settings.setValue("SA_SWEEP/Sweep points", ui->sweep_points_spinbox->value());
@@ -977,5 +999,11 @@ void scan_settings::on_no_sweeps_dropdown_currentIndexChanged(int index)
 void scan_settings::on_detectorComboBox_currentIndexChanged(int index)
 {
     Q_UNUSED(index);
+    ui->apply->setEnabled(true);
+}
+
+void scan_settings::on_preamp_on_checkbox_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1);
     ui->apply->setEnabled(true);
 }

@@ -73,12 +73,12 @@ void ScanWizard::on_Next_button_clicked()
                                  "* Make sure that the 'Corner' circle is still present and take a picture.\n\n"
                                  "* If the picture is blured, move the robot higher using Z+\n\n"
                                  "* Next, by using of mouse, select the area of scan");
-            emit ask_for_cam_height();
             emit set_scan_settings(step);
             emit send_for_2nd_takepic();
             emit scan_area_origin_detect(true);
             ui->takepic_btn->setVisible(true);
             ui->resetview_btn->setVisible(true);
+            emit ask_for_cam_height();
             break;
         }
         case(4):
@@ -175,7 +175,6 @@ void ScanWizard::height_measure_finished()
     ui->label_2->setText("Height measured! \n\nFinding the spot!");    
     ui->Next_button->setVisible(true);
     ui->Next_button->clicked();
-    qDebug() << "Crash";
 }
 
 void ScanWizard::scan_finished()

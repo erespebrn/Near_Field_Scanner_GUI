@@ -994,7 +994,7 @@ brightness:</string>
        <enum>QFrame::Plain</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="viewfinderPage">
        <layout class="QGridLayout" name="gridLayout_5">
@@ -1008,7 +1008,7 @@ brightness:</string>
           </property>
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>1280</width>
             <height>960</height>
            </size>
           </property>
@@ -1017,6 +1017,9 @@ brightness:</string>
             <width>16777215</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
           <property name="text">
            <string>Loading preview...</string>
@@ -1037,8 +1040,8 @@ brightness:</string>
           </property>
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>1280</width>
+            <height>960</height>
            </size>
           </property>
           <property name="mouseTracking">

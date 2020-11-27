@@ -27,6 +27,7 @@ public slots:
     void refocus(int);
     void recontrast(int);
     void rebrightness(int);
+    void receive_area(qint64);
 
 signals:
     void finished();
@@ -44,9 +45,12 @@ private:
     QImage MatToQImage(const cv::Mat& mat);
     std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
     cv::Point pcb_origin;
-
+    cv::Point cv_robot_origin = cv::Point(130,172);
     bool detect = false;
     bool zoomed_origin = false;
+
+    long int desired_area = 1e9;
+
 
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;

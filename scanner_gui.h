@@ -40,6 +40,7 @@ class scanner_gui : public QMainWindow
         void cropped_image_coord();
         void height_measured();
         void scan_finished_to_wizard();
+        void send_area_to_videothread(qint64);
 
     private slots:
 
@@ -61,6 +62,7 @@ class scanner_gui : public QMainWindow
         void on_stepsize_z_valueChanged(double arg1);
         void on_scan_height_valueChanged(double arg1);
         void read_robot_msg();
+        void robotBytesWritten(qint64);
 
         //Camera, Take and process the image
         void Take_img_button_clicked();
@@ -77,6 +79,7 @@ class scanner_gui : public QMainWindow
 
         //Scan settings
         void on_scan_settings_button_clicked();
+        void get_sweep_points_amount(int);
 
         //Measurement instruments slots
         void SA_online(bool);
@@ -84,6 +87,7 @@ class scanner_gui : public QMainWindow
         void on_datasave_test_clicked();
         void get_trace_data(bool);
         void sa_dataread();
+        void confirm_written_bytes(qint64);
 
         //Wizard slots
         void wizard_robot_to_origin(bool);
@@ -91,6 +95,7 @@ class scanner_gui : public QMainWindow
         void wizard_scan_control(bool);
         void send_to_top_pcb_edge();
         void ask_robot_for_cam_height();
+        void ask_for_cam_h();
 
     private:
         //Widgets
@@ -140,6 +145,7 @@ class scanner_gui : public QMainWindow
         QPoint scan_pcb_corner;
         QPoint scan_area_corner;
         QRect scan_area_size;
+        QRect scan_area_size_px;
 
         //Robot functions
         void robot_init();
@@ -156,6 +162,28 @@ class scanner_gui : public QMainWindow
         uint16_t scan_point = 0;
         int hm = 0;
 
+        std::vector<std::vector<std::vector<float>>> data_tensor;
+        std::vector<std::vector<float>> temp2d;
+        std::vector<float> freq;
+
+        int sweep_points;
+        int current_scan_point_x=-1;
+
+        int scan_rows = 0;
+        int scan_columns = 0;
+        long int save_x = 0;
+        long int save_y = 0;
+        QByteArray b_data;
+        QByteArray f_data;
+        int32_t bytes = 0;
+        bool first_part = true;
+        bool first_part_freq = true;
+        bool this_time_already_done = false;
+
+        bool run_scan_cam_h = false;
+
+
+        QTimer * timer2;
         //Minor variables
         QColor laststyle;
         bool time_for_amplitude = false;
