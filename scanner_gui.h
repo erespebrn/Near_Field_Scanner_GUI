@@ -11,9 +11,11 @@
 #include <QPainter>
 #include <QWizard>
 #include <QCloseEvent>
+#include <QVector>
 #include "videothread.h"
 #include "instrument_thread.h"
 #include "scanwizard.h"
+#include "tool.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
@@ -61,6 +63,8 @@ class scanner_gui : public QMainWindow
         void on_stepsize_z_valueChanged(double arg1);
         void on_scan_height_valueChanged(double arg1);
         void read_robot_msg();
+        void on_Probe_dropdown_currentTextChanged(const QString &arg1);
+        void tools_init();
 
         //Camera, Take and process the image
         void Take_img_button_clicked();
@@ -92,7 +96,12 @@ class scanner_gui : public QMainWindow
         void send_to_top_pcb_edge();
         void ask_robot_for_cam_height();
 
-    private:
+        void on_myfunction_clicked();
+
+        void on_AddTool_clicked();
+        void on_Tool_Tab_Closed(QVector<Tool*>);
+
+private:
         //Widgets
         Ui::scanner_gui *ui;
         ScanWizard * wizard;
@@ -154,7 +163,9 @@ class scanner_gui : public QMainWindow
         QString foldername = "SCAN_21_10_2020__15_34_11";
         QString current_scan_datapath;
         uint16_t scan_point = 0;
-        int hm = 0;
+        ///int hm = 0;
+        QVector<Tool*> Tools;
+
 
         //Minor variables
         QColor laststyle;

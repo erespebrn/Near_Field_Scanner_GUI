@@ -2,6 +2,8 @@
 #include "scanner_gui.h"
 #include "scan_settings.h"
 #include "ui_scanner_gui.h"
+#include "tool.h"
+#include "tool_add.h"
 #include <cstdio>
 
 #include <fstream>
@@ -34,8 +36,6 @@ scanner_gui::~scanner_gui()
     delete ui;
 }
 
-
-
 //Init functions
 void scanner_gui::init()
 {
@@ -52,6 +52,9 @@ void scanner_gui::init()
 
     // Minor init settings
     ui->stackedWidget->setCurrentIndex(0);
+
+    // Load robot tool data
+    tools_init();
 }
 
 void scanner_gui::robot_init()
@@ -996,4 +999,86 @@ void scanner_gui::closeEvent (QCloseEvent *event)
 //    _socket_robot->waitForBytesWritten(30);
 //    _socket_robot->write("takepic = 1\n");
 //    _socket_robot->waitForBytesWritten(30);
+}
+
+void scanner_gui::on_Probe_dropdown_currentTextChanged(const QString &arg1)
+{
+    QString probe = arg1;
+    int t_x, t_y, t_z;
+
+    ///Find the probe in the vector
+    for (int i = 0; i < Tools.length(); i++) {
+        if (Tools[i]->tool_name == probe){
+            t_x = Tools[i]->tool_x;
+            t_y = Tools[i]->tool_y;
+            t_z = Tools[i]->tool_z;
+        }
+    }
+
+    ///Set tl_x,tl_y,tl_z to the appropriate values
+    QString msg = "tl_x = %1\n";
+    msg = msg.arg(QString::number(t_x));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
+
+    msg = "tl_y = %1\n";
+    msg = msg.arg(QString::number(t_y));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
+
+    msg = "tl_z = %1\n";
+    msg = msg.arg(QString::number(t_z));
+    _socket_robot->write(msg.toLocal8Bit());
+    _socket_robot->waitForBytesWritten(20);
+
+    ///Call the robot's toolchange function
+    _socket_robot->write("tool_change = 1\n");
+    _socket_robot->waitForBytesWritten(20);
+
+}
+
+void scanner_gui::tools_init(){
+
+
+    QFile inputFile(QCoreApplication::applicationDirPath() + "/tooldata.txt");
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&inputFile);
+        while (!in.atEnd())
+        {
+            QString line = in.readLine();
+            QStringList fields = line.split(";");
+            Tool* T = new Tool(fields[0],fields[1].toFloat(),fields[2].toFloat(),fields[3].toFloat());
+            ///qDebug() << fields;
+            Tools.append(T);
+        }
+        inputFile.close();
+    }
+
+    ///Fill in the "Probes" dropdown
+    for (int i = 0; i < Tools.length(); i++) {
+        ui->Probe_dropdown->addItem(Tools[i]->tool_name);
+    }
+
+}
+
+void scanner_gui::on_AddTool_clicked()
+{
+
+    ///qDebug("Entering Tool panel");
+    tool_add* tool_add_ = new tool_add(this);
+    connect(tool_add_, SIGNAL(tool_tab_closed(QVector<Tool*>)), this, SLOT(on_Tool_Tab_Closed(QVector<Tool*>)));
+    tool_add_->setWindowFlags(tool_add_->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    tool_add_->setModal(true);
+    tool_add_->setFixedSize(tool_add_->width(),tool_add_->height());
+    tool_add_->exec();
+}
+
+void scanner_gui::on_Tool_Tab_Closed(QVector<Tool*> rTools){
+    ui->Probe_dropdown->clear();
+    Tools = rTools;
+    for (int i = 0; i < Tools.length(); i++) {
+        ui->Probe_dropdown->addItem(Tools[i]->tool_name);
+        ///qDebug() << Tools[i]->tool_name;
+    }
 }
