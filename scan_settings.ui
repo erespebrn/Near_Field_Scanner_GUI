@@ -914,6 +914,11 @@
            </item>
            <item>
             <property name="text">
+             <string>POS</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>APEAK</string>
             </property>
            </item>

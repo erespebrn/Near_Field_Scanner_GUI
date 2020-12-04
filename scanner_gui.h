@@ -41,6 +41,9 @@ class scanner_gui : public QMainWindow
         void height_measured();
         void scan_finished_to_wizard();
         void send_area_to_videothread(qint64);
+        void stop_displaying_point();
+        void allow_emit_pos(bool);
+        void instruments_created();
 
     private slots:
 
@@ -76,6 +79,8 @@ class scanner_gui : public QMainWindow
         void cameraError(QString);
         void cameraConnected();
         void on_actionReset_Camera_triggered();
+        void receive_scanheight_point(int, int);
+        void throw_height_meas_error();
 
         //Scan settings
         void on_scan_settings_button_clicked();
@@ -104,7 +109,7 @@ class scanner_gui : public QMainWindow
 
         //TCP sockets
         QTcpSocket *_socket_sa;
-        QTcpSocket _socket_vna;
+        QTcpSocket *_socket_vna;
         QTcpSocket *_socket_robot;
 
         // IP addresses
@@ -146,6 +151,7 @@ class scanner_gui : public QMainWindow
         QPoint scan_area_corner;
         QRect scan_area_size;
         QRect scan_area_size_px;
+        QPoint scan_height_point;
 
         //Robot functions
         void robot_init();
@@ -174,13 +180,17 @@ class scanner_gui : public QMainWindow
         long int save_x = 0;
         long int save_y = 0;
         QByteArray b_data;
+        QByteArray robot_raw_data;
         QByteArray f_data;
         int32_t bytes = 0;
+
         bool first_part = true;
         bool first_part_freq = true;
         bool this_time_already_done = false;
 
         bool run_scan_cam_h = false;
+
+        bool y_comp = true;
 
 
         QTimer * timer2;

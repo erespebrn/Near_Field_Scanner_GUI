@@ -24,6 +24,7 @@ signals:
     void measure_height();
     void send_for_2nd_takepic();
     void ask_for_cam_height();
+    void allow_emit_pos(bool);
 
 private slots:
     void on_Next_button_clicked();
@@ -33,6 +34,8 @@ private slots:
     void on_Cancel_button_clicked();
     void height_measure_finished();
     void scan_finished();
+    void check_for_instruments_created();
+    void inst_created();
 
 private:
     Ui::ScanWizard *ui;
@@ -40,7 +43,7 @@ private:
 
     bool _pcb_found = false;
     bool _corner_found = false;
-
+    bool ins_creat = false;
     QPoint pcb_corner;
     QRect pcb_size;
     uint8_t step = 0;
