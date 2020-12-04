@@ -109,8 +109,6 @@ class scanner_gui : public QMainWindow
         void ask_robot_for_cam_height();
         void ask_for_cam_h();
 
-        void on_myfunction_clicked();
-
         void on_AddTool_clicked();
         void on_Tool_Tab_Closed(QVector<Tool*>);
 

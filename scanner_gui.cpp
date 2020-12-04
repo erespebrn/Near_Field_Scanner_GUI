@@ -1291,7 +1291,8 @@ void scanner_gui::on_Tool_Tab_Closed(QVector<Tool*> rTools){
         ui->Probe_dropdown->addItem(Tools[i]->tool_name);
         ///qDebug() << Tools[i]->tool_name;
     }
-=======
+}
+
 void scanner_gui::robotBytesWritten(qint64 b)
 {
     Q_UNUSED(b);
