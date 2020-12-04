@@ -20,6 +20,7 @@ public:
     ~scan_settings();
 
 signals:
+    void send_sweep_points_amount(int);
 
 private slots:
 
@@ -83,6 +84,8 @@ private slots:
     void on_no_sweeps_dropdown_currentIndexChanged(int index);
 
     void on_detectorComboBox_currentIndexChanged(int index);
+
+    void on_preamp_on_checkbox_stateChanged(int arg1);
 
 private:
     Ui::scan_settings *ui;

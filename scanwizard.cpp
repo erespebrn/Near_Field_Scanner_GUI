@@ -16,12 +16,14 @@ ScanWizard::ScanWizard(QWidget *parent) :
     connect(ui->takepic_btn, SIGNAL(clicked()), par, SLOT(Take_img_button_clicked()));
     connect(ui->resetview_btn, SIGNAL(clicked()), par, SLOT(resetCamera_button_clicked()));
     connect(ui->Cancel_button, SIGNAL(clicked()), par, SLOT(on_home_button_clicked()));
+
 }
 
 ScanWizard::~ScanWizard()
 {
     emit set_scan_settings(10);
-    delete timer;
+    emit allow_emit_pos(false);
+    //delete timer;
     delete ui;
 }
 
@@ -39,14 +41,17 @@ void ScanWizard::on_Next_button_clicked()
             ui->label->setText("Place PCB");
             ui->label_2->setText("Place your PCB on the scannig mat.\n\n"
                                  "* Important is to place is as much parallel to the bottom table edge as possible.\n\n"
-                                 "* Adjust the camera focus using knob on the right to achieve maximum sharpeness of the picture");
+                                 "* Adjust the camera focus using knob on the right to achieve maximum sharpeness of the picture"
+                                 "* Make sure the PCB color is contrasting to the mat. If not, use the white sheet of paper to place PCB on.\n\n");
             ui->Next_button->setText("Next");
             break;
         }
         case(1):
         {
             ui->label->setText("Detecting PCB");
-            ui->label_2->setText("Waiting for PCB...");
+            ui->label_2->setText("Waiting for PCB...\n\n"
+                                 "* Reference window has opened. The PCB should be illuminated as a white rectangle on the black background.\n\n"
+                                 "* In case that PCB cannot be detected, try to place it on the white piece of paper sheet with rectangle shape.");
             ui->Next_button->setEnabled(false);
 
             timer = new QTimer;
@@ -58,14 +63,29 @@ void ScanWizard::on_Next_button_clicked()
         }
         case(2):
         {
+            emit set_scan_settings(step);
+            ui->label->setText("Measure the height");
+            ui->label_2->setText("Measure the height of the PCB above the mat: \n\n"
+                                 "* Select the point on the picture where the height measurement should be done"
+                                 " by clicking on it. A circle with description should show up.\n\n"
+                                 "* The best choice for the height measurement is the highest point of the PCB\n\n"
+                                 "  or the part of the PCB where the near-field scan should be done\n\n"
+                                 "* Select the scan height using the highlighted spin-box");
+            ui->Next_button->setText("Next");
+            emit allow_emit_pos(true);
+            break;
+        }
+        case(3):
+        {
             ui->label->setText("PCB height");
             ui->label_2->setText("Measuring PCB height...");
             ui->Next_button->setVisible(false);
             emit detect_pcb(false);
+            emit allow_emit_pos(false);
             emit send_robot_to_origin(true);
             break;
         }
-        case(3):
+        case(4):
         {
             ui->label->setText("Scan area");
             ui->label_2->setText("* Adjust the camera focus using knob on the right to achieve maximum sharpeness of the picture\n\n"
@@ -73,28 +93,35 @@ void ScanWizard::on_Next_button_clicked()
                                  "* Make sure that the 'Corner' circle is still present and take a picture.\n\n"
                                  "* If the picture is blured, move the robot higher using Z+\n\n"
                                  "* Next, by using of mouse, select the area of scan");
-            emit ask_for_cam_height();
             emit set_scan_settings(step);
             emit send_for_2nd_takepic();
             emit scan_area_origin_detect(true);
             ui->takepic_btn->setVisible(true);
             ui->resetview_btn->setVisible(true);
+            emit ask_for_cam_height();
             break;
         }
-        case(4):
+        case(5):
         {
             emit scan_area_origin_detect(false);
             ui->takepic_btn->setVisible(false);
             ui->resetview_btn->setVisible(false);
+            emit ui->resetview_btn->clicked();
             emit send_robot_to_origin(false);
             emit set_scan_settings(step);
+
+            timer = new QTimer;
+            connect(timer, &QTimer::timeout, this, &ScanWizard::check_for_instruments_created);
+            timer->start(100);
+
+            ui->Next_button->setEnabled(false);
             ui->label->setText("Scan settings");
             ui->label_2->setText("Robot now moved to a corner of desired scan area.\n\n "
                                  "* If needed, compensate the position of the robot manually\n\n"
                                  "* Please now set the measurement instruments setting in the Scan Settings (highlighted in green) menu on the right side option bar!");
             break;
         }
-        case(5):
+        case(6):
         {
             emit scan_area_origin_detect(false);
             emit ui->resetview_btn->clicked();
@@ -103,7 +130,7 @@ void ScanWizard::on_Next_button_clicked()
             ui->label_2->setText("Set the scanning step size and scanning height on the right side option bar (highlighted in green)");
             break;
         }
-        case(6):
+        case(7):
         {
             ui->label->setText("Run the scan");
             emit set_scan_settings(step);
@@ -111,7 +138,7 @@ void ScanWizard::on_Next_button_clicked()
             ui->Next_button->setText("Start Scan");
             break;
         }
-        case(7):
+        case(8):
         {
             ui->label->setText("Scan in progress..");
             emit set_scan_settings(step);
@@ -120,7 +147,7 @@ void ScanWizard::on_Next_button_clicked()
             ui->Next_button->setText("Stop");
             break;
         }
-        case(8):
+        case(9):
         {
             emit run_scan(false);
             ui->label->setText("Scan aborted");
@@ -165,6 +192,8 @@ void ScanWizard::on_Cancel_button_clicked()
     emit scan_area_origin_detect(false);
     emit detect_pcb(false);
     emit ui->resetview_btn->clicked();
+    emit allow_emit_pos(false);
+
     this->deleteLater();
     this->hide();
 }
@@ -175,7 +204,6 @@ void ScanWizard::height_measure_finished()
     ui->label_2->setText("Height measured! \n\nFinding the spot!");    
     ui->Next_button->setVisible(true);
     ui->Next_button->clicked();
-    qDebug() << "Crash";
 }
 
 void ScanWizard::scan_finished()
@@ -184,5 +212,21 @@ void ScanWizard::scan_finished()
     ui->label_2->setText("Scanning process finished!");
     ui->Next_button->setVisible(false);
     ui->Cancel_button->setText("Close");
+}
+
+void ScanWizard::check_for_instruments_created()
+{
+    if(ins_creat)
+    {
+        timer->stop();
+        timer->deleteLater();
+        ui->Next_button->setEnabled(true);
+        emit set_scan_settings(10);
+    }
+}
+
+void ScanWizard::inst_created()
+{
+    ins_creat = true;
 }
 
