@@ -41,6 +41,8 @@ SOURCES += \
     scanheight_mouseevent.cpp \
     scanner_gui.cpp \
     scanwizard.cpp \
+    tool.cpp \
+    tool_add.cpp \
     videothread.cpp
 
 HEADERS += \
@@ -50,12 +52,15 @@ HEADERS += \
     scanheight_mouseevent.h \
     scanner_gui.h \
     scanwizard.h \
+    tool.h \
+    tool_add.h \
     videothread.h
 
 FORMS += \
     scan_settings.ui \
     scanner_gui.ui \
-    scanwizard.ui
+    scanwizard.ui \
+    tool_add.ui
 
 RESOURCES += camera.qrc \
     img.qrc
