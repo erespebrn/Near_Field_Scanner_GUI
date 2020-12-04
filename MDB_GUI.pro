@@ -38,6 +38,7 @@ SOURCES += \
     main.cpp \
     qlabel_mouseevent.cpp \
     scan_settings.cpp \
+    scanheight_mouseevent.cpp \
     scanner_gui.cpp \
     scanwizard.cpp \
     tool.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     instrument_thread.h \
     qlabel_mouseevent.h \
     scan_settings.h \
+    scanheight_mouseevent.h \
     scanner_gui.h \
     scanwizard.h \
     tool.h \

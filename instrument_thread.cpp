@@ -64,6 +64,7 @@ void Instrument_Thread::scan_devices()
 
 void Instrument_Thread::shutdown()
 {
+    qDebug() << "Instrument thread shutdown..";
     emit finished();
 }
 
