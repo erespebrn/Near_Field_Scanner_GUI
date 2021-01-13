@@ -109,8 +109,14 @@ class scanner_gui : public QMainWindow
         void ask_robot_for_cam_height();
         void ask_for_cam_h();
 
-        void on_myfunction_clicked();
+        //Data management
+        /**
+         * @brief Saves the scan data for given field component\n
+         * Pass 'x' or 'y' as an argument to save corresponding field data.
+         */
+        bool save_scan_data(char);
 
+        void on_myfunction_clicked();
         void on_AddTool_clicked();
         void on_Tool_Tab_Closed(QVector<Tool*>);
 
@@ -208,6 +214,7 @@ private:
 
 
         QTimer * timer2;
+
         //Minor variables
         QColor laststyle;
         bool time_for_amplitude = false;

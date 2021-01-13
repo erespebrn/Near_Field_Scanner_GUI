@@ -44,9 +44,9 @@ scanner_gui::~scanner_gui()
 //Init functions
 void scanner_gui::init()
 {
-    robot_init();
-    video_thread_init();
-    instrument_thread_init();
+    //robot_init();
+    //video_thread_init();
+    //instrument_thread_init();
     //Mouse events signals
     connect(ui->lastImagePreviewLabel, SIGNAL(sendQrect(QRect&)), this, SLOT(displayCroppedImage(QRect&)));
     connect(ui->liveStream, SIGNAL(sendPos(int, int)), videothread, SLOT(mark_scanheight(int ,int)));
@@ -231,14 +231,8 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     QImage scaledImage = cropped.scaled(ui->liveStream->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
-    scaledImage.save(QDir::toNativeSeparators(QDir::homePath() + "/Pictures/cropped_image.PNG"), "PNG",100);
-
-    qDebug() << "Marked area: " << rect.width() * rect.height();
-
-    // *** Determine the real size of the object on an image *** //
-    //Since the image taken is scaled, scale factor must be used
-//    float scale_factor_x = 1.14*((float)resolution_max_width/(float)ui->lastImagePreviewLabel->width());
-//    float scale_factor_y = 0.92*((float)resolution_max_height/(float)ui->lastImagePreviewLabel->height());
+    QString path = current_scan_datapath+"/cropped_image.PNG";
+    scaledImage.save(path, "PNG",100);
 
     //Height and width of cropped image (marked using mouse) can be computed using the following equations
     float width_cropped = ((float)camera_distance_2*(float)rect.width()*sensor_width/(focal_lenght*1280));
@@ -299,7 +293,6 @@ void scanner_gui::on_Start_scan_button_clicked()
         b_data.clear();
         temp2d.clear();
         freq.clear();
-        current_scan_point_x=-1;
         scan_rows = 0;
         scan_columns = 0;
         save_x = 0;
@@ -742,6 +735,109 @@ void scanner_gui::sa_dataread()
 }
 
 
+//Data management
+bool scanner_gui::save_scan_data(char comp)
+{
+    if(comp == 'y')
+    {
+        QString path = current_scan_datapath+"y_comp_scan_data_tensor.bin";
+        std::ofstream file;
+
+        file.open(path.toLocal8Bit(), std::ios::binary);
+
+        if(file)
+        {
+            qDebug() << "File does not exists. Created file!";
+            float sp = (float)sweep_points;
+            float x_max = (float)scan_columns;
+            float y_max = (float)scan_rows;
+
+            float step_size_px = (float)scan_area_size_px.width()/scan_rows;
+            float scan_width_px = (float)scan_area_size_px.width();
+            float scan_height_px = (float)scan_area_size_px.height();
+
+            float step_size_mm = (float)ui->stepsize_xy->value();
+            float scan_width_mm = (float)scan_area_size.width();
+            float scan_height_mm = (float)scan_area_size.height();
+
+            file.write(reinterpret_cast<const char*>(&step_size_px), sizeof(step_size_px));
+            file.write(reinterpret_cast<const char*>(&scan_width_px), sizeof(scan_width_px ));
+            file.write(reinterpret_cast<const char*>(&scan_height_px), sizeof(scan_height_px));
+            file.write(reinterpret_cast<const char*>(&step_size_mm), sizeof(step_size_mm));
+            file.write(reinterpret_cast<const char*>(&scan_width_mm), sizeof(scan_width_mm));
+            file.write(reinterpret_cast<const char*>(&scan_height_mm), sizeof(scan_height_mm));
+
+            file.write(reinterpret_cast<const char*>(&sp), sizeof(sp));
+            file.write(reinterpret_cast<const char*>(&x_max), sizeof(x_max));
+            file.write(reinterpret_cast<const char*>(&y_max), sizeof(y_max));
+        }
+        else
+        {
+            qDebug() << "File exists. No overwrite allowed!";
+        }
+
+        qDebug() << "DATA SAVED TO FILE. SIZE OF THE VECTOR FOR Y COMP: " << data_tensor.size();
+        if(file.is_open())
+        {
+            for(auto &v : data_tensor)
+            {
+                for(auto &v1 : v)
+                    file.write(reinterpret_cast<const char*>(&v1[0]), v1.size()*sizeof(float));
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        QString path = current_scan_datapath+"x_comp_scan_data_tensor.bin";
+        std::ofstream file;
+
+        file.open(path.toLocal8Bit(), std::ios::binary);
+
+        if(file)
+        {
+            qDebug() << "File does not exists. Created file!";
+            float sp = (float)sweep_points;
+            float x_max = (float)scan_columns;
+            float y_max = (float)scan_rows;
+
+            float step_size_px = (float)scan_area_size_px.width()/scan_rows;
+            float scan_width_px = (float)scan_area_size_px.width();
+            float scan_height_px = (float)scan_area_size_px.height();
+
+            float step_size_mm = (float)ui->stepsize_xy->value();
+            float scan_width_mm = (float)scan_area_size.width();
+            float scan_height_mm = (float)scan_area_size.height();
+
+            file.write(reinterpret_cast<const char*>(&step_size_px), sizeof(step_size_px));
+            file.write(reinterpret_cast<const char*>(&scan_width_px), sizeof(scan_width_px ));
+            file.write(reinterpret_cast<const char*>(&scan_height_px), sizeof(scan_height_px));
+            file.write(reinterpret_cast<const char*>(&step_size_mm), sizeof(step_size_mm));
+            file.write(reinterpret_cast<const char*>(&scan_width_mm), sizeof(scan_width_mm));
+            file.write(reinterpret_cast<const char*>(&scan_height_mm), sizeof(scan_height_mm));
+
+            file.write(reinterpret_cast<const char*>(&sp), sizeof(sp));
+            file.write(reinterpret_cast<const char*>(&x_max), sizeof(x_max));
+            file.write(reinterpret_cast<const char*>(&y_max), sizeof(y_max));
+        }
+        else
+        {
+            qDebug() << "File exists. No overwrite allowed!";
+        }
+
+        qDebug() << "DATA SAVED TO FILE. SIZE OF THE VECTOR FOR X COMP: " << data_tensor.size();
+        if(file.is_open())
+        {
+            for(auto &v : data_tensor)
+            {
+                for(auto &v1 : v)
+                    file.write(reinterpret_cast<const char*>(&v1[0]), v1.size()*sizeof(float));
+            }
+        }
+        file.close();
+    }
+}
+
 //Robot control functions
 void scanner_gui::read_robot_msg()
 {
@@ -749,6 +845,7 @@ void scanner_gui::read_robot_msg()
     QByteArray msg;
     uint8_t i = 0;
 
+    //Robot welcome message read. If not done, it stays in the buffer.
     if(robot_first_run)
     {
         welcome_msg.append(_socket_robot->readAll());
@@ -760,36 +857,43 @@ void scanner_gui::read_robot_msg()
         }
     }
 
+    //Take the robot message when available bytes and not thhe welcome message.
     if(_socket_robot->bytesAvailable() && !robot_first_run)
     {
-        robot_raw_data.append(_socket_robot->readAll());
+        robot_raw_data.append(_socket_robot->readAll());        //Read all bytes available and append to the QByteArray
 
+        //All robot messages are ended by new line character.
+        //Very ofter message is read in more than one package so keep reading
+        //and appending until this character reached.
         if(robot_raw_data.at(robot_raw_data.size()-1) == '\n')
         {
+            //Extract the information from the robot message. Msg format: @2 123 323 according to the conventions file.
             if(!robot_raw_data.isEmpty())
+            {
                 qDebug() << "Robot raw message: " << robot_raw_data;
-
-            bool time_for_msg = false;
-            for(int t=0; t<robot_raw_data.size(); t++)
-            {
-                char a = robot_raw_data.at(t);
-                if(a == '@')
-                    time_for_msg = true;
-                if(time_for_msg)
-                    msg.append(robot_raw_data.at(t));
+                bool time_for_msg = false;
+                for(int t=0; t<robot_raw_data.size(); t++)
+                {
+                    char a = robot_raw_data.at(t);
+                    if(a == '@')
+                        time_for_msg = true;
+                    if(time_for_msg)
+                        msg.append(robot_raw_data.at(t));
+                }
+                if(!msg.isEmpty())
+                {
+                    char arg_to_cvt[5];
+                    arg_to_cvt[0] = msg.at(1);
+                    arg_to_cvt[1] = msg.at(2);
+                    arg_to_cvt[2] = '\n';
+                    i = atoi(arg_to_cvt);
+                }
+                robot_raw_data.clear();
             }
-            if(!msg.isEmpty())
-            {
-                char arg_to_cvt[5];
-                arg_to_cvt[0] = msg.at(1);
-                arg_to_cvt[1] = msg.at(2);
-                arg_to_cvt[2] = '\n';
-                i = atoi(arg_to_cvt);
-            }
-            robot_raw_data.clear();
         }
     }
 
+    //Put the extracted information for the correct handling.
     switch(i)
     {
         case 1:
@@ -801,9 +905,9 @@ void scanner_gui::read_robot_msg()
             ui->robotTerminal->setText("");
             ui->robotTerminal->setText("Scan in progress...");
 
+            //Extract the current scan row and column from the robot message.
             QByteArray col_to_cvt;
             QByteArray row_to_cvt;
-
             bool time_for_col = false;
             for(size_t p=3; p<strlen(msg); p++)
             {
@@ -819,12 +923,13 @@ void scanner_gui::read_robot_msg()
                     col_to_cvt.append(a);
                 }
             }
-
             save_x = col_to_cvt.toUInt();
             save_y = row_to_cvt.toUInt();
 
+            //Get data from the Spectrum Analyzer
             if(sa_connected_bool)
                 get_trace_data(true);
+
             break;
         }
         case 3:
@@ -833,54 +938,7 @@ void scanner_gui::read_robot_msg()
             {
                 ui->robotTerminal->setText("");
                 ui->robotTerminal->setText("Y comp Scan finished!");
-
-                current_scan_point_x = -1;
-                QString path = current_scan_datapath+"y_comp_scan_data_tensor.bin";
-                std::ofstream file;
-
-                file.open(path.toLocal8Bit(), std::ios::binary);
-
-                if(file)
-                {
-                    qDebug() << "File does not exists. Created file!";
-                    float sp = (float)sweep_points;
-                    float x_max = (float)scan_columns;
-                    float y_max = (float)scan_rows;
-
-                    float step_size_px = (float)scan_area_size_px.width()/scan_rows;
-                    float scan_width_px = (float)scan_area_size_px.width();
-                    float scan_height_px = (float)scan_area_size_px.height();
-
-                    float step_size_mm = (float)ui->stepsize_xy->value();
-                    float scan_width_mm = (float)scan_area_size.width();
-                    float scan_height_mm = (float)scan_area_size.height();
-
-                    file.write(reinterpret_cast<const char*>(&step_size_px), sizeof(step_size_px));
-                    file.write(reinterpret_cast<const char*>(&scan_width_px), sizeof(scan_width_px ));
-                    file.write(reinterpret_cast<const char*>(&scan_height_px), sizeof(scan_height_px));
-                    file.write(reinterpret_cast<const char*>(&step_size_mm), sizeof(step_size_mm));
-                    file.write(reinterpret_cast<const char*>(&scan_width_mm), sizeof(scan_width_mm));
-                    file.write(reinterpret_cast<const char*>(&scan_height_mm), sizeof(scan_height_mm));
-
-                    file.write(reinterpret_cast<const char*>(&sp), sizeof(sp));
-                    file.write(reinterpret_cast<const char*>(&x_max), sizeof(x_max));
-                    file.write(reinterpret_cast<const char*>(&y_max), sizeof(y_max));
-                }
-                else
-                {
-                    qDebug() << "File exists. No overwrite allowed!";
-                }
-
-                qDebug() << "DATA SAVED TO FILE. SIZE OF THE VECTOR FOR Y COMP: " << data_tensor.size();
-                if(file.is_open())
-                {
-                    for(auto &v : data_tensor)
-                    {
-                        for(auto &v1 : v)
-                            file.write(reinterpret_cast<const char*>(&v1[0]), v1.size()*sizeof(float));
-                    }
-                }
-                file.close();
+                save_scan_data('y');
                 save_x = 0;
                 save_y = 0;
                 data_tensor.clear();
@@ -889,55 +947,11 @@ void scanner_gui::read_robot_msg()
             }
             else
             {
-                current_scan_point_x = -1;
-                QString path = current_scan_datapath+"x_comp_scan_data_tensor.bin";
-                std::ofstream file;
-
-                file.open(path.toLocal8Bit(), std::ios::binary);
-
-                if(file)
-                {
-                    qDebug() << "File does not exists. Created file!";
-                    float sp = (float)sweep_points;
-                    float x_max = (float)scan_columns;
-                    float y_max = (float)scan_rows;
-
-                    float step_size_px = (float)scan_area_size_px.width()/scan_rows;
-                    float scan_width_px = (float)scan_area_size_px.width();
-                    float scan_height_px = (float)scan_area_size_px.height();
-
-                    float step_size_mm = (float)ui->stepsize_xy->value();
-                    float scan_width_mm = (float)scan_area_size.width();
-                    float scan_height_mm = (float)scan_area_size.height();
-
-                    file.write(reinterpret_cast<const char*>(&step_size_px), sizeof(step_size_px));
-                    file.write(reinterpret_cast<const char*>(&scan_width_px), sizeof(scan_width_px ));
-                    file.write(reinterpret_cast<const char*>(&scan_height_px), sizeof(scan_height_px));
-                    file.write(reinterpret_cast<const char*>(&step_size_mm), sizeof(step_size_mm));
-                    file.write(reinterpret_cast<const char*>(&scan_width_mm), sizeof(scan_width_mm));
-                    file.write(reinterpret_cast<const char*>(&scan_height_mm), sizeof(scan_height_mm));
-
-                    file.write(reinterpret_cast<const char*>(&sp), sizeof(sp));
-                    file.write(reinterpret_cast<const char*>(&x_max), sizeof(x_max));
-                    file.write(reinterpret_cast<const char*>(&y_max), sizeof(y_max));
-                }
-                else
-                {
-                    qDebug() << "File exists. No overwrite allowed!";
-                }
-
-                qDebug() << "DATA SAVED TO FILE. SIZE OF THE VECTOR FOR X COMP: " << data_tensor.size();
-                if(file.is_open())
-                {
-                    for(auto &v : data_tensor)
-                    {
-                        for(auto &v1 : v)
-                            file.write(reinterpret_cast<const char*>(&v1[0]), v1.size()*sizeof(float));
-                    }
-                }
-                file.close();
+                save_scan_data('y');
                 save_x = 0;
                 save_y = 0;
+                data_tensor.clear();
+                temp2d.clear();
                 instrument_thread_init();
                 emit scan_finished_to_wizard();
                 emit allow_emit_pos(false);
@@ -1201,6 +1215,11 @@ void scanner_gui::on_home_button_clicked()
     camera_distance_2 = camera_distance;
 }
 
+void scanner_gui::robotBytesWritten(qint64 b)
+{
+    Q_UNUSED(b);
+}
+
 void scanner_gui::closeEvent (QCloseEvent *event)
 {
     Q_UNUSED(event);
@@ -1284,15 +1303,13 @@ void scanner_gui::on_AddTool_clicked()
     tool_add_->exec();
 }
 
-void scanner_gui::on_Tool_Tab_Closed(QVector<Tool*> rTools){
+void scanner_gui::on_Tool_Tab_Closed(QVector<Tool*> rTools)
+{
     ui->Probe_dropdown->clear();
     Tools = rTools;
     for (int i = 0; i < Tools.length(); i++) {
         ui->Probe_dropdown->addItem(Tools[i]->tool_name);
         ///qDebug() << Tools[i]->tool_name;
     }
-=======
-void scanner_gui::robotBytesWritten(qint64 b)
-{
-    Q_UNUSED(b);
 }
+

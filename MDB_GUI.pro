@@ -4,6 +4,7 @@ QT       += \
 
 QT += multimedia multimediawidgets
 
+
 win32:RC_ICONS += sduicon.ico
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
