@@ -9,7 +9,7 @@ ScanWizard::ScanWizard(QWidget *parent) :
 {
     ui->setupUi(this);
     par = parent;
-
+    robot = rt;
     ui->takepic_btn->setVisible(false);
     ui->resetview_btn->setVisible(false);
 

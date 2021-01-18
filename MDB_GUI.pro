@@ -24,20 +24,34 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += C:\opencv\build\include
 
-LIBS += C:\opencv\release\bin\libopencv_core420.dll
-LIBS += C:\opencv\release\bin\libopencv_highgui420.dll
-LIBS += C:\opencv\release\bin\libopencv_imgcodecs420.dll
-LIBS += C:\opencv\release\bin\libopencv_imgproc420.dll
-LIBS += C:\opencv\release\bin\libopencv_features2d420.dll
-LIBS += C:\opencv\release\bin\libopencv_calib3d420.dll
-LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
-LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
-LIBS += C:\opencv\release\bin\libopencv_photo420.dll
+#LIBS += C:\opencv\release\bin\libopencv_core420.dll
+#LIBS += C:\opencv\release\bin\libopencv_highgui420.dll
+#LIBS += C:\opencv\release\bin\libopencv_imgcodecs420.dll
+#LIBS += C:\opencv\release\bin\libopencv_imgproc420.dll
+#LIBS += C:\opencv\release\bin\libopencv_features2d420.dll
+#LIBS += C:\opencv\release\bin\libopencv_calib3d420.dll
+#LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
+#LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
+#LIBS += C:\opencv\release\bin\libopencv_photo420.dll
+
+#LIBS += C:\opencv\release\bin\libopencv_core3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_highgui3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_imgcodecs3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_imgproc3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_features2d3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_calib3d3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_videoio3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_objdetect3410.dll
+#LIBS += C:\opencv\release\bin\libopencv_photo3410.dll
 
 SOURCES += \
+    dut_size.cpp \
     instrument_thread.cpp \
     main.cpp \
+    mainsettings.cpp \
     qlabel_mouseevent.cpp \
+    robot.cpp \
+    rs_instruments.cpp \
     scan_settings.cpp \
     scanheight_mouseevent.cpp \
     scanner_gui.cpp \
@@ -47,8 +61,12 @@ SOURCES += \
     videothread.cpp
 
 HEADERS += \
+    dut_size.h \
     instrument_thread.h \
+    mainsettings.h \
     qlabel_mouseevent.h \
+    robot.h \
+    rs_instruments.h \
     scan_settings.h \
     scanheight_mouseevent.h \
     scanner_gui.h \
@@ -58,6 +76,7 @@ HEADERS += \
     videothread.h
 
 FORMS += \
+    mainsettings.ui \
     scan_settings.ui \
     scanner_gui.ui \
     scanwizard.ui \

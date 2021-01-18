@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QSettings>
 #include <QCoreApplication>
+#include "rs_instruments.h"
 
 namespace Ui {
 class scan_settings;
@@ -15,8 +16,7 @@ class scan_settings : public QDialog
     Q_OBJECT
 
 public:
-    explicit scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent = nullptr);
-    explicit scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *parent = nullptr);
+    explicit scan_settings(RS_Instruments *ins, bool sa_vna, QWidget *parent = nullptr);
     ~scan_settings();
 
 signals:
@@ -89,6 +89,8 @@ private slots:
 
 private:
     Ui::scan_settings *ui;
+
+    RS_Instruments *instrument;
 
     QTcpSocket *_socket_sa;
     QTcpSocket *_socket_vna;

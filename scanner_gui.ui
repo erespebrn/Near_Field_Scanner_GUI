@@ -1102,6 +1102,18 @@ brightness:</string>
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -1117,47 +1129,18 @@ brightness:</string>
     </property>
     <addaction name="actionExit_2"/>
    </widget>
-   <widget class="QMenu" name="menuCamera">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Camera</string>
+     <string>Tools</string>
     </property>
+    <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
     <addaction name="actionReset_Camera"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuCamera"/>
+   <addaction name="menuTools"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <action name="actionStopCamera">
-   <property name="text">
-    <string>Stop Camera</string>
-   </property>
-  </action>
-  <action name="actionStartCamera">
-   <property name="text">
-    <string>Start Camera</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionImage_Settings">
-   <property name="text">
-    <string>Image Settings</string>
-   </property>
-  </action>
   <action name="actionExit_2">
    <property name="text">
     <string>Exit</string>
@@ -1166,6 +1149,11 @@ brightness:</string>
   <action name="actionReset_Camera">
    <property name="text">
     <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>

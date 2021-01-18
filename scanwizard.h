@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTimer>
+#include "robot.h"
 
 namespace Ui {
 class ScanWizard;
@@ -44,6 +45,7 @@ private:
     bool _pcb_found = false;
     bool _corner_found = false;
     bool ins_creat = false;
+    Robot * robot;
     QPoint pcb_corner;
     QRect pcb_size;
     uint8_t step = 0;

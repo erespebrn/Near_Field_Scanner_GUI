@@ -12,16 +12,19 @@
 #include <QWizard>
 #include <QCloseEvent>
 #include <QVector>
-#include "videothread.h"
+
+//#include "videothread.h"
 #include "instrument_thread.h"
 #include "scanwizard.h"
 #include "tool.h"
+#include "robot.h"
+#include "dut_size.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/objdetect/objdetect.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/videoio/videoio.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/objdetect/objdetect.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/videoio/videoio.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class scanner_gui; }
@@ -41,7 +44,7 @@ class scanner_gui : public QMainWindow
         void send_coord_to_wizard(QPoint, QRect);
         void cropped_image_coord();
         void height_measured();
-        void scan_finished_to_wizard();
+
         void send_area_to_videothread(qint64);
         void stop_displaying_point();
         void allow_emit_pos(bool);
@@ -66,7 +69,9 @@ class scanner_gui : public QMainWindow
         void on_stepsize_xy_valueChanged(double arg1);
         void on_stepsize_z_valueChanged(double arg1);
         void on_scan_height_valueChanged(double arg1);
-        void read_robot_msg();
+
+        void disp_robot_msg(QString);
+        void stop_current_scan();
 
         void on_Probe_dropdown_currentTextChanged(const QString &arg1);
         void tools_init();
@@ -99,13 +104,14 @@ class scanner_gui : public QMainWindow
         void on_datasave_test_clicked();
         void get_trace_data(bool);
         void sa_dataread();
+        void vna_dataread();
         void confirm_written_bytes(qint64);
 
         //Wizard slots
         void wizard_robot_to_origin(bool);
         void wizard_mark_background(int);
         void wizard_scan_control(bool);
-        void send_to_top_pcb_edge();
+        void send_to_takepic2_pos();
         void ask_robot_for_cam_height();
         void ask_for_cam_h();
 
@@ -116,7 +122,6 @@ class scanner_gui : public QMainWindow
          */
         bool save_scan_data(char);
 
-        void on_myfunction_clicked();
         void on_AddTool_clicked();
         void on_Tool_Tab_Closed(QVector<Tool*>);
 
@@ -125,93 +130,39 @@ private:
         Ui::scanner_gui *ui;
         ScanWizard * wizard;
 
-        //TCP sockets
-        QTcpSocket *_socket_sa;
-        QTcpSocket *_socket_vna;
-        QTcpSocket *_socket_robot;
+        //RS measurement instruments
+        RS_Instruments *sa;
+        RS_Instruments *vna;
 
-        // IP addresses
-        const QString sa_ip_address = "192.168.11.4";
-        const QString vna_ip_address = "192.168.11.6";
-        const QString robot_ip_address = "192.168.11.2";
-
-        //Measurement instruments
+        //RS instrument detector thread
         Instrument_Thread * insthread;
         bool sa_connected_bool = false;
         bool vna_connected_bool = false;
 
-        // Camera image sensor dimensions
-        const float sensor_width = 4.54;
-        const float sensor_height = 3.42;
-        const float focal_lenght = 3.81;
-        const uint16_t resolution_max_width = 4208;
-        const uint16_t resolution_max_height = 3120;
-
-        //Camera distances
-        uint32_t camera_distance = 876;
-        uint32_t real_height;
-        uint32_t camera_distance_2 = 10000;
+        //PCB and scan area objects
+        DUT_size *pcb;
+        DUT_size *scan_area;
 
         //OpenCV and image processing
-        cv::Point cv_robot_origin;
-        cv::Mat cv_lastImage;
         QImage lastImage;
         QRect croppedOrigin;
-        VideoThread* videothread;
+        //VideoThread* videothread;
         void video_thread_init();
         void instrument_thread_init();
 
-        //PCB, Scan Area distances and sizes
-        QPoint origin;
-        QPoint pcb_corner;
-        QRect pcb_size;
-        QPoint scan_pcb_corner;
-        QPoint scan_area_corner;
-        QRect scan_area_size;
-        QRect scan_area_size_px;
-        QPoint scan_height_point;
-
         //Robot functions
+        Robot *robot;
         void robot_init();
-        void send_robot_coordinates(bool);
         void set_scan_step_sizes();
         void start_scan();
-        void stop_scan();
+
 
         //Data storage variables and functions
         QString datapath = "C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage/scan_data/";
-        QString matlab_script_path = "C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/datastorage/";
         QString foldername = "SCAN_21_10_2020__15_34_11";
         QString current_scan_datapath;
         uint16_t scan_point = 0;
-        ///int hm = 0;
         QVector<Tool*> Tools;
-
-
-        std::vector<std::vector<std::vector<float>>> data_tensor;
-        std::vector<std::vector<float>> temp2d;
-        std::vector<float> freq;
-
-        int sweep_points;
-        int current_scan_point_x=-1;
-
-        int scan_rows = 0;
-        int scan_columns = 0;
-        long int save_x = 0;
-        long int save_y = 0;
-        QByteArray b_data;
-        QByteArray robot_raw_data;
-        QByteArray f_data;
-        int32_t bytes = 0;
-
-        bool first_part = true;
-        bool first_part_freq = true;
-        bool this_time_already_done = false;
-
-        bool run_scan_cam_h = false;
-
-        bool y_comp = true;
-
 
         QTimer * timer2;
 

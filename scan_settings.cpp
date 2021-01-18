@@ -10,7 +10,7 @@
 #include <QDebug>
 
 
-scan_settings::scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent) :
+scan_settings::scan_settings(RS_Instruments *ins, bool sa_vna, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::scan_settings)
 {
@@ -18,29 +18,19 @@ scan_settings::scan_settings(QTcpSocket *socket, bool sa_vna, QWidget *parent) :
 
     if(sa_vna == false)
     {
-        _socket_sa = socket;
+        instrument = ins;
+        _socket_sa = instrument->give_socket();
         ui->VNA_tab->setEnabled(false);
     }
     else
     {
-        _socket_vna = socket;
+        instrument = ins;
+        _socket_vna = instrument->give_socket();
         ui->SA_tab->setEnabled(false);
     }
 
     load_previous_settings();
 
-}
-
-scan_settings::scan_settings(QTcpSocket *socket, QTcpSocket *socket2, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::scan_settings)
-{
-    ui->setupUi(this);
-
-    _socket_sa = socket;
-    _socket_vna = socket2;
-
-    load_previous_settings();
 }
 
 
@@ -236,7 +226,7 @@ void scan_settings::write_sa_settings()
         mystring = "SWE:POIN %1\n";
         mystring = mystring.arg(QString::number(ui->sweep_points_spinbox->value()));
         sa_send_command(mystring);
-        emit send_sweep_points_amount(ui->sweep_points_spinbox->value());
+        instrument->get_sweep_points(ui->sweep_points_spinbox->value());
         mystring = "";
         // Save to the preset file
         settings.setValue("SA_SWEEP/Sweep points", ui->sweep_points_spinbox->value());
@@ -647,7 +637,6 @@ void scan_settings::vna_send_command(const QString &cmd)
     _socket_vna->write(cmd.toLocal8Bit());
     _socket_vna->waitForBytesWritten(1);
 }
-
 
 void scan_settings::on_start_freq_spinbox_valueChanged(double arg1)
 {
