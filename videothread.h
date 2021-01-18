@@ -49,7 +49,7 @@ private:
     QImage MatToQImage(const cv::Mat& mat);
     std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
     cv::Point pcb_origin;
-    cv::Point cv_robot_origin = cv::Point(145,172);
+    cv::Point cv_robot_origin = cv::Point(78,157);
     bool detect = false;
     bool zoomed_origin = false;
     bool is_height_measured = false;

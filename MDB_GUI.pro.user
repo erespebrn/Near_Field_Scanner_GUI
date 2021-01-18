@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.13.0, 2020-12-04T19:49:03. -->
+<!-- Written by QtCreator 4.13.0, 2021-01-14T16:36:05. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -146,10 +146,10 @@
     <value type="int" key="SeparateDebugInfo">2</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
-    <value type="bool">true</value>
+    <value type="bool">false</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/build-MDB_GUI-Desktop_Qt_5_12_6_MinGW_64_bit-Release</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/build-MDB_GUI-Desktop_Qt_5_12_6_MinGW_64_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\Near-field scanner\Documents\Near_Field_Scanner_GUI\Near_Field_Scanner_GUI</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/Near_Field_Scanner_GUI</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -200,7 +200,7 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.2">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/build-MDB_GUI-Desktop_Qt_5_12_6_MinGW_64_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\Near-field scanner\Documents\Near_Field_Scanner_GUI\build-MDB_GUI-Desktop_Qt_5_12_6_MinGW_64_bit-Profile</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/Users/Near-field scanner/Documents/Near_Field_Scanner_GUI/build-MDB_GUI-Desktop_Qt_5_12_6_MinGW_64_bit-Profile</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">

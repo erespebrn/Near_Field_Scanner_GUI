@@ -250,12 +250,11 @@ void scanner_gui::displayCroppedImage(QRect &rect)
     float x_dist_mm = ((float)camera_distance_2*x_dist_px*sensor_width/(focal_lenght*1280));
     float y_dist_mm = ((float)camera_distance_2*y_dist_px*sensor_height/(focal_lenght*960));
 
-    x_dist_mm += 5;
-    y_dist_mm -= 10;
-
     scan_area_size_px = QRect(x_dist_px, y_dist_px, rect.width(), rect.height());
     scan_area_corner = QPoint(int(round(x_dist_mm)), int(round(y_dist_mm)));
     scan_area_size = QRect(scan_area_corner.x(), scan_area_corner.y(), int(round(width_cropped)), int(round(height_cropped)));
+
+    qDebug() << "Scan area size: " << scan_area_size;
 }
 
 void scanner_gui::displayCapturedImage()
@@ -1041,8 +1040,8 @@ void scanner_gui::send_robot_coordinates(bool middle)
 
     if(middle)
     {
-        x = scan_height_point.x();
-        y = scan_height_point.y();
+        x = scan_height_point.x()-10;
+        y = scan_height_point.y()-3;
 
         msg = "fast_x = %1\n";
         msg = msg.arg(QString::number(x));
@@ -1053,8 +1052,8 @@ void scanner_gui::send_robot_coordinates(bool middle)
     }
     else if(!middle)
     {
-        x = pcb_corner.x() - scan_area_corner.x();
-        y = pcb_corner.y() - scan_area_corner.y();
+        x = pcb_corner.x() - scan_area_corner.x()-12;
+        y = pcb_corner.y() - scan_area_corner.y()-12;
 
         msg = "x_mes = %1\n";
         msg = msg.arg(QString::number(x));
