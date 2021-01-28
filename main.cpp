@@ -1,6 +1,5 @@
 #include "scanner_gui.h"
 #include <QtWidgets>
-#include <QtMultimediaWidgets>
 #include <QApplication>
 
 int main(int argc, char *argv[])

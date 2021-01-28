@@ -1,5 +1,10 @@
 #include "dut_size.h"
 
+QPoint DUT_size::scan_pcb_corner = QPoint(0,0);
+QRect DUT_size::croppedOrigin = QRect(0,0,0,0);
+uint32_t DUT_size::real_height = 0;
+uint32_t DUT_size::camera_distance_2 = 100000;
+
 DUT_size::DUT_size()
 {}
 
@@ -47,4 +52,23 @@ void DUT_size::receive_scanheight_point(int x, int y)
     float y_dist_mm = (camera_distance*y_dist_px*sensor_height/(focal_lenght*960));
 
     scan_height_point = QPoint(x_dist_mm+18, y_dist_mm);
+}
+
+void DUT_size::receive_cropped_area(QRect &rect)
+{
+    croppedOrigin = rect;
+
+    //Height and width of cropped image (marked using mouse) can be computed using the following equations
+    float width_cropped = ((float)camera_distance_2*(float)rect.width()*sensor_width/(focal_lenght*1280));
+    float height_cropped = ((float)camera_distance_2*(float)rect.height()*sensor_height/(focal_lenght*960));
+
+    float x_dist_px = scan_pcb_corner.x() - croppedOrigin.x();
+    float y_dist_px = scan_pcb_corner.y() - croppedOrigin.y();
+
+    float x_dist_mm = ((float)camera_distance_2*x_dist_px*sensor_width/(focal_lenght*1280));
+    float y_dist_mm = ((float)camera_distance_2*y_dist_px*sensor_height/(focal_lenght*960));
+
+    size_px = QRect(x_dist_px, y_dist_px, rect.width(), rect.height());
+    corner = QPoint(int(round(x_dist_mm)), int(round(y_dist_mm)));
+    size_mm = QRect(corner.x(), corner.y(), int(round(width_cropped)), int(round(height_cropped)));
 }

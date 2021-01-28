@@ -2,5 +2,8 @@
     <qresource prefix="/img">
         <file>images/led_off.png</file>
         <file>images/led_on.png</file>
+        <file>images/home_icon.svg</file>
+        <file>images/probe_rotate.png</file>
+        <file>images/rotate.png</file>
     </qresource>
 </RCC>

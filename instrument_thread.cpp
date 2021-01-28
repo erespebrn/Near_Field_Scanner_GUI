@@ -40,9 +40,7 @@ void Instrument_Thread::scan_devices()
     if(_vna_socket->state() == QAbstractSocket::ConnectedState)
     {
         vna_online = true;
-
-        msg = "SYST:TSL OFF\n";
-        _vna_socket->write(msg.toLocal8Bit());
+        _vna_socket->write("SYST:TSL OFF\n");
         _vna_socket->waitForBytesWritten();
         msg = "";
 

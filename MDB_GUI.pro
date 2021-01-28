@@ -1,9 +1,6 @@
 QT       += \
     core gui \
-    multimediawidgets
-
-QT += multimedia multimediawidgets
-
+    network \
 
 win32:RC_ICONS += sduicon.ico
 
@@ -24,28 +21,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += C:\opencv\build\include
 
-#LIBS += C:\opencv\release\bin\libopencv_core420.dll
-#LIBS += C:\opencv\release\bin\libopencv_highgui420.dll
-#LIBS += C:\opencv\release\bin\libopencv_imgcodecs420.dll
-#LIBS += C:\opencv\release\bin\libopencv_imgproc420.dll
-#LIBS += C:\opencv\release\bin\libopencv_features2d420.dll
-#LIBS += C:\opencv\release\bin\libopencv_calib3d420.dll
-#LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
-#LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
-#LIBS += C:\opencv\release\bin\libopencv_photo420.dll
+LIBS += C:\opencv\release\bin\libopencv_core420.dll
+LIBS += C:\opencv\release\bin\libopencv_highgui420.dll
+LIBS += C:\opencv\release\bin\libopencv_imgcodecs420.dll
+LIBS += C:\opencv\release\bin\libopencv_imgproc420.dll
+LIBS += C:\opencv\release\bin\libopencv_features2d420.dll
+LIBS += C:\opencv\release\bin\libopencv_calib3d420.dll
+LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
+LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
+LIBS += C:\opencv\release\bin\libopencv_photo420.dll
 
-#LIBS += C:\opencv\release\bin\libopencv_core3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_highgui3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_imgcodecs3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_imgproc3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_features2d3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_calib3d3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_videoio3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_objdetect3410.dll
-#LIBS += C:\opencv\release\bin\libopencv_photo3410.dll
 
 SOURCES += \
     dut_size.cpp \
+    event_log.cpp \
     instrument_thread.cpp \
     main.cpp \
     mainsettings.cpp \
@@ -62,6 +51,7 @@ SOURCES += \
 
 HEADERS += \
     dut_size.h \
+    event_log.h \
     instrument_thread.h \
     mainsettings.h \
     qlabel_mouseevent.h \
@@ -82,11 +72,8 @@ FORMS += \
     scanwizard.ui \
     tool_add.ui
 
-RESOURCES += camera.qrc \
+RESOURCES += \
     img.qrc
-
-target.path = $$[QT_INSTALL_EXAMPLES]/multimediawidgets/camera
-INSTALLS += target
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

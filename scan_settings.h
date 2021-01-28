@@ -66,25 +66,15 @@ private slots:
     void on_center_freq_unit_VNA_currentIndexChanged(int index);
     void on_span_freq_value_VNA_valueChanged(double arg1);
     void on_span_freq_unit_VNA_currentIndexChanged(int index);
-
     void on_referencelevel_spinbox_VNA_valueChanged(int arg1);
-
     void on_attenuation_spinbox_VNA_valueChanged(int arg1);
-
     void on_leveloffset_spinbox_VNA_valueChanged(int arg1);
-
     void on_scaleCheckbox_VNA_stateChanged(int arg1);
-
     void on_sweep_points_spinbox_VNA_valueChanged(int arg1);
-
     void on_sweepTime_spinbox_VNA_valueChanged(double arg1);
-
     void on_resolutionBW_comboBox_VNA_currentIndexChanged(int index);
-
     void on_no_sweeps_dropdown_currentIndexChanged(int index);
-
     void on_detectorComboBox_currentIndexChanged(int index);
-
     void on_preamp_on_checkbox_stateChanged(int arg1);
 
 private:
@@ -96,8 +86,9 @@ private:
     QTcpSocket *_socket_vna;
 
     QString settingsFile;
+    QSettings *scansettings;
 
-    const QString settings_file_path = QCoreApplication::applicationDirPath() + "/scansettings.ini";
+    const QString settings_file_path =  QCoreApplication::applicationDirPath() + "/settings/scansettings.ini";
     const double sa_max_freq = 7.5;
     const uint8_t sa_max_freq_unit = 0; // Dropdown index
 
@@ -105,7 +96,8 @@ private:
     void vna_send_command(const QString &cmd);
 
     bool instrument_settings = false;
-    void load_previous_settings();
+    void load_sa_previous_settings();
+    void load_vna_previous_settings();
     void write_sa_settings();
     void write_vna_settings();
 };

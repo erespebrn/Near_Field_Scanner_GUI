@@ -6,6 +6,8 @@
 #include <QRect>
 #include <math.h>
 
+
+
 class DUT_size : public QObject
 {
     Q_OBJECT
@@ -15,15 +17,17 @@ signals:
     void send_coord_to_wizard(QPoint, QRect);
 
 public slots:
-    void receive_cropped_area();
+    void receive_cropped_area(QRect&);
     void cv_getcoord(bool, int, int, int, int, int, int);
     void receive_scanheight_point(int, int);
 
 public:
     static QPoint scan_pcb_corner;
+    static QRect croppedOrigin;
     static const uint32_t camera_distance = 876;
     static uint32_t real_height;
     static uint32_t camera_distance_2;
+
 
     DUT_size();
     void send_area_request();
@@ -31,6 +35,7 @@ public:
     QPoint corner;
     QPoint origin;
     QPoint scan_height_point;
+    double step_size;
     QRect size_mm;
     QRect size_px;
 

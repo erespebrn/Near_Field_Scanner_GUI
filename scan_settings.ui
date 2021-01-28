@@ -84,6 +84,9 @@
             </item>
             <item row="1" column="1">
              <widget class="QComboBox" name="videoBW_comboBox">
+              <property name="currentIndex">
+               <number>8</number>
+              </property>
               <item>
                <property name="text">
                 <string>10 MHz</string>
@@ -261,7 +264,7 @@
             <item row="0" column="1">
              <widget class="QComboBox" name="resolutionBW_comboBox">
               <property name="currentIndex">
-               <number>0</number>
+               <number>8</number>
               </property>
               <item>
                <property name="text">
@@ -583,6 +586,9 @@
                 <pointsize>10</pointsize>
                </font>
               </property>
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
               <item>
                <property name="text">
                 <string>GHz</string>
@@ -747,7 +753,7 @@
                <double>999.899999999999977</double>
               </property>
               <property name="value">
-               <double>3.000000000000000</double>
+               <double>1.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -827,7 +833,7 @@
                <number>5001</number>
               </property>
               <property name="value">
-               <number>1000</number>
+               <number>5000</number>
               </property>
              </widget>
             </item>
@@ -906,6 +912,9 @@
             <font>
              <pointsize>10</pointsize>
             </font>
+           </property>
+           <property name="currentIndex">
+            <number>1</number>
            </property>
            <item>
             <property name="text">
@@ -1317,7 +1326,7 @@
           <item row="4" column="1">
            <widget class="QComboBox" name="resolutionBW_comboBox_VNA">
             <property name="currentIndex">
-             <number>0</number>
+             <number>4</number>
             </property>
             <item>
              <property name="text">
@@ -1457,7 +1466,7 @@
              <number>99000</number>
             </property>
             <property name="value">
-             <number>1000</number>
+             <number>5000</number>
             </property>
            </widget>
           </item>
@@ -1694,6 +1703,9 @@
               <pointsize>10</pointsize>
              </font>
             </property>
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
             <item>
              <property name="text">
               <string>GHz</string>
@@ -1876,68 +1888,6 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="2" column="1">
-           <widget class="QLabel" name="label_25">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="midLineWidth">
-             <number>1</number>
-            </property>
-            <property name="text">
-             <string>Reference level:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QCheckBox" name="attenuation_checkbox_VNA">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="label_22">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="midLineWidth">
-             <number>1</number>
-            </property>
-            <property name="text">
-             <string>Level offset:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QCheckBox" name="referencelevel_checkbox_VNA">
-            <property name="maximumSize">
-             <size>
-              <width>20</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-            <property name="tristate">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="3">
            <widget class="QCheckBox" name="leveloffset_checkbox_VNA">
             <property name="text">
@@ -1963,30 +1913,19 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QSpinBox" name="attenuation_spinbox_VNA">
-            <property name="enabled">
+          <item row="2" column="3">
+           <widget class="QCheckBox" name="referencelevel_checkbox_VNA">
+            <property name="maximumSize">
+             <size>
+              <width>20</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+            <property name="tristate">
              <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="wrapping">
-             <bool>false</bool>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="suffix">
-             <string> dB</string>
-            </property>
-            <property name="maximum">
-             <number>1000000000</number>
-            </property>
-            <property name="value">
-             <number>10</number>
             </property>
            </widget>
           </item>
@@ -2009,8 +1948,69 @@
             <property name="suffix">
              <string> dB</string>
             </property>
+            <property name="minimum">
+             <number>-100</number>
+            </property>
             <property name="maximum">
-             <number>100000000</number>
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QCheckBox" name="attenuation_checkbox_VNA">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="attenuation_spinbox_VNA">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="suffix">
+             <string> dB</string>
+            </property>
+            <property name="minimum">
+             <number>-100</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_25">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Reference level:</string>
             </property>
            </widget>
           </item>
@@ -2047,6 +2047,24 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_22">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="midLineWidth">
+             <number>1</number>
+            </property>
+            <property name="text">
+             <string>Level offset:</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -2065,8 +2083,8 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="2" column="2">
-           <widget class="QSpinBox" name="signalGen_stop_freq_value">
+          <item row="1" column="2">
+           <widget class="QSpinBox" name="signalGen_power_value">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -2075,11 +2093,17 @@
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="maximum">
-             <number>99000</number>
+            <property name="wrapping">
+             <bool>false</bool>
             </property>
-            <property name="value">
-             <number>1</number>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="minimum">
+             <number>-99</number>
+            </property>
+            <property name="maximum">
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -2095,25 +2119,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QSpinBox" name="signalGen_start_freq_value">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>1000</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_34">
             <property name="font">
              <font>
@@ -2131,115 +2137,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Start frequency:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
-           <widget class="QSpinBox" name="signalGen_power_value">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="wrapping">
-             <bool>false</bool>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_33">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Stop frequency:</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="3">
-           <widget class="QComboBox" name="signalGen_start_freq_unit">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>53</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <item>
-             <property name="text">
-              <string>GHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>kHz</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QComboBox" name="signalGen_stop_freq_unit">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>53</width>
-              <height>53</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <item>
-             <property name="text">
-              <string>GHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MHz</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>kHz</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="3">
            <widget class="QLabel" name="label_35">
             <property name="enabled">
              <bool>true</bool>
