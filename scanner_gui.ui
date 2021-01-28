@@ -33,6 +33,168 @@
     <bool>false</bool>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="1" column="0" rowspan="5" colspan="2">
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>1500</width>
+        <height>900</height>
+       </size>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>145</red>
+            <green>145</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>145</red>
+            <green>145</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>145</red>
+            <green>145</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>145</red>
+            <green>145</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="viewfinderPage">
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="scanheight_mouseevent" name="liveStream">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>1280</width>
+            <height>960</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="text">
+           <string>Loading preview...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="previewPage">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QLabel_mouseEvent" name="lastImagePreviewLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>1280</width>
+            <height>960</height>
+           </size>
+          </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
     <item row="4" column="2">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -138,6 +300,53 @@ p, li { white-space: pre-wrap; }
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout">
+                <item row="2" column="0">
+                 <widget class="QPushButton" name="Z_plus">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="statusTip">
+                   <string>Z+</string>
+                  </property>
+                  <property name="text">
+                   <string>Z+</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                  <property name="autoRepeatDelay">
+                   <number>100</number>
+                  </property>
+                 </widget>
+                </item>
                 <item row="4" column="2" alignment="Qt::AlignHCenter">
                  <widget class="QToolButton" name="Y_minus_button">
                   <property name="minimumSize">
@@ -187,8 +396,8 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="1">
-                 <widget class="QToolButton" name="X_minus_button">
+                <item row="3" column="3">
+                 <widget class="QToolButton" name="X_plus_button">
                   <property name="minimumSize">
                    <size>
                     <width>45</width>
@@ -202,10 +411,10 @@ p, li { white-space: pre-wrap; }
                    </size>
                   </property>
                   <property name="toolTip">
-                   <string>X+</string>
+                   <string>X-</string>
                   </property>
                   <property name="statusTip">
-                   <string>X+</string>
+                   <string>X-</string>
                   </property>
                   <property name="text">
                    <string>...</string>
@@ -223,36 +432,7 @@ p, li { white-space: pre-wrap; }
                    <number>100</number>
                   </property>
                   <property name="arrowType">
-                   <enum>Qt::LeftArrow</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
-                 <widget class="QToolButton" name="home_button">
-                  <property name="minimumSize">
-                   <size>
-                    <width>45</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>45</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normaloff>images/home_icon.svg</normaloff>images/home_icon.svg</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>35</width>
-                    <height>30</height>
-                   </size>
+                   <enum>Qt::RightArrow</enum>
                   </property>
                  </widget>
                 </item>
@@ -304,46 +484,6 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="3">
-                 <widget class="QToolButton" name="X_plus_button">
-                  <property name="minimumSize">
-                   <size>
-                    <width>45</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>45</width>
-                    <height>45</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>X-</string>
-                  </property>
-                  <property name="statusTip">
-                   <string>X-</string>
-                  </property>
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>40</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                  <property name="autoRepeat">
-                   <bool>true</bool>
-                  </property>
-                  <property name="autoRepeatDelay">
-                   <number>100</number>
-                  </property>
-                  <property name="arrowType">
-                   <enum>Qt::RightArrow</enum>
-                  </property>
-                 </widget>
-                </item>
                 <item row="4" column="0">
                  <widget class="QPushButton" name="Z_minus">
                   <property name="minimumSize">
@@ -366,6 +506,9 @@ p, li { white-space: pre-wrap; }
                     <kerning>true</kerning>
                    </font>
                   </property>
+                  <property name="statusTip">
+                   <string>Z-</string>
+                  </property>
                   <property name="text">
                    <string>Z-</string>
                   </property>
@@ -377,14 +520,8 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QPushButton" name="Z_plus">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
+                <item row="3" column="2">
+                 <widget class="QToolButton" name="home_button">
                   <property name="minimumSize">
                    <size>
                     <width>45</width>
@@ -397,15 +534,46 @@ p, li { white-space: pre-wrap; }
                     <height>45</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                    <weight>75</weight>
-                    <bold>true</bold>
-                   </font>
+                  <property name="statusTip">
+                   <string>Home position</string>
                   </property>
                   <property name="text">
-                   <string>Z+</string>
+                   <string>...</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="img.qrc">
+                    <normaloff>:/img/images/home_icon.svg</normaloff>:/img/images/home_icon.svg</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>35</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QToolButton" name="X_minus_button">
+                  <property name="minimumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>X+</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>X+</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -418,6 +586,56 @@ p, li { white-space: pre-wrap; }
                   </property>
                   <property name="autoRepeatDelay">
                    <number>100</number>
+                  </property>
+                  <property name="arrowType">
+                   <enum>Qt::LeftArrow</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QToolButton" name="rotate_probe_button">
+                  <property name="minimumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>45</width>
+                    <height>45</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>X+</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Rotate probe</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="img.qrc">
+                    <normaloff>:/img/images/rotate.png</normaloff>:/img/images/rotate.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>35</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                  <property name="autoRepeat">
+                   <bool>true</bool>
+                  </property>
+                  <property name="autoRepeatDelay">
+                   <number>300</number>
+                  </property>
+                  <property name="arrowType">
+                   <enum>Qt::NoArrow</enum>
                   </property>
                  </widget>
                 </item>
@@ -708,11 +926,11 @@ brightness:</string>
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame_2">
+       <widget class="QFrame" name="frame">
         <property name="minimumSize">
          <size>
-          <width>200</width>
-          <height>0</height>
+          <width>0</width>
+          <height>10</height>
          </size>
         </property>
         <property name="frameShape">
@@ -721,11 +939,8 @@ brightness:</string>
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
         </property>
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -743,7 +958,7 @@ brightness:</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="1" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout">
            <property name="spacing">
             <number>20</number>
@@ -804,6 +1019,27 @@ brightness:</string>
            </item>
           </layout>
          </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="frame_2">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QLabel" name="label_7">
            <property name="font">
@@ -938,169 +1174,19 @@ brightness:</string>
       </item>
      </layout>
     </item>
-    <item row="1" column="0" rowspan="5" colspan="2">
-     <widget class="QStackedWidget" name="stackedWidget">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>1500</width>
-        <height>900</height>
-       </size>
-      </property>
-      <property name="palette">
-       <palette>
-        <active>
-         <colorrole role="Base">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>255</red>
-            <green>255</green>
-            <blue>255</blue>
-           </color>
-          </brush>
-         </colorrole>
-         <colorrole role="Window">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>145</red>
-            <green>145</green>
-            <blue>145</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </active>
-        <inactive>
-         <colorrole role="Base">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>255</red>
-            <green>255</green>
-            <blue>255</blue>
-           </color>
-          </brush>
-         </colorrole>
-         <colorrole role="Window">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>145</red>
-            <green>145</green>
-            <blue>145</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </inactive>
-        <disabled>
-         <colorrole role="Base">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>145</red>
-            <green>145</green>
-            <blue>145</blue>
-           </color>
-          </brush>
-         </colorrole>
-         <colorrole role="Window">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>145</red>
-            <green>145</green>
-            <blue>145</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </disabled>
-       </palette>
-      </property>
-      <property name="mouseTracking">
-       <bool>true</bool>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="viewfinderPage">
-       <layout class="QGridLayout" name="gridLayout_5">
-        <item row="0" column="0">
-         <widget class="scanheight_mouseevent" name="liveStream">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>1280</width>
-            <height>960</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="text">
-           <string>Loading preview...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="previewPage">
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QLabel_mouseEvent" name="lastImagePreviewLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>1280</width>
-            <height>960</height>
-           </size>
-          </property>
-          <property name="mouseTracking">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
    </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1117,47 +1203,18 @@ brightness:</string>
     </property>
     <addaction name="actionExit_2"/>
    </widget>
-   <widget class="QMenu" name="menuCamera">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Camera</string>
+     <string>Tools</string>
     </property>
+    <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
     <addaction name="actionReset_Camera"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuCamera"/>
+   <addaction name="menuTools"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <action name="actionStopCamera">
-   <property name="text">
-    <string>Stop Camera</string>
-   </property>
-  </action>
-  <action name="actionStartCamera">
-   <property name="text">
-    <string>Start Camera</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionImage_Settings">
-   <property name="text">
-    <string>Image Settings</string>
-   </property>
-  </action>
   <action name="actionExit_2">
    <property name="text">
     <string>Exit</string>
@@ -1166,6 +1223,11 @@ brightness:</string>
   <action name="actionReset_Camera">
    <property name="text">
     <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>

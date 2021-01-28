@@ -12,14 +12,15 @@ Instrument_Thread::~Instrument_Thread()
 void Instrument_Thread::start()
 {
     timer = new QTimer;
-    _vna_socket = new QTcpSocket;
-    _sa_socket = new QTcpSocket;
     connect(timer, &QTimer::timeout, this, &Instrument_Thread::scan_devices);
     timer->start(1000);
 }
 
 void Instrument_Thread::scan_devices()
 {
+    QTcpSocket *_vna_socket = new QTcpSocket;
+    QTcpSocket *_sa_socket = new QTcpSocket;
+
     bool vna_online;
     bool sa_online;
     QString msg = "";
@@ -29,10 +30,6 @@ void Instrument_Thread::scan_devices()
         _vna_socket->connectToHost(vna_ip, 5025);
         _vna_socket->waitForConnected(10);
 
-//        msg = "SYST:TSL SCR\n";
-//        _vna_socket->write(msg.toLocal8Bit());
-//        _vna_socket->waitForBytesWritten();
-//        msg = "";
     }
     if(_sa_socket->state() == QAbstractSocket::UnconnectedState)
     {
@@ -43,9 +40,7 @@ void Instrument_Thread::scan_devices()
     if(_vna_socket->state() == QAbstractSocket::ConnectedState)
     {
         vna_online = true;
-
-        msg = "SYST:TSL OFF\n";
-        _vna_socket->write(msg.toLocal8Bit());
+        _vna_socket->write("SYST:TSL OFF\n");
         _vna_socket->waitForBytesWritten();
         msg = "";
 
@@ -58,6 +53,8 @@ void Instrument_Thread::scan_devices()
     else
         sa_online = false;
 
+    delete _sa_socket;
+    delete _vna_socket;
     emit VNA_connected(vna_online);
     emit SA_connected(sa_online);
 }

@@ -27,8 +27,6 @@ signals:
 
 private:
     QTimer * timer;
-    QTcpSocket * _vna_socket;
-    QTcpSocket * _sa_socket;
     QHostInfo * info;
 
     QString sa_ip = "";

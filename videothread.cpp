@@ -4,14 +4,10 @@
 #include <QMessageBox>
 
 VideoThread::VideoThread()
-{
-
-}
+{}
 
 VideoThread::~VideoThread()
-{
-
-}
+{}
 
 void VideoThread::process()
 {
@@ -25,17 +21,15 @@ void VideoThread::process()
     cv::Point start;
     cv::Rect shape_1;
 
-    if(!cv_camera->read(frame_to_resize))
-    {
+    if(!cv_camera->read(frame_to_resize)){
         emit error("Camera read error");
         emit finished();
     }
 
-    if(!frame_to_resize.empty())
-    {
+    if(!frame_to_resize.empty()){
         cv::resize(frame_to_resize, frame_cv, cv::Size(1280,960));
-        if(detect)
-        {
+
+        if(detect){
             is_height_measured = false;
             cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
             cv::GaussianBlur(frame_gray, frame_blur, cv::Size(7,7),1);
@@ -58,12 +52,9 @@ void VideoThread::process()
             cv::Rect internal = cv::Rect(cv::Point((frame_cv.cols/2)-400,(frame_cv.rows/2)-200),cv::Point((frame_cv.cols/2)+400,(frame_cv.rows/2)+400));
             std::vector<cv::Point2f> corners;
 
-
 //            cv::Point cv_robot_origin;
 //            cv::Rect origin = cv::Rect(0,0,120,190);
 //            cv::findContours(frame_canny(origin), contours_2, hierarchy_2, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-
-
 //            if(!contours_2.empty())
 //            {
 //                org = cv::boundingRect(contours_2[0]);
@@ -74,11 +65,10 @@ void VideoThread::process()
 
 //            }
 
+            cv::Point cv_robot_origin = cv::Point(cv_robot_origin_fixed.x+ref00_x_off, cv_robot_origin_fixed.y+ref99_y_off);
             cv::putText(frame_cv, "(0,0)", cv::Point(cv_robot_origin.x+6, cv_robot_origin.y-6), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
             cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
 
-            cv::putText(frame_cv, "(0,0)", cv::Point(cv_robot_origin.x+6, cv_robot_origin.y-6), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
-            cv::circle(frame_cv, cv_robot_origin, 3, cv::Scalar(0,0,255));
             cv::threshold(frame_gray(internal), bin, 100, 255, cv::THRESH_OTSU+cv::THRESH_BINARY);
             cv::morphologyEx(bin, eroded, cv::MORPH_OPEN, kernel_2);
             cv::dilate(eroded, dilated, kernel_2);
@@ -86,42 +76,35 @@ void VideoThread::process()
             cv::namedWindow("b", cv::WINDOW_NORMAL);
             cv::imshow("b", dilated);
 
-            if(!contours.empty())
-            {
-                for(std::vector<cv::Point>contour : contours)
-                {
+            if(!contours.empty()){
+                for(std::vector<cv::Point>contour : contours){
                     double area = cv::contourArea(contour);
-                    if(area > 1000)
-                    {
+                    if(area > 1000){
                         cv::approxPolyDP(contour, corners, 0.05*cv::arcLength(contour,true), true);
                         shape_1 = cv::boundingRect(corners);
-                        //cv::rectangle(frame_cv, shape, cv::Scalar(255,255,0), 1);
                         start = cv::Point(shape_1.br().x+(frame_cv.cols/2)-400, shape_1.br().y+(frame_cv.rows/2)-200);
                         emit pcb_found();
                     }
                 }
+
                 cv::circle(frame_cv, start, 3, cv::Scalar(255,255,0),1);
                 cv::putText(frame_cv, "Start", start, cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
 
-                if(mark_scanh && !is_height_measured)
-                {
-                    if((scan_height_pos.x < start.x && scan_height_pos.y < start.y) && (scan_height_pos.x > start.x-shape_1.width && scan_height_pos.y > start.y-shape_1.height))
-                    {
+                if(mark_scanh && !is_height_measured){
+                    if((scan_height_pos.x < start.x && scan_height_pos.y < start.y) && (scan_height_pos.x > start.x-shape_1.width && scan_height_pos.y > start.y-shape_1.height)){
                         cv::circle(frame_cv, scan_height_pos, 3, cv::Scalar(0,0,153));
                         cv::putText(frame_cv, "Point for height measurement", cv::Point(scan_height_pos.x, scan_height_pos.y-5), cv::FONT_HERSHEY_COMPLEX, 0.25, cv::Scalar(255,0,0),1);
                         emit send_scanheight_point(scan_height_pos.x, scan_height_pos.y);
-                    }
-                    else
-                    {
+                    }else{
                         mark_scanh = false;
                         emit height_scan_point_error();
                     }
                 }
             }
             emit positions(zoomed_origin, cv_robot_origin.x, cv_robot_origin.y, start.x, start.y, shape_1.width, shape_1.height);
-        }
-        else if(zoomed_origin)
-        {
+
+        }else if(zoomed_origin){
+            cv::destroyWindow("b");
             cv::cvtColor(frame_cv, frame_gray, cv::COLOR_BGR2GRAY);
 
             std::vector<std::vector<cv::Point>> contours;
@@ -143,25 +126,19 @@ void VideoThread::process()
             cv::imshow("a",eroded);
 
             cv::Rect shape;
-            cv::Point2f points[4];
             std::vector<cv::Point2f> corners;
 
-            if(!contours.empty())
-            {
+            if(!contours.empty()){
                 std::vector<std::vector<cv::Point>> hull( contours.size() );
-                for( size_t i = 0; i < contours.size(); i++ )
-                {
+                for( size_t i = 0; i < contours.size(); i++ ){
                     convexHull( contours[i], hull[i] );
                 }
 
-                for(std::vector<cv::Point>contour : hull)
-                {
+                for(std::vector<cv::Point>contour : hull){
                     double area = cv::contourArea(contour);
-                    if(area < desired_area+(desired_area/4) && area > desired_area-(desired_area/4))
-                    {
+                    if(area < desired_area+(desired_area/4) && area > desired_area-(desired_area/4)){
                         cv::approxPolyDP(contour, corners, 0.05*cv::arcLength(contour,true), true);
-                        if(corners.size() == 4)
-                        {
+                        if(corners.size() == 4){
                             shape = cv::boundingRect(corners);
                             pcb_origin = shape.br();
                             cv::rectangle(frame_cv, shape, cv::Scalar(255,255,0), 1);
@@ -172,9 +149,7 @@ void VideoThread::process()
                     }
                 }
             }
-        }
-        else
-        {
+        }else{
             mark_scanh = false;
             is_height_measured = false;
             scan_height_pos.x = scan_height_pos.y = -1;
@@ -182,7 +157,6 @@ void VideoThread::process()
         QImage frame_qt = MatToQImage(frame_cv);
         emit readyImg(frame_qt);
     }
-
 }
 
 void VideoThread::start()
@@ -246,7 +220,6 @@ void VideoThread::mark_scanheight(int x, int y)
 {
     scan_height_pos = cv::Point(x,y);
     mark_scanh = true;
-    qDebug() << "WTF";
 }
 
 void VideoThread::height_measurement_done()
@@ -254,11 +227,21 @@ void VideoThread::height_measurement_done()
     is_height_measured = true;
 }
 
+void VideoThread::get_ref00_offsets(double x, double y)
+{
+    ref00_x_off = x;
+    ref99_y_off = y;
+}
+
+void VideoThread::kill_window()
+{
+    cv::destroyWindow("a");
+}
+
 QImage VideoThread::MatToQImage(const cv::Mat& mat)
 {
     // 8-bits unsigned, NO. OF CHANNELS=1
-    if(mat.type()==CV_8UC1)
-    {
+    if(mat.type()==CV_8UC1){
         // Set the color table (used to translate colour indexes to qRgb values)
         QVector<QRgb> colorTable;
         for (int i=0; i<256; i++)
@@ -271,8 +254,7 @@ QImage VideoThread::MatToQImage(const cv::Mat& mat)
         return img;
     }
     // 8-bits unsigned, NO. OF CHANNELS=3
-    if(mat.type()==CV_8UC3)
-    {
+    if(mat.type()==CV_8UC3){
         // Copy input Mat
         const uchar *qImageBuffer = (const uchar*)mat.data;
         // Create QImage with same dimensions as input Mat
@@ -280,15 +262,4 @@ QImage VideoThread::MatToQImage(const cv::Mat& mat)
         return img.rgbSwapped();
     }
     return QImage();
-}
-
-std::vector<cv::Point> VideoThread::contourConvexHull(std::vector<cv::Point> contours)
-{
-    std::vector<cv::Point> result;
-    std::vector<cv::Point> pts;
-
-    for(size_t i=0; i<contours.size(); i++)
-            pts.push_back(contours[i]);
-    cv::convexHull(pts,result);
-    return result;
 }

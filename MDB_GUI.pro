@@ -1,9 +1,6 @@
 QT       += \
     core gui \
-    multimediawidgets
-
-QT += multimedia multimediawidgets
-
+    network \
 
 win32:RC_ICONS += sduicon.ico
 
@@ -34,10 +31,16 @@ LIBS += C:\opencv\release\bin\libopencv_videoio420.dll
 LIBS += C:\opencv\release\bin\libopencv_objdetect420.dll
 LIBS += C:\opencv\release\bin\libopencv_photo420.dll
 
+
 SOURCES += \
+    dut_size.cpp \
+    event_log.cpp \
     instrument_thread.cpp \
     main.cpp \
+    mainsettings.cpp \
     qlabel_mouseevent.cpp \
+    robot.cpp \
+    rs_instruments.cpp \
     scan_settings.cpp \
     scanheight_mouseevent.cpp \
     scanner_gui.cpp \
@@ -47,8 +50,13 @@ SOURCES += \
     videothread.cpp
 
 HEADERS += \
+    dut_size.h \
+    event_log.h \
     instrument_thread.h \
+    mainsettings.h \
     qlabel_mouseevent.h \
+    robot.h \
+    rs_instruments.h \
     scan_settings.h \
     scanheight_mouseevent.h \
     scanner_gui.h \
@@ -58,16 +66,14 @@ HEADERS += \
     videothread.h
 
 FORMS += \
+    mainsettings.ui \
     scan_settings.ui \
     scanner_gui.ui \
     scanwizard.ui \
     tool_add.ui
 
-RESOURCES += camera.qrc \
+RESOURCES += \
     img.qrc
-
-target.path = $$[QT_INSTALL_EXAMPLES]/multimediawidgets/camera
-INSTALLS += target
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

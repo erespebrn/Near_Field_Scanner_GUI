@@ -30,6 +30,8 @@ public slots:
     void receive_area(qint64);
     void mark_scanheight(int ,int);
     void height_measurement_done();
+    void get_ref00_offsets(double, double);
+    void kill_window();
 
 signals:
     void finished();
@@ -43,13 +45,11 @@ signals:
     void height_scan_point_error();
 
 private:
-    cv::Mat mat;
     cv::VideoCapture * cv_camera;
     QTimer * timer;
     QImage MatToQImage(const cv::Mat& mat);
-    std::vector<cv::Point> contourConvexHull(std::vector<cv::Point> contours);
     cv::Point pcb_origin;
-    cv::Point cv_robot_origin = cv::Point(145,172);
+    cv::Point cv_robot_origin_fixed = cv::Point(82,160);
     bool detect = false;
     bool zoomed_origin = false;
     bool is_height_measured = false;
@@ -58,6 +58,7 @@ private:
 
     long int desired_area = 1e9;
 
+    double ref00_x_off = 0, ref99_y_off = 0;
 
     const uint16_t resolution_max_width = 4208;
     const uint16_t resolution_max_height = 3120;

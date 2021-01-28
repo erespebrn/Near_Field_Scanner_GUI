@@ -15,6 +15,7 @@ class scanheight_mouseevent : public QLabel
 
 signals:
     void sendPos(int, int);
+    void height_meas_point_selected();
 
 public:
     scanheight_mouseevent(QWidget *parent = nullptr);
