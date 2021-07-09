@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>images/led_off.png</file>
+        <file>images/led_on.png</file>
+        <file>images/home_icon.svg</file>
+        <file>images/probe_rotate.png</file>
+        <file>images/rotate.png</file>
+        <file>images/nearfield_wizard.PNG</file>
+        <file>images/SDU_LOGO.png</file>
+        <file>images/cie_logo.png</file>
+        <file>images/cie_logo_big.png</file>
+    </qresource>
+</RCC>
